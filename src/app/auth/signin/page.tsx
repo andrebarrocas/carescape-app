@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Github } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SignInPage() {
@@ -38,13 +38,9 @@ export default function SignInPage() {
     }
   };
 
-  const handleGithubSignIn = () => {
-    signIn('github', { callbackUrl: '/colors' });
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 relative">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-start justify-center pt-2 pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 relative" style={{ marginTop: '2%' }}>
         {/* Background Effects */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-3xl" />
@@ -57,11 +53,7 @@ export default function SignInPage() {
                 'linear-gradient(240deg, #a855f7 0%, #ec4899 50%, #6366f1 100%)',
               ],
             }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              repeatType: 'reverse',
-            }}
+            transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse' }}
             style={{ filter: 'blur(100px)' }}
           />
         </div>
@@ -145,7 +137,7 @@ export default function SignInPage() {
               </motion.p>
             )}
 
-            <div className="space-y-4">
+            <div>
               <button
                 type="submit"
                 disabled={isLoading}
@@ -159,15 +151,6 @@ export default function SignInPage() {
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </>
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleGithubSignIn}
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
-              >
-                <Github className="w-5 h-5 mr-2" />
-                Continue with GitHub
               </button>
             </div>
           </motion.form>
@@ -192,4 +175,4 @@ export default function SignInPage() {
       </div>
     </div>
   );
-} 
+}
