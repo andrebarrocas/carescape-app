@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Search, Filter } from 'lucide-react';
 import AddColorButton from '@/components/AddColorButton';
 import { ColorSubmission } from '@/types/colors';
-import Image from 'next/image';
 import ColorPlaceholder from '@/components/ColorPlaceholder';
 
 export default function ColorsPage() {
@@ -18,6 +17,7 @@ export default function ColorsPage() {
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchColors();
@@ -32,8 +32,13 @@ export default function ColorsPage() {
   const fetchColors = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/colors');
+      const response = await fetch(`${window.location.origin}/api/colors`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch colors: ${errorText}`);
+      }
       const data = await response.json();
+      console.log('Fetched colors:', data);
       setColors(data);
       setFilteredColors(data);
     } catch (error) {
@@ -43,6 +48,11 @@ export default function ColorsPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleImageError = (colorId: string, imageUrl: string) => {
+    console.log('Image load error:', { colorId, imageUrl }); // Debug log
+    setImageLoadErrors(prev => ({ ...prev, [colorId]: true }));
   };
 
   const filterColors = () => {
@@ -175,21 +185,19 @@ export default function ColorsPage() {
                     className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-200"
                   >
                     <div className="relative aspect-square">
-                      {color.mediaUploads && color.mediaUploads.length > 0 ? (
-                        <div className="relative w-full h-full">
-                          <img
-                            src={color.mediaUploads[0].url}
-                            alt={color.name}
-                            className="w-full h-full object-cover rounded-lg"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = `https://via.placeholder.com/400x400/${color.hex.replace('#', '')}/FFFFFF?text=${encodeURIComponent(color.name)}`;
-                              target.onerror = null;
-                            }}
-                          />
-                        </div>
+                      {color.mediaUploads && color.mediaUploads.length > 0 && !imageLoadErrors[color.id] ? (
+                        <div 
+                          className="w-full h-full bg-cover bg-center rounded-t-xl"
+                          style={{
+                            backgroundColor: color.hex,
+                            backgroundImage: `url(${color.mediaUploads[0].url})`,
+                          }}
+                          onError={() => handleImageError(color.id, color.mediaUploads[0].url)}
+                        />
                       ) : (
-                        <ColorPlaceholder hex={color.hex} />
+                        <div className="w-full h-full">
+                          <ColorPlaceholder hex={color.hex} name={color.name} />
+                        </div>
                       )}
                       <div
                         className="absolute bottom-4 right-4 w-12 h-12 rounded-full shadow-lg border-4 border-white"

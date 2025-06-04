@@ -92,7 +92,7 @@ export default function MapPage() {
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
           <div className="container mx-auto px-4 py-12">
-            <h1 className="text-4xl font-bold mb-4">Color Map</h1>
+            <h1 className="text-4xl font-bold mb-4">Caring Dictionary of Landscape Colors</h1>
             <p className="text-lg opacity-90">Explore natural colors by their geographic origins</p>
           </div>
         </div>

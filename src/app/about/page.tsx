@@ -27,17 +27,14 @@ export default function AboutPage() {
     {
       title: 'Interactive Color Map',
       description: 'Explore natural colors geographically and discover their cultural origins.',
-      image: '/images/map-preview.jpg',
     },
     {
       title: 'Community Knowledge',
       description: 'Share and learn from color artisans and enthusiasts worldwide.',
-      image: '/images/community-preview.jpg',
     },
     {
       title: 'Sustainable Practices',
       description: 'Learn eco-friendly methods for creating and using natural colors.',
-      image: '/images/sustainable-preview.jpg',
     },
   ];
 
@@ -73,7 +70,7 @@ export default function AboutPage() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-              Preserving Earth's Natural Colors
+              Preserve Earth's Natural Colors
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               We're building a global platform to document, preserve, and celebrate the rich heritage

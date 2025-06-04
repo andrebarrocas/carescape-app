@@ -11,82 +11,76 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String?
+  id        String   @id @default(cuid())
+  email     String   @unique
   pseudonym String?
-  createdAt DateTime @default(now())
   colors    Color[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
 
 model Color {
-  id            String        @id @default(uuid())
+  id            String        @id @default(cuid())
   name          String
   hex           String
-  description   String?
+  description   String
+  location      String
+  coordinates   String?       // JSON string with lat/lng
   season        String
   dateCollected DateTime
-  location      String
-  coordinates   Json
   userId        String
-  createdAt     DateTime      @default(now())
-  user          User          @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   materials     Material[]
   processes     Process[]
   mediaUploads  MediaUpload[]
-  tags          ColorTag[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@map("colors")
+  @@index([userId])
 }
 
 model Material {
-  id         String  @id @default(uuid())
-  colorId    String
-  name       String
-  partUsed   String
-  originNote String?
-  color      Color   @relation(fields: [colorId], references: [id])
+  id          String   @id @default(cuid())
+  name        String
+  partUsed    String
+  originNote  String
+  colorId     String
+  color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("materials")
+  @@index([colorId])
 }
 
 model Process {
-  id          String  @id @default(uuid())
-  colorId     String
+  id          String   @id @default(cuid())
   technique   String
   application String
-  notes       String?
-  color       Color   @relation(fields: [colorId], references: [id])
+  notes       String
+  colorId     String
+  color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("processes")
+  @@index([colorId])
 }
 
 model MediaUpload {
-  id      String  @id @default(uuid())
-  colorId String
-  type    String
-  url     String
-  caption String?
-  color   Color   @relation(fields: [colorId], references: [id])
+  id          String   @id @default(cuid())
+  filename    String
+  mimetype    String
+  data        Bytes    // Binary data storage
+  type        String   // 'process' or 'outcome'
+  colorId     String
+  color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("media_uploads")
-}
-
-model Tag {
-  id        String     @id @default(uuid())
-  name      String     @unique
-  colors    ColorTag[]
-
-  @@map("tags")
-}
-
-model ColorTag {
-  colorId String
-  tagId   String
-  color   Color  @relation(fields: [colorId], references: [id])
-  tag     Tag    @relation(fields: [tagId], references: [id])
-
-  @@id([colorId, tagId])
-  @@map("color_tags")
+  @@index([colorId])
 } 

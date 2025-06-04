@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Github } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SignInPage() {
@@ -38,61 +38,65 @@ export default function SignInPage() {
     }
   };
 
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await signIn('email', { email, callbackUrl: '/' });
+    } catch (error) {
+      console.error('Sign in error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-start justify-center pt-2 pb-4 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 relative" style={{ marginTop: '2%' }}>
-        {/* Background Effects */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-3xl" />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+            Welcome to CAreScape
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Join our community of color enthusiasts and artisans
+          </p>
+        </motion.div>
+
+        <div className="mt-8 space-y-6">
           <motion.div
-            className="absolute -inset-[100px] opacity-50"
-            animate={{
-              background: [
-                'linear-gradient(0deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
-                'linear-gradient(120deg, #ec4899 0%, #6366f1 50%, #a855f7 100%)',
-                'linear-gradient(240deg, #a855f7 0%, #ec4899 50%, #6366f1 100%)',
-              ],
-            }}
-            transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse' }}
-            style={{ filter: 'blur(100px)' }}
-          />
-        </div>
-
-        {/* Content */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 relative z-10">
-          <div className="text-center">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
-            >
-              Welcome Back
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="mt-2 text-gray-600"
-            >
-              Sign in to continue your color journey
-            </motion.p>
-          </div>
-
-          <motion.form
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-8 space-y-6"
-            onSubmit={handleSubmit}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="space-y-4"
           >
-            <div className="space-y-4">
+            <button
+              onClick={() => signIn('github', { callbackUrl: '/' })}
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-colors duration-200"
+            >
+              <Github className="w-5 h-5 mr-2" />
+              Continue with GitHub
+            </button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleEmailSignIn} className="space-y-4">
               <div>
                 <label htmlFor="email" className="sr-only">
                   Email address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     id="email"
                     name="email"
@@ -101,77 +105,39 @@ export default function SignInPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400"
-                    placeholder="Email address"
+                    className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Enter your email address"
                   />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 </div>
               </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400"
-                    placeholder="Password"
-                  />
-                </div>
-              </div>
-            </div>
 
-            {error && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-red-500 text-sm text-center"
-              >
-                {error}
-              </motion.p>
-            )}
-
-            <div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
+                className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
               >
                 {isLoading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    Sign in
-                    <ArrowRight className="ml-2 w-5 h-5" />
+                    Continue with Email
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </>
                 )}
               </button>
-            </div>
-          </motion.form>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-6 text-center"
-          >
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link
-                href="/auth/signup"
-                className="font-medium text-purple-500 hover:text-purple-400 transition-colors duration-200"
-              >
-                Sign up
-              </Link>
-            </p>
+            </form>
           </motion.div>
         </div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-8 text-xs text-center text-gray-500"
+        >
+          By signing in, you agree to our Terms of Service and Privacy Policy.
+        </motion.p>
       </div>
     </div>
   );

@@ -4,43 +4,77 @@ import { getServerSession } from 'next-auth';
 import { GET as authHandler } from '@/app/api/auth/[...nextauth]/route';
 import { Session } from 'next-auth';
 
-interface ExtendedSession extends Session {
-  user?: {
+interface ColorWithMedia {
+  id: string;
+  name: string;
+  hex: string;
+  description: string;
+  location: string;
+  coordinates: string;
+  season: string;
+  dateCollected: Date;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  materials: any[];
+  processes: any[];
+  mediaUploads: {
     id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  };
+    filename: string;
+    mimetype: string;
+    type: string;
+  }[];
 }
-
-const authOptions = authHandler.config;
 
 export async function GET() {
   try {
-    // Get all colors with their related data using Prisma
     const colors = await prisma.color.findMany({
       include: {
-        user: {
-          select: {
-            pseudonym: true,
-          },
-        },
         materials: true,
         processes: true,
-        mediaUploads: true,
+        mediaUploads: {
+          select: {
+            id: true,
+            filename: true,
+            mimetype: true,
+            type: true,
+          },
+        },
+      },
+      orderBy: {
+        dateCollected: 'desc',
       },
     });
 
-    return NextResponse.json(colors);
+    // Add debug logging
+    console.log('Fetched colors:', colors);
+
+    // Transform the response to include image URLs
+    const transformedColors = colors.map((color: ColorWithMedia) => {
+      const transformed = {
+        ...color,
+        mediaUploads: color.mediaUploads.map(media => ({
+          ...media,
+          url: `/api/images/${media.id}`,
+        })),
+      };
+      console.log('Transformed color:', transformed);
+      return transformed;
+    });
+
+    return NextResponse.json(transformedColors);
   } catch (error) {
     console.error('Error fetching colors:', error);
-    return NextResponse.json({ error: 'Failed to fetch colors' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch colors' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions) as ExtendedSession;
+    const session = await getServerSession(authHandler.config) as Session;
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -54,31 +88,23 @@ export async function POST(request: Request) {
         hex: data.hex,
         description: data.description,
         location: data.location,
-        locationGeom: {
-          type: 'Point',
-          coordinates: [data.coordinates.lng, data.coordinates.lat],
-        },
-        sourceMaterial: data.sourceMaterial,
-        type: data.type,
-        application: data.application,
-        process: data.process,
+        coordinates: JSON.stringify({ lat: data.coordinates.lat, lng: data.coordinates.lng }),
         season: data.season,
         dateCollected: new Date(data.dateCollected),
         userId: session.user.id,
+        materials: {
+          create: data.materials,
+        },
+        processes: {
+          create: data.processes,
+        },
+      },
+      include: {
+        materials: true,
+        processes: true,
+        mediaUploads: true,
       },
     });
-
-    // Create media uploads
-    if (data.mediaUploads?.length) {
-      await prisma.mediaUpload.createMany({
-        data: data.mediaUploads.map((media: any) => ({
-          colorId: color.id,
-          type: media.type,
-          url: media.url, // You'll need to handle file uploads separately
-          caption: media.caption,
-        })),
-      });
-    }
 
     return NextResponse.json(color);
   } catch (error) {

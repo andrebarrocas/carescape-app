@@ -1,138 +1,167 @@
 import { PrismaClient } from '@prisma/client';
+import fetch from 'node-fetch';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  // Clear existing data
-  await prisma.mediaUpload.deleteMany();
-  await prisma.process.deleteMany();
-  await prisma.material.deleteMany();
-  await prisma.color.deleteMany();
-  await prisma.user.deleteMany();
+async function downloadImage(url: string): Promise<{ buffer: Buffer; type: string }> {
+  const response = await fetch(url);
+  const buffer = await response.buffer();
+  const type = response.headers.get('content-type') || 'image/jpeg';
+  return { buffer, type };
+}
 
-  // Create a test user
+async function main() {
+  // Clear all existing data
+  await prisma.mediaUpload.deleteMany({});
+  await prisma.process.deleteMany({});
+  await prisma.material.deleteMany({});
+  await prisma.color.deleteMany({});
+  await prisma.user.deleteMany({});
+
+  // Create test user
   const user = await prisma.user.create({
     data: {
       email: 'test@example.com',
-      pseudonym: 'Test User',
-    }
+      pseudonym: 'TestUser',
+    },
   });
 
-  // Create test colors with coordinates and images
-  const colors = [
-    {
-      name: 'Indigo Blue',
-      hex: '#00416A',
-      description: 'Traditional indigo dye from Japan',
-      location: 'Tokushima, Japan',
-      coordinates: JSON.stringify({ lat: 34.0658, lng: 134.5593 }),
+  // Create colors
+  const oceanBlue = await prisma.color.create({
+    data: {
+      name: 'Ocean Blue',
+      hex: '#0077BE',
+      description: 'Deep ocean blue inspired by marine waters',
+      location: 'Pacific Ocean',
+      coordinates: JSON.stringify({ lat: 23.4162, lng: -155.2833 }),
       season: 'Summer',
       dateCollected: new Date('2024-07-15'),
-      materials: [
-        { name: 'Indigo plant', partUsed: 'Leaves', originNote: 'Cultivated in Tokushima' },
-        { name: 'Limestone', partUsed: 'Mineral', originNote: 'Local limestone' }
-      ],
-      processes: [
-        { technique: 'Fermentation', application: 'Dye', notes: 'Traditional sukumo method' },
-        { technique: 'Oxidation', application: 'Dye', notes: 'Air exposure process' }
-      ],
-      images: [
-        'https://via.placeholder.com/400x400/00416A/FFFFFF?text=Indigo%20Blue',
-        'https://via.placeholder.com/400x400/00416A/FFFFFF?text=Process'
-      ]
+      userId: user.id,
+      materials: {
+        create: [
+          { name: 'Marine Algae', partUsed: 'Whole plant', originNote: 'Harvested from deep waters' },
+        ],
+      },
+      processes: {
+        create: [
+          { technique: 'Extraction', application: 'Natural dye', notes: 'Cold process extraction' },
+        ],
+      },
     },
-    {
-      name: 'Cochineal Red',
-      hex: '#BE0039',
-      description: 'Natural red dye from cochineal insects',
-      location: 'Oaxaca, Mexico',
-      coordinates: JSON.stringify({ lat: 17.0732, lng: -96.7266 }),
+  });
+
+  const desertOrange = await prisma.color.create({
+    data: {
+      name: 'Desert Orange',
+      hex: '#FF8C42',
+      description: 'Vibrant orange from desert flowers',
+      location: 'Namaqualand, South Africa',
+      coordinates: JSON.stringify({ lat: -30.1652, lng: 17.9839 }),
       season: 'Spring',
-      dateCollected: new Date('2024-03-20'),
-      materials: [
-        { name: 'Cochineal insects', partUsed: 'Whole insect', originNote: 'Harvested from nopal cactus' },
-        { name: 'Alum', partUsed: 'Mineral', originNote: 'Mordant material' }
-      ],
-      processes: [
-        { technique: 'Grinding', application: 'Dye', notes: 'Ground into fine powder' },
-        { technique: 'Mordanting', application: 'Dye', notes: 'Alum mordant process' }
-      ],
-      images: [
-        'https://via.placeholder.com/400x400/BE0039/FFFFFF?text=Cochineal%20Red',
-        'https://via.placeholder.com/400x400/BE0039/FFFFFF?text=Process'
-      ]
+      dateCollected: new Date('2024-09-15'),
+      userId: user.id,
+      materials: {
+        create: [
+          { name: 'Namaqua Daisy', partUsed: 'Petals', originNote: 'Wild harvested during bloom season' },
+        ],
+      },
+      processes: {
+        create: [
+          { technique: 'Petal Extraction', application: 'Natural dye', notes: 'Traditional method' },
+        ],
+      },
     },
-    {
-      name: 'Ochre Yellow',
-      hex: '#FFB627',
-      description: 'Natural earth pigment',
-      location: 'Roussillon, France',
-      coordinates: JSON.stringify({ lat: 43.9021, lng: 5.2929 }),
+  });
+
+  const citrusYellow = await prisma.color.create({
+    data: {
+      name: 'Citrus Yellow',
+      hex: '#FFD700',
+      description: 'Bright yellow from fresh lemons',
+      location: 'Amalfi Coast, Italy',
+      coordinates: JSON.stringify({ lat: 40.6333, lng: 14.6029 }),
       season: 'Summer',
       dateCollected: new Date('2024-06-15'),
-      materials: [
-        { name: 'Yellow ochre', partUsed: 'Mineral', originNote: 'Mined from Roussillon quarries' },
-        { name: 'Clay', partUsed: 'Mineral', originNote: 'Local clay deposits' }
-      ],
-      processes: [
-        { technique: 'Mining', application: 'Pigment', notes: 'Traditional quarrying methods' },
-        { technique: 'Grinding', application: 'Pigment', notes: 'Ground into fine powder' }
-      ],
-      images: [
-        'https://via.placeholder.com/400x400/FFB627/FFFFFF?text=Ochre%20Yellow',
-        'https://via.placeholder.com/400x400/FFB627/FFFFFF?text=Process'
-      ]
+      userId: user.id,
+      materials: {
+        create: [
+          { name: 'Amalfi Lemon', partUsed: 'Peel', originNote: 'Locally sourced citrus' },
+        ],
+      },
+      processes: {
+        create: [
+          { technique: 'Extraction', application: 'Natural pigment', notes: 'Cold press method' },
+        ],
+      },
+    },
+  });
+
+  const saffronRed = await prisma.color.create({
+    data: {
+      name: 'Saffron Red',
+      hex: '#FF4500',
+      description: 'Rich red from premium saffron',
+      location: 'Kashmir, India',
+      coordinates: JSON.stringify({ lat: 34.0837, lng: 74.7973 }),
+      season: 'Autumn',
+      dateCollected: new Date('2024-10-10'),
+      userId: user.id,
+      materials: {
+        create: [
+          { name: 'Kashmir Saffron', partUsed: 'Stigmas', originNote: 'Hand-harvested saffron crocus' },
+        ],
+      },
+      processes: {
+        create: [
+          { technique: 'Infusion', application: 'Natural dye', notes: 'Traditional method' },
+        ],
+      },
+    },
+  });
+
+  // Download and store images
+  const images = [
+    {
+      url: 'https://bernardmarr.com/img/What%20Is%20Blue%20Ocean%20Strategy%20And%20How%20Can%20You%20Create%20One.png',
+      filename: 'ocean-blue.png',
+      colorId: oceanBlue.id,
     },
     {
-      name: 'Madder Rose',
-      hex: '#E84E66',
-      description: 'Traditional pink dye from madder root',
-      location: 'Istanbul, Turkey',
-      coordinates: JSON.stringify({ lat: 41.0082, lng: 28.9784 }),
-      season: 'Spring',
-      dateCollected: new Date('2024-04-10'),
-      materials: [
-        { name: 'Madder root', partUsed: 'Root', originNote: 'Cultivated madder plants' },
-        { name: 'Alum', partUsed: 'Mineral', originNote: 'Mordant material' }
-      ],
-      processes: [
-        { technique: 'Extraction', application: 'Dye', notes: 'Root extraction process' },
-        { technique: 'Mordanting', application: 'Dye', notes: 'Alum mordant process' }
-      ],
-      images: [
-        'https://via.placeholder.com/400x400/E84E66/FFFFFF?text=Madder%20Rose',
-        'https://via.placeholder.com/400x400/E84E66/FFFFFF?text=Process'
-      ]
-    }
+      url: 'https://i.pinimg.com/736x/bb/87/1e/bb871e4d55a517a8fa5fd636e54bf751.jpg',
+      filename: 'desert-orange.jpg',
+      colorId: desertOrange.id,
+    },
+    {
+      url: 'https://media.post.rvohealth.io/wp-content/uploads/2020/09/sliced-lemons-thumb.jpg',
+      filename: 'citrus-yellow.jpg',
+      colorId: citrusYellow.id,
+    },
+    {
+      url: 'https://cdn.britannica.com/83/191983-050-9D97C943/saffron-spice-herb.jpg',
+      filename: 'saffron-red.jpg',
+      colorId: saffronRed.id,
+    },
   ];
 
-  for (const color of colors) {
-    const createdColor = await prisma.color.create({
-      data: {
-        name: color.name,
-        hex: color.hex,
-        description: color.description,
-        location: color.location,
-        coordinates: color.coordinates,
-        season: color.season,
-        dateCollected: color.dateCollected,
-        userId: user.id,
-        materials: {
-          create: color.materials
+  for (const image of images) {
+    try {
+      const { buffer, type } = await downloadImage(image.url);
+      await prisma.mediaUpload.create({
+        data: {
+          filename: image.filename,
+          mimetype: type,
+          data: buffer,
+          type: 'outcome',
+          colorId: image.colorId,
         },
-        processes: {
-          create: color.processes
-        },
-        mediaUploads: {
-          create: color.images.map(url => ({
-            url,
-            type: 'outcome'
-          }))
-        }
-      }
-    });
-    console.log(`Created color: ${createdColor.name}`);
+      });
+      console.log(`Successfully stored image: ${image.filename}`);
+    } catch (error) {
+      console.error(`Failed to download/store image ${image.filename}:`, error);
+    }
   }
+
+  console.log('Database has been seeded with fresh data and binary images. 🌱');
 }
 
 main()
