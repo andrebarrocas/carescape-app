@@ -27,7 +27,8 @@ model Color {
   description   String?
   season        String
   dateCollected DateTime
-  locationGeom  Unsupported("geometry(Point, 4326)")
+  location      String
+  coordinates   Json
   userId        String
   createdAt     DateTime      @default(now())
   user          User          @relation(fields: [userId], references: [id])

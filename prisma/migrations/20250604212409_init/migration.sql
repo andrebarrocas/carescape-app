@@ -16,7 +16,8 @@ CREATE TABLE "colors" (
     "description" TEXT,
     "season" TEXT NOT NULL,
     "dateCollected" TIMESTAMP(3) NOT NULL,
-    "locationGeom" geometry(Point, 4326) NOT NULL,
+    "location" TEXT NOT NULL,
+    "coordinates" JSONB NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

@@ -1,31 +1,41 @@
 export type ColorType = 'pigment' | 'dye' | 'ink';
 
-export interface Location {
+export interface MediaUpload {
+  id: string;
+  url: string;
+  type: 'outcome' | 'landscape' | 'process';
+  caption?: string;
+}
+
+export interface Material {
+  id: string;
   name: string;
-  coordinates: [number, number]; // [latitude, longitude]
-  photo?: string;
+  partUsed: string;
+  originNote?: string;
 }
 
 export interface Process {
-  sourceMaterial: string;
-  type: ColorType;
-  application?: string;
-  recipe: string;
-  season: string;
+  id: string;
+  technique: string;
+  application: string;
+  notes?: string;
 }
 
 export interface ColorSubmission {
   id: string;
   name: string;
-  hexCode: string;
-  photo: string;
-  origin: Location;
-  process: Process;
-  mediaUploads?: string[];
-  submittedBy?: {
-    name?: string;
-    email: string;
+  hex: string;
+  description: string;
+  location: string;
+  coordinates: {
+    lat: number;
+    lng: number;
   };
+  materials: Material[];
+  processes: Process[];
+  season: string;
+  dateCollected: string;
+  mediaUploads: MediaUpload[];
   createdAt: string;
   updatedAt: string;
 } 

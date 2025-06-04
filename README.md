@@ -1,6 +1,6 @@
-# CareSpace - Natural Color Collection Platform
+# CAreScape - Caring Dictionary of Landscape Colors Platform
 
-CareSpace is a web platform for documenting and sharing natural colors found in our environment. It allows users to create a digital collection of colors extracted from natural sources, complete with location data, extraction processes, and community knowledge sharing.
+CAreScape is a web platform for documenting and sharing natural colors found in our environment. It allows users to create a digital collection of colors extracted from natural sources, complete with location data, extraction processes, and community knowledge sharing.
 
 ## Features
 

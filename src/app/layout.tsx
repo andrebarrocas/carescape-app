@@ -6,7 +6,7 @@ import Link from "next/link";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CareSpace - Natural Color Collection",
+  title: "CAreScape - Caring Dictionary of Landscape Colors",
   description: "A platform for collecting and sharing natural colors and pigments.",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
                   href="/"
                   className="flex items-center px-2 text-xl font-semibold text-primary"
                 >
-                  CareSpace
+                  CAreScape
                 </Link>
                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                   <Link

@@ -1,129 +1,179 @@
 'use client';
 
-import { useState } from 'react';
-import ColorMap from '@/components/Map';
-import ColorDialog from '@/components/ColorDialog';
-import { ColorSubmission, ColorType } from '@/types/colors';
+import { useState, useEffect } from 'react';
+import { Search, Filter } from 'lucide-react';
+import Map from '@/components/Map';
+import { ColorSubmission } from '@/types/colors';
 import { ToastProvider } from '@/components/ui/toast';
-
-// TODO: Replace with actual data from your backend
-const mockColors: ColorSubmission[] = [
-  {
-    id: '1',
-    name: 'Spring Field Red',
-    hexCode: '#FF0000',
-    photo: '/path/to/photo.jpg',
-    origin: {
-      name: 'Spring Field, NY',
-      coordinates: [40.1, -74.5],
-      photo: '/path/to/location.jpg',
-    },
-    process: {
-      sourceMaterial: 'Red Clay',
-      type: 'pigment',
-      recipe: 'Collected and processed red clay',
-      season: 'Spring 2024',
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  // Add more mock colors as needed
-];
+import AddColorButton from '@/components/AddColorButton';
+import { MapPin } from 'lucide-react';
 
 export default function MapPage() {
-  const [selectedTypes, setSelectedTypes] = useState<ColorType[]>(['pigment', 'dye', 'ink']);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [colors, setColors] = useState<ColorSubmission[]>([]);
+  const [filteredColors, setFilteredColors] = useState<ColorSubmission[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    color: '',
+    source: '',
+    place: '',
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleType = (type: ColorType) => {
-    setSelectedTypes(prev =>
-      prev.includes(type)
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
-    );
+  useEffect(() => {
+    fetchColors();
+  }, []);
+
+  useEffect(() => {
+    if (colors) {
+      filterColors();
+    }
+  }, [searchTerm, filters, colors]);
+
+  const fetchColors = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/colors');
+      const data = await response.json();
+      setColors(data);
+      setFilteredColors(data);
+    } catch (error) {
+      console.error('Error fetching colors:', error);
+      setColors([]);
+      setFilteredColors([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleMarkerClick = (color: ColorSubmission) => {
-    // TODO: Implement color detail view
-    console.log('Clicked color:', color);
+  const filterColors = () => {
+    if (!Array.isArray(colors)) {
+      return;
+    }
+
+    let filtered = [...colors];
+
+    // Search term filter
+    if (searchTerm) {
+      filtered = filtered.filter(color =>
+        color.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        color.materials.some(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        color.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Color filter
+    if (filters.color) {
+      filtered = filtered.filter(color =>
+        color.name.toLowerCase().includes(filters.color.toLowerCase())
+      );
+    }
+
+    // Source filter
+    if (filters.source) {
+      filtered = filtered.filter(color =>
+        color.materials.some(m => m.name.toLowerCase().includes(filters.source.toLowerCase()))
+      );
+    }
+
+    // Place filter
+    if (filters.place) {
+      filtered = filtered.filter(color =>
+        color.location.toLowerCase().includes(filters.place.toLowerCase())
+      );
+    }
+
+    setFilteredColors(filtered);
   };
 
   return (
     <ToastProvider>
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-primary">Color Map</h1>
-          <div className="flex gap-4">
-            <div className="flex gap-2">
-              <button
-                onClick={() => toggleType('pigment')}
-                className={`px-4 py-2 rounded-md ${
-                  selectedTypes.includes('pigment')
-                    ? 'bg-red-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Pigments
-              </button>
-              <button
-                onClick={() => toggleType('dye')}
-                className={`px-4 py-2 rounded-md ${
-                  selectedTypes.includes('dye')
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Dyes
-              </button>
-              <button
-                onClick={() => toggleType('ink')}
-                className={`px-4 py-2 rounded-md ${
-                  selectedTypes.includes('ink')
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Inks
-              </button>
-            </div>
-            <button
-              onClick={() => setIsDialogOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
-            >
-              Submit Color
-            </button>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
+          <div className="container mx-auto px-4 py-12">
+            <h1 className="text-4xl font-bold mb-4">Color Map</h1>
+            <p className="text-lg opacity-90">Explore natural colors by their geographic origins</p>
           </div>
         </div>
 
-        <div className="w-full h-[600px] rounded-lg border border-gray-200 overflow-hidden">
-          <ColorMap
-            colors={mockColors}
-            selectedTypes={selectedTypes}
-            onMarkerClick={handleMarkerClick}
-          />
-        </div>
+        {/* Search and Filters */}
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search colors, materials, or locations..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
 
-        <div className="bg-card rounded-lg border border-gray-200 p-4">
-          <h2 className="text-lg font-semibold text-primary mb-4">Legend</h2>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-red-500" />
-              <span className="text-sm text-muted-foreground">Pigments</span>
+              {/* Filter Button */}
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                <Filter className="w-5 h-5" />
+                <span>Filters</span>
+              </button>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-blue-500" />
-              <span className="text-sm text-muted-foreground">Dyes</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-green-500" />
-              <span className="text-sm text-muted-foreground">Inks</span>
-            </div>
+
+            {/* Filter Panel */}
+            {isFilterOpen && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Color Name</label>
+                  <input
+                    type="text"
+                    value={filters.color}
+                    onChange={(e) => setFilters({ ...filters, color: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Filter by color name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Source Material</label>
+                  <input
+                    type="text"
+                    value={filters.source}
+                    onChange={(e) => setFilters({ ...filters, source: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Filter by source"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={filters.place}
+                    onChange={(e) => setFilters({ ...filters, place: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="Filter by location"
+                  />
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Loading State */}
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+              <p className="mt-4 text-gray-500">Loading colors...</p>
+            </div>
+          ) : (
+            <div className="h-[calc(100vh-24rem)] rounded-xl overflow-hidden shadow-lg">
+              <Map colors={filteredColors} />
+            </div>
+          )}
         </div>
 
-        <ColorDialog
-          isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-        />
+        <AddColorButton />
       </div>
     </ToastProvider>
   );

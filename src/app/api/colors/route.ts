@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { GET as authHandler } from '@/app/api/auth/[...nextauth]/route';
+import { Session } from 'next-auth';
+
+interface ExtendedSession extends Session {
+  user?: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+  };
+}
+
+const authOptions = authHandler.config;
 
 export async function GET() {
   try {
@@ -15,11 +28,6 @@ export async function GET() {
         materials: true,
         processes: true,
         mediaUploads: true,
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
       },
     });
 
@@ -32,62 +40,47 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const session = await getServerSession(authOptions) as ExtendedSession;
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // Create the color and all related data in a single transaction
-    const color = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>) => {
-      // Create the color
-      const newColor = await tx.color.create({
-        data: {
-          name: body.name,
-          hex: body.hex,
-          description: body.description,
-          season: body.season,
-          dateCollected: new Date(body.dateCollected),
-          locationGeom: body.locationGeom,
-          userId: body.userId,
-          // Create materials if provided
-          materials: body.materials?.length ? {
-            create: body.materials,
-          } : undefined,
-          // Create processes if provided
-          processes: body.processes?.length ? {
-            create: body.processes,
-          } : undefined,
-          // Create media uploads if provided
-          mediaUploads: body.mediaUploads?.length ? {
-            create: body.mediaUploads,
-          } : undefined,
-          // Create tag connections if provided
-          tags: body.tags?.length ? {
-            create: body.tags.map((tagId: string) => ({
-              tag: {
-                connect: { id: tagId },
-              },
-            })),
-          } : undefined,
+    const data = await request.json();
+    
+    // Create the color entry
+    const color = await prisma.color.create({
+      data: {
+        name: data.name,
+        hex: data.hex,
+        description: data.description,
+        location: data.location,
+        locationGeom: {
+          type: 'Point',
+          coordinates: [data.coordinates.lng, data.coordinates.lat],
         },
-        include: {
-          user: {
-            select: {
-              pseudonym: true,
-            },
-          },
-          materials: true,
-          processes: true,
-          mediaUploads: true,
-          tags: {
-            include: {
-              tag: true,
-            },
-          },
-        },
-      });
-
-      return newColor;
+        sourceMaterial: data.sourceMaterial,
+        type: data.type,
+        application: data.application,
+        process: data.process,
+        season: data.season,
+        dateCollected: new Date(data.dateCollected),
+        userId: session.user.id,
+      },
     });
 
-    return NextResponse.json(color, { status: 201 });
+    // Create media uploads
+    if (data.mediaUploads?.length) {
+      await prisma.mediaUpload.createMany({
+        data: data.mediaUploads.map((media: any) => ({
+          colorId: color.id,
+          type: media.type,
+          url: media.url, // You'll need to handle file uploads separately
+          caption: media.caption,
+        })),
+      });
+    }
+
+    return NextResponse.json(color);
   } catch (error) {
     console.error('Error creating color:', error);
     return NextResponse.json({ error: 'Failed to create color' }, { status: 500 });

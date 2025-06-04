@@ -1,117 +1,165 @@
-import Link from 'next/link';
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, Globe, Palette, Users, Leaf } from 'lucide-react';
+
+export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const features = [
+    {
+      icon: Globe,
+      title: 'Global Color Heritage',
+      description: 'Explore natural colors from diverse cultures around the world',
+    },
+    {
+      icon: Palette,
+      title: 'Traditional Techniques',
+      description: 'Learn ancient and modern methods of natural color creation',
+    },
+    {
+      icon: Users,
+      title: 'Community Knowledge',
+      description: 'Share and discover color-making wisdom across cultures',
+    },
+    {
+      icon: Leaf,
+      title: 'Sustainable Practices',
+      description: 'Embrace eco-friendly approaches to color production',
+    },
+  ];
+
+  if (!mounted) return null;
+
   return (
-    <div className="relative isolate">
-      <div className="mx-auto max-w-4xl py-12 sm:py-16 lg:py-20">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-6xl">
-            Discover and Share Natural Colors
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            Join our community of natural color enthusiasts. Document and explore
-            colors from nature, share your discoveries, and learn about traditional
-            pigment-making processes.
-          </p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-3xl" />
+          <motion.div
+            className="absolute -inset-[10px] opacity-50"
+            animate={{
+              background: [
+                'linear-gradient(0deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
+                'linear-gradient(120deg, #ec4899 0%, #6366f1 50%, #a855f7 100%)',
+                'linear-gradient(240deg, #a855f7 0%, #ec4899 50%, #6366f1 100%)',
+              ],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              repeatType: 'reverse',
+            }}
+            style={{ filter: 'blur(100px)' }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+          >
+            Caring Archive of
+            <br />
+            Landscape Colors
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto"
+          >
+            Join our global community in documenting and preserving the rich heritage of natural colors
+            and traditional dyeing techniques.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
             <Link
               href="/colors"
-              className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex items-center px-8 py-4 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-lg font-semibold hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Explore Colors
+              <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
             <Link
-              href="/about"
-              className="text-sm font-semibold leading-6 text-primary"
+              href="/map"
+              className="inline-flex items-center px-8 py-4 rounded-xl bg-white text-gray-800 text-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              Learn More <span aria-hidden="true">→</span>
+              View Color Map
+              <Globe className="ml-2 w-5 h-5" />
             </Link>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </section>
 
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl lg:max-w-none">
-          <div className="grid grid-cols-1 gap-8 text-center lg:grid-cols-3">
-            <div className="flex flex-col items-center">
-              <div className="rounded-lg bg-primary/5 p-4">
-                <svg
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+              Preserving Color Heritage
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Discover the intersection of tradition and innovation in natural color creation
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="mt-6 text-base font-semibold leading-7 text-primary">
-                Location-Based
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Discover colors from specific locations and track their geographic
-                origins.
-              </p>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="rounded-lg bg-primary/5 p-4">
-                <svg
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"
-                  />
-                </svg>
-              </div>
-              <h3 className="mt-6 text-base font-semibold leading-7 text-primary">
-                Natural Sources
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Learn about natural materials and traditional processes for creating
-                colors.
-              </p>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="rounded-lg bg-primary/5 p-4">
-                <svg
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="mt-6 text-base font-semibold leading-7 text-primary">
-                Community-Driven
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Share your discoveries and learn from other color enthusiasts.
-              </p>
-            </div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center mb-6">
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.description}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-white mb-8">
+            Join Our Color Community
+          </h2>
+          <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
+            Be part of a global movement to document and preserve natural color traditions
+          </p>
+          <Link
+            href="/auth/signin"
+            className="inline-flex items-center px-8 py-4 rounded-xl bg-white text-gray-800 text-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            Get Started
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
