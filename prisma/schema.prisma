@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String?
+  pseudonym String?
+  createdAt DateTime @default(now())
+  colors    Color[]
+
+  @@map("users")
+}
+
+model Color {
+  id            String        @id @default(uuid())
+  name          String
+  hex           String
+  description   String?
+  season        String
+  dateCollected DateTime
+  locationGeom  Unsupported("geometry(Point, 4326)")
+  userId        String
+  createdAt     DateTime      @default(now())
+  user          User          @relation(fields: [userId], references: [id])
+  materials     Material[]
+  processes     Process[]
+  mediaUploads  MediaUpload[]
+  tags          ColorTag[]
+
+  @@map("colors")
+}
+
+model Material {
+  id         String  @id @default(uuid())
+  colorId    String
+  name       String
+  partUsed   String
+  originNote String?
+  color      Color   @relation(fields: [colorId], references: [id])
+
+  @@map("materials")
+}
+
+model Process {
+  id          String  @id @default(uuid())
+  colorId     String
+  technique   String
+  application String
+  notes       String?
+  color       Color   @relation(fields: [colorId], references: [id])
+
+  @@map("processes")
+}
+
+model MediaUpload {
+  id      String  @id @default(uuid())
+  colorId String
+  type    String
+  url     String
+  caption String?
+  color   Color   @relation(fields: [colorId], references: [id])
+
+  @@map("media_uploads")
+}
+
+model Tag {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  colors    ColorTag[]
+
+  @@map("tags")
+}
+
+model ColorTag {
+  colorId String
+  tagId   String
+  color   Color  @relation(fields: [colorId], references: [id])
+  tag     Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([colorId, tagId])
+  @@map("color_tags")
+} 

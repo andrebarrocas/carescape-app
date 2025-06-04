@@ -1,67 +1,39 @@
 import NextAuth from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import dbConnect from '@/lib/mongodb';
-import User from '@/lib/models/User';
-import { Session } from 'next-auth';
-
-interface ExtendedSession extends Session {
-  user: {
-    id?: string;
-    pseudonym?: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
-}
+import EmailProvider from 'next-auth/providers/email';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from '@/lib/prisma';
 
 const handler = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+    EmailProvider({
+      server: {
+        host: process.env.EMAIL_SERVER_HOST || 'localhost',
+        port: process.env.EMAIL_SERVER_PORT || 1025,
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
+      from: process.env.EMAIL_FROM || 'noreply@example.com',
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        try {
-          await dbConnect();
-          
-          // Check if user exists
-          const existingUser = await User.findOne({ email: user.email });
-          
-          if (!existingUser) {
-            // Create new user
-            await User.create({
-              email: user.email,
-              pseudonym: user.name || user.email?.split('@')[0] || 'Anonymous',
-            });
-          }
-          
-          return true;
-        } catch (error) {
-          console.error('Error during sign in:', error);
-          return false;
+    async session({ session, user }) {
+      if (session.user) {
+        session.user.id = user.id;
+        // Set pseudonym as email username if not set
+        if (!user.pseudonym) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { pseudonym: user.email?.split('@')[0] || 'Anonymous' },
+          });
         }
+        session.user.pseudonym = user.pseudonym || user.email?.split('@')[0] || 'Anonymous';
       }
-      return true;
-    },
-    async session({ session }): Promise<ExtendedSession> {
-      const extendedSession = session as ExtendedSession;
-      
-      try {
-        await dbConnect();
-        const user = await User.findOne({ email: extendedSession.user?.email });
-        if (user && extendedSession.user) {
-          extendedSession.user.id = user._id.toString();
-          extendedSession.user.pseudonym = user.pseudonym;
-        }
-      } catch (error) {
-        console.error('Error getting session:', error);
-      }
-      return extendedSession;
+      return session;
     },
   },
-});
+})
 
 export { handler as GET, handler as POST }; 
