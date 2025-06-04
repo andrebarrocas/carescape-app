@@ -1,79 +1,127 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Map as PigeonMap, Marker } from 'pigeon-maps';
-import { ColorSubmission, ColorType } from '@/types/colors';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/supabase';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
-interface ColorMapProps {
-  selectedTypes: ColorType[];
-  onMarkerClick: (color: ColorSubmission) => void;
+if (!process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
+  throw new Error('NEXT_PUBLIC_MAPBOX_TOKEN is required!');
 }
 
-export default function ColorMap({ selectedTypes, onMarkerClick }: ColorMapProps) {
-  const [colors, setColors] = useState<ColorSubmission[]>([]);
-  const [loading, setLoading] = useState(true);
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+interface Color {
+  _id: string;
+  name: string;
+  hex: string;
+  description?: string;
+  season: string;
+  dateCollected: string;
+  locationGeom: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  userId: {
+    _id: string;
+    pseudonym?: string;
+  };
+  materials?: Array<{
+    name: string;
+    partUsed: string;
+  }>;
+  processes?: Array<{
+    technique: string;
+    application: string;
+  }>;
+  mediaUploads?: Array<{
+    type: string;
+    url: string;
+    caption?: string;
+  }>;
+}
+
+export default function ColorMap() {
+  const [colors, setColors] = useState<Color[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClientComponentClient<Database>({
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  });
-
   useEffect(() => {
-    async function fetchColors() {
-      try {
-        const { data, error } = await supabase
-          .from('colors')
-          .select('*')
-          .in('process->type', selectedTypes);
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [-74.5, 40],
+      zoom: 9,
+    });
 
-        if (error) throw error;
+    // Fetch colors with related data from our MongoDB API
+    fetch('/api/colors')
+      .then((response) => response.json())
+      .then((data) => {
+        setColors(data);
+        
+        // Add markers for each color
+        data.forEach((color: Color) => {
+          const [lng, lat] = color.locationGeom.coordinates;
+          
+          // Create marker element
+          const el = document.createElement('div');
+          el.className = 'marker';
+          el.style.backgroundColor = color.hex;
+          el.style.width = '20px';
+          el.style.height = '20px';
+          el.style.borderRadius = '50%';
+          el.style.border = '2px solid white';
+          el.style.boxShadow = '0 0 2px rgba(0,0,0,0.3)';
+          
+          // Create popup content with more details
+          const popupContent = `
+            <div class="p-4">
+              <h3 class="text-lg font-bold mb-2">${color.name}</h3>
+              <p class="text-sm text-gray-600">Added by: ${color.userId.pseudonym || 'Anonymous'}</p>
+              <div class="my-2" style="background-color: ${color.hex}; width: 50px; height: 50px;"></div>
+              ${color.description ? `<p class="text-sm mt-2">${color.description}</p>` : ''}
+              ${color.materials?.length ? `
+                <div class="mt-2">
+                  <p class="text-sm font-semibold">Materials:</p>
+                  <ul class="text-sm">
+                    ${color.materials.map(m => `<li>${m.name} (${m.partUsed})</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+              ${color.processes?.length ? `
+                <div class="mt-2">
+                  <p class="text-sm font-semibold">Processes:</p>
+                  <ul class="text-sm">
+                    ${color.processes.map(p => `<li>${p.technique} - ${p.application}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+            </div>
+          `;
 
-        setColors(data as ColorSubmission[]);
-      } catch (err) {
-        console.error('Error fetching colors:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch colors');
-      } finally {
-        setLoading(false);
-      }
-    }
+          // Add popup
+          const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(popupContent);
 
-    fetchColors();
-  }, [selectedTypes]);
+          // Add marker to map
+          new mapboxgl.Marker(el)
+            .setLngLat([lng, lat])
+            .setPopup(popup)
+            .addTo(map);
+        });
+      })
+      .catch((error) => {
+        setError('Failed to load colors');
+        console.error('Error:', error);
+      });
 
-  const getMarkerColor = (type: ColorType) => {
-    switch (type) {
-      case 'pigment':
-        return '#EF4444'; // red-500
-      case 'dye':
-        return '#3B82F6'; // blue-500
-      case 'ink':
-        return '#22C55E'; // green-500
-      default:
-        return '#6B7280'; // gray-500
-    }
-  };
+    return () => map.remove();
+  }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
-    <PigeonMap
-      defaultCenter={[40, -74.5]}
-      defaultZoom={9}
-      attribution={false}
-    >
-      {colors.map((color) => (
-        <Marker
-          key={color.id}
-          width={50}
-          anchor={color.origin.coordinates}
-          color={getMarkerColor(color.process.type)}
-          onClick={() => onMarkerClick(color)}
-        />
-      ))}
-    </PigeonMap>
+    <div id="map" className="w-full h-[calc(100vh-64px)]" />
   );
 } 
