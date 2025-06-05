@@ -8,6 +8,22 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "CAreScape",
   description: "A platform for collecting and sharing natural colors and pigments.",
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: ['/favicon.svg'],
+    apple: [
+      { url: '/favicon.svg' }
+    ],
+  },
+  manifest: '/manifest.json',
+  themeColor: '#6366F1',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'CAreScape',
+  },
 };
 
 export default function RootLayout({
@@ -17,6 +33,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      </head>
       <body className={`${inter.className} bg-background text-primary`}>
         <nav className="backdrop-blur-lg bg-white/10 border-b border-white/10 shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
