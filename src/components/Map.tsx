@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Map as PigeonMap, Marker } from 'pigeon-maps';
 import { ColorSubmission } from '@/types/colors';
 import { motion, AnimatePresence } from 'framer-motion';
 import ColorPlaceholder from '@/components/ColorPlaceholder';
+import { MapPin, Calendar, X, Palette, Leaf, Beaker, Globe } from 'lucide-react';
 
 interface MapProps {
   colors: ColorSubmission[];
@@ -13,149 +14,212 @@ interface MapProps {
 }
 
 export default function Map({ colors, selectedTypes = [], onMarkerClick }: MapProps) {
-  const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
-  const [center, setCenter] = useState<[number, number]>([0, 0]);
-  const [zoom, setZoom] = useState(2);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
+  const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
+  const [zoom, setZoom] = useState<number>(3);
 
   const getCoordinates = (color: ColorSubmission): [number, number] | null => {
     try {
       if (!color.coordinates) return null;
-      
-      let coords;
-      if (typeof color.coordinates === 'string') {
-        coords = JSON.parse(color.coordinates);
-      } else {
-        coords = color.coordinates;
-      }
+      const coords = typeof color.coordinates === 'string'
+        ? JSON.parse(color.coordinates)
+        : color.coordinates;
 
-      if (coords && typeof coords === 'object' && 
-          'lat' in coords && 'lng' in coords &&
-          typeof coords.lat === 'number' &&
-          typeof coords.lng === 'number') {
-        return [coords.lat, coords.lng];
+      if (coords?.lat && coords?.lng) {
+        return [Number(coords.lat), Number(coords.lng)];
       }
-
-      console.warn('Invalid coordinates format for color:', color.name, coords);
       return null;
-    } catch (error) {
-      console.error('Error parsing coordinates for color:', color.name, error);
+    } catch {
       return null;
     }
   };
 
-  useEffect(() => {
-    if (colors.length > 0) {
-      const validCoordinates = colors
-        .map(color => getCoordinates(color))
-        .filter((coords): coords is [number, number] => coords !== null);
-
-      if (validCoordinates.length > 0) {
-        const avgLat = validCoordinates.reduce((sum, [lat]) => sum + lat, 0) / validCoordinates.length;
-        const avgLng = validCoordinates.reduce((sum, [, lng]) => sum + lng, 0) / validCoordinates.length;
-        setCenter([avgLat, avgLng]);
-        setZoom(3);
-      }
+  const getFirstValidCoordinate = (): [number, number] => {
+    for (const color of colors) {
+      const coords = getCoordinates(color);
+      if (coords) return coords;
     }
-  }, [colors]);
-
-  const handleImageError = (colorId: string) => {
-    setImageLoadErrors(prev => ({ ...prev, [colorId]: true }));
+    return [20, 0]; // fallback
   };
 
-  const filteredColors = selectedTypes.length > 0
-    ? colors.filter(color => {
-        const processType = color.processes[0]?.application.toLowerCase();
-        return selectedTypes.includes(processType);
-      })
-    : colors;
+  const formatDate = (date: string | Date) =>
+    new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const visibleColors = () => {
+    if (zoom <= 2) return colors.slice(0, 300);
+    if (zoom <= 3) return colors.slice(0, 200);
+    if (zoom <= 4) return colors.slice(0, 100);
+    return colors;
+  };
+
+  const handleMarkerClick = (color: ColorSubmission, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setSelectedColor(color);
+    onMarkerClick?.(color);
+  };
 
   return (
-    <div className="relative w-full h-full" ref={mapRef}>
+    <div className="relative w-full h-full">
       <PigeonMap
-        center={center}
-        zoom={zoom}
+        defaultCenter={getFirstValidCoordinate()}
+        defaultZoom={3} // Zoomed out to show more circles
+        minZoom={2}
+        maxZoom={8}
+        onBoundsChanged={({ zoom }) => setZoom(zoom)}
         attribution={false}
-        onBoundsChanged={({ center, zoom }) => {
-          setCenter(center);
-          setZoom(zoom);
-        }}
       >
-        {filteredColors.map((color) => {
+        {visibleColors().map((color) => {
           const coords = getCoordinates(color);
           if (!coords) return null;
-          
+
           return (
             <Marker
               key={color.id}
-              width={24}
+              width={40}
               anchor={coords}
+              onClick={(e) => handleMarkerClick(color, e as unknown as React.MouseEvent)}
             >
-              <div
-                className="relative group"
-                onMouseEnter={() => setHoveredColor(color)}
-                onMouseLeave={() => setHoveredColor(null)}
-                onClick={() => onMarkerClick?.(color)}
+              <motion.div
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative group cursor-pointer"
               >
                 <div
-                  className="w-6 h-6 rounded-full shadow-lg cursor-pointer transform transition-transform duration-200 hover:scale-125"
+                  className="w-6 h-6 rounded-full border-2 border-white shadow"
                   style={{ backgroundColor: color.hex }}
+                  title={color.name}
                 />
-                
-                <AnimatePresence>
-                  {hoveredColor?.id === color.id && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-80 bg-white rounded-xl shadow-2xl p-4"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex gap-4">
-                        <div className="w-24 h-24 relative rounded-lg overflow-hidden">
-                          {color.mediaUploads && color.mediaUploads.length > 0 && !imageLoadErrors[color.id] ? (
-                            <div
-                              className="w-full h-full bg-cover bg-center"
-                              style={{
-                                backgroundColor: color.hex,
-                                backgroundImage: `url(${color.mediaUploads[0].url})`,
-                              }}
-                              onError={() => handleImageError(color.id)}
-                            />
-                          ) : (
-                            <ColorPlaceholder hex={color.hex} name={color.name} showName={false} />
-                          )}
-                          <div
-                            className="absolute bottom-1 right-1 w-6 h-6 rounded-full border-2 border-white shadow-lg"
-                            style={{ backgroundColor: color.hex }}
-                          />
-                        </div>
-                        
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">{color.name}</h3>
-                          <p className="text-sm text-gray-600 mb-1">{color.location}</p>
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {color.processes.map(process => (
-                              <span
-                                key={process.id}
-                                className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full"
-                              >
-                                {process.application}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs px-2 py-1 bg-white text-black rounded shadow opacity-0 group-hover:opacity-100 transition">
+                  {color.name}
+                </div>
+              </motion.div>
             </Marker>
           );
         })}
       </PigeonMap>
+
+      <AnimatePresence>
+        {selectedColor && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedColor(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative">
+                {/* Close button */}
+                <button
+                  onClick={() => setSelectedColor(null)}
+                  className="absolute top-4 right-4 w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center text-white z-10 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                {/* Hero section */}
+                <div className="relative h-72 bg-gray-100">
+                  {selectedColor.mediaUploads?.[0]?.url ? (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${selectedColor.mediaUploads[0].url})` }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ColorPlaceholder hex={selectedColor.hex} name={selectedColor.name} showName={false} />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-8">
+                    <div className="flex items-center gap-6">
+                      <div
+                        className="w-20 h-20 rounded-xl shadow-lg border-4 border-white"
+                        style={{ backgroundColor: selectedColor.hex }}
+                      />
+                      <div>
+                        <h2 className="text-3xl font-bold text-white mb-2">{selectedColor.name}</h2>
+                        <div className="flex items-center text-white/80">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          {selectedColor.location}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal body */}
+                <div className="p-8 grid grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
+                        <Globe className="w-5 h-5 mr-2" />
+                        Origin Story
+                      </h3>
+                      <p className="text-gray-600">
+                        {selectedColor.description ||
+                          `${selectedColor.name} originates from ${selectedColor.location}, reflecting its natural essence.`}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
+                        <Leaf className="w-5 h-5 mr-2" />
+                        Source Materials
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedColor.materials.map((m) => (
+                          <span key={m.id} className="px-4 py-2 bg-gray-100 rounded-full text-sm font-medium text-gray-700">
+                            {m.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
+                        <Beaker className="w-5 h-5 mr-2" />
+                        Traditional Process
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedColor.processes.map((p) => (
+                          <span key={p.id} className="px-4 py-2 bg-gray-100 rounded-full text-sm font-medium text-gray-700">
+                            {p.application}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
+                        <Calendar className="w-5 h-5 mr-2" />
+                        Collection Details
+                      </h3>
+                      <div className="bg-gray-100 rounded-xl p-4 space-y-2 text-sm text-gray-600">
+                        <div className="flex justify-between">
+                          <span>Date</span>
+                          <span className="font-medium">{formatDate(selectedColor.dateCollected)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Hex</span>
+                          <span className="font-medium">{selectedColor.hex.toUpperCase()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
-} 
+}
