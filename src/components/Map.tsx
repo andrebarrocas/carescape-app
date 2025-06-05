@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Map as PigeonMap, Marker } from 'pigeon-maps';
 import { ColorSubmission } from '@/types/colors';
 
@@ -10,19 +10,14 @@ interface MapProps {
 
 export default function Map({ colors }: MapProps) {
   const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
-  const [hoveredColor, setHoveredColor] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('Map received colors:', colors);
   }, [colors]);
 
-  const getCoordinates = (color: ColorSubmission): [number, number] | null => {
-    if (!color.coordinates) {
-      console.log('No coordinates for color:', color.name);
-      return null;
-    }
-
-    return [color.coordinates.lat, color.coordinates.lng];
+  const getMarkerColor = (color: ColorSubmission) => {
+    // Use the color's hex value for the marker
+    return color.hex || '#6B7280'; // fallback to gray if no hex value
   };
 
   const handleMarkerClick = (color: ColorSubmission) => {
@@ -30,65 +25,27 @@ export default function Map({ colors }: MapProps) {
     setSelectedColor(color);
   };
 
-  // Get center coordinates for the map
-  const getMapCenter = (): [number, number] => {
-    for (const color of colors) {
-      const coords = getCoordinates(color);
-      if (coords) {
-        console.log('Using center coordinates:', coords);
-        return coords;
-      }
-    }
-    console.log('No valid coordinates found, using default center');
-    return [0, 0];
-  };
-
   return (
     <div className="relative w-full h-full">
       <PigeonMap
-        defaultCenter={getMapCenter()}
+        defaultCenter={[40, -74.5]}
         defaultZoom={3}
         minZoom={2}
         maxZoom={8}
-        onClick={() => {
-          console.log('Map clicked, clearing selection');
-          setSelectedColor(null);
-        }}
+        onClick={() => setSelectedColor(null)}
       >
         {colors.map((color) => {
-          const coords = getCoordinates(color);
-          if (!coords) {
-            console.log('Skipping color due to missing coordinates:', color.name);
-            return null;
-          }
+          if (!color.coordinates) return null;
+          const coords = [color.coordinates.lat, color.coordinates.lng] as [number, number];
 
           return (
             <Marker
               key={color.id}
               width={50}
               anchor={coords}
+              color={getMarkerColor(color)}
               onClick={() => handleMarkerClick(color)}
-            >
-              <div
-                className="relative cursor-pointer"
-                onMouseEnter={() => setHoveredColor(color.id)}
-                onMouseLeave={() => setHoveredColor(null)}
-              >
-                <div
-                  className="w-8 h-8 rounded-full border-4 border-white shadow-lg transform transition-transform hover:scale-110"
-                  style={{ backgroundColor: color.hex }}
-                />
-                
-                {hoveredColor === color.id && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap bg-white rounded-lg shadow-lg px-3 py-2 text-sm z-10">
-                    <div className="font-medium">{color.name}</div>
-                    {color.location && (
-                      <div className="text-xs text-gray-500">{color.location}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </Marker>
+            />
           );
         })}
       </PigeonMap>
