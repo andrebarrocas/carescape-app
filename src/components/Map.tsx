@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Map as PigeonMap, Marker } from 'pigeon-maps';
 import { ColorSubmission } from '@/types/colors';
 import Image from 'next/image';
@@ -9,53 +9,85 @@ interface MapProps {
   colors: ColorSubmission[];
 }
 
-export default function Map({ colors }: MapProps) {
-  const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
+interface MarkerEventProps {
+  event: MouseEvent;
+  anchor: [number, number];
+  payload: any;
+}
 
-  useEffect(() => {
-    console.log('Map received colors:', colors);
-    if (colors.length > 0) {
-      console.log('Sample color data structure:', colors[0]);
-    }
-  }, [colors]);
+export default function Map({ colors }: MapProps) {
+  const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const getMarkerColor = (color: ColorSubmission) => {
     return color.hex || '#6B7280';
   };
 
-  const handleMarkerClick = (color: ColorSubmission) => {
-    console.log('Marker clicked, full color data:', color);
-    console.log('Media uploads:', color.mediaUploads);
-    setSelectedColor(color);
+  const calculateTooltipPosition = (markerRect: DOMRect) => {
+    if (!tooltipRef.current) return { x: 0, y: 0 };
+
+    const tooltipHeight = tooltipRef.current.offsetHeight;
+    const tooltipWidth = tooltipRef.current.offsetWidth;
+    
+    // Calculate initial position (centered above marker)
+    let x = markerRect.left + (markerRect.width / 2) - (tooltipWidth / 2);
+    let y = markerRect.top - tooltipHeight - 10; // 10px gap
+
+    // Get viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Ensure tooltip stays within horizontal bounds
+    if (x + tooltipWidth > viewportWidth - 20) {
+      x = viewportWidth - tooltipWidth - 20; // 20px padding from right
+    }
+    if (x < 20) {
+      x = 20; // 20px padding from left
+    }
+
+    // If tooltip would go above viewport, position it below the marker instead
+    if (y < 20) {
+      y = markerRect.bottom + 10; // 10px gap below marker
+    }
+
+    // Ensure tooltip stays within vertical bounds
+    if (y + tooltipHeight > viewportHeight - 20) {
+      y = viewportHeight - tooltipHeight - 20;
+    }
+
+    return { x, y };
   };
 
-  // Helper function to get the first outcome image
+  const handleMarkerHover = (color: ColorSubmission) => ({ event }: MarkerEventProps) => {
+    const target = event.target as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    
+    // First set the color to trigger the tooltip render
+    setHoveredColor(color);
+    
+    // Use requestAnimationFrame to wait for the tooltip to render before calculating position
+    requestAnimationFrame(() => {
+      const position = calculateTooltipPosition(rect);
+      setTooltipPosition(position);
+    });
+  };
+
   const getColorImage = (color: ColorSubmission) => {
-    if (!color.mediaUploads?.length) {
-      console.log('No media uploads found');
-      return null;
-    }
-
-    // Try to find an 'outcome' type image first
+    if (!color.mediaUploads?.length) return null;
     const outcomeImage = color.mediaUploads.find(media => media.type === 'outcome');
-    if (outcomeImage) {
-      console.log('Found outcome image:', outcomeImage);
-      return outcomeImage.url;
-    }
-
-    // Fallback to the first image
-    console.log('Using first available image:', color.mediaUploads[0]);
-    return color.mediaUploads[0].url;
+    return outcomeImage ? outcomeImage.url : color.mediaUploads[0].url;
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" ref={mapContainerRef}>
       <PigeonMap
         defaultCenter={[40, -74.5]}
         defaultZoom={3}
         minZoom={2}
         maxZoom={8}
-        onClick={() => setSelectedColor(null)}
+        onClick={() => setHoveredColor(null)}
       >
         {colors.map((color) => {
           if (!color.coordinates) return null;
@@ -67,111 +99,118 @@ export default function Map({ colors }: MapProps) {
               width={50}
               anchor={coords}
               color={getMarkerColor(color)}
-              onClick={() => handleMarkerClick(color)}
+              onMouseOver={handleMarkerHover(color)}
+              onMouseOut={() => setHoveredColor(null)}
             />
           );
         })}
       </PigeonMap>
 
-      {selectedColor && (
+      {hoveredColor && (
         <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-          onClick={() => setSelectedColor(null)}
+          ref={tooltipRef}
+          className="fixed z-50 w-96 bg-white rounded-xl shadow-2xl overflow-hidden transition-all duration-200 ease-out"
+          style={{
+            top: `${tooltipPosition.y}px`,
+            left: `${tooltipPosition.x}px`,
+            opacity: hoveredColor ? 1 : 0,
+            transform: `translateY(${hoveredColor ? '0' : '10px'})`,
+            pointerEvents: 'auto'
+          }}
+          onMouseEnter={(e) => {
+            e.stopPropagation();
+            // Keep the tooltip visible while hovering over it
+          }}
+          onMouseLeave={() => setHoveredColor(null)}
         >
+          {/* Color Preview Banner */}
           <div 
-            className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-bold text-gray-900">{selectedColor.name}</h2>
-              <button
-                onClick={() => setSelectedColor(null)}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            className="w-full h-3"
+            style={{ backgroundColor: hoveredColor.hex }}
+          />
+
+          <div className="p-4 max-h-[70vh] overflow-y-auto">
+            {/* Header with Cultural Context */}
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{hoveredColor.name}</h2>
+              {hoveredColor.location && (
+                <p className="text-sm text-gray-600 italic">
+                  Discovered in {hoveredColor.location}
+                </p>
+              )}
             </div>
 
-            <div className="p-4">
-              <div className="space-y-4">
-                {/* Debug info */}
-                <div className="text-xs text-gray-500">
-                  <p>Debug: Has mediaUploads: {Boolean(selectedColor.mediaUploads)?.toString()}</p>
-                  <p>Debug: MediaUploads length: {selectedColor.mediaUploads?.length || 0}</p>
-                  {selectedColor.mediaUploads && selectedColor.mediaUploads.length > 0 && (
-                    <p>Debug: First media URL: {selectedColor.mediaUploads[0].url}</p>
-                  )}
+            {/* Image and Color Information Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {/* Left Column: Image */}
+              {getColorImage(hoveredColor) && (
+                <div className="relative aspect-square rounded-lg overflow-hidden">
+                  <Image
+                    src={getColorImage(hoveredColor)!}
+                    alt={`Cultural context of ${hoveredColor.name}`}
+                    fill
+                    className="object-cover transition-transform hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 400px"
+                  />
                 </div>
+              )}
 
-                {/* Image */}
-                {getColorImage(selectedColor) && (
-                  <div className="relative w-full aspect-square rounded-lg overflow-hidden">
-                    <Image
-                      src={getColorImage(selectedColor)!}
-                      alt={`Image of ${selectedColor.name}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 400px"
-                    />
-                  </div>
-                )}
-
-                {/* Color sample and location */}
-                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+              {/* Right Column: Color Story */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
                   <div
-                    className="w-16 h-16 rounded-lg shadow-md"
-                    style={{ backgroundColor: selectedColor.hex }}
+                    className="w-12 h-12 rounded-lg shadow-lg transform hover:scale-110 transition-transform"
+                    style={{ backgroundColor: hoveredColor.hex }}
                   />
                   <div>
-                    <p className="font-medium text-gray-900">{selectedColor.hex}</p>
-                    {selectedColor.location && (
-                      <p className="text-sm text-gray-500">{selectedColor.location}</p>
-                    )}
+                    <p className="font-mono text-sm">{hoveredColor.hex}</p>
+                    <p className="text-xs text-gray-500">HEX Code</p>
                   </div>
                 </div>
 
-                {/* Description */}
-                {selectedColor.description && (
-                  <p className="text-sm text-gray-700">{selectedColor.description}</p>
-                )}
-
-                {/* Materials */}
-                {selectedColor.materials && selectedColor.materials.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-2">Materials</h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedColor.materials.map((material) => (
-                        <span
-                          key={material.id}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
-                        >
-                          {material.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Processes */}
-                {selectedColor.processes && selectedColor.processes.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-2">Processes</h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedColor.processes.map((process) => (
-                        <span
-                          key={process.id}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
-                        >
-                          {process.application}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                {hoveredColor.description && (
+                  <p className="text-sm text-gray-700 italic leading-relaxed">
+                    "{hoveredColor.description}"
+                  </p>
                 )}
               </div>
+            </div>
+
+            {/* Cultural Elements */}
+            <div className="space-y-3">
+              {/* Materials */}
+              {hoveredColor.materials && hoveredColor.materials.length > 0 && (
+                <div>
+                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Traditional Materials</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {hoveredColor.materials.map((material) => (
+                      <span
+                        key={material.id}
+                        className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors"
+                      >
+                        {material.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Processes */}
+              {hoveredColor.processes && hoveredColor.processes.length > 0 && (
+                <div>
+                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Cultural Techniques</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {hoveredColor.processes.map((process) => (
+                      <span
+                        key={process.id}
+                        className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors"
+                      >
+                        {process.application}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
