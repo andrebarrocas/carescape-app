@@ -20,41 +20,42 @@ export default function Map({ colors }: MapProps) {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltipDimensions, setTooltipDimensions] = useState({ width: 384, height: 400 }); // Default dimensions
+
+  useEffect(() => {
+    if (tooltipRef.current) {
+      const { offsetWidth, offsetHeight } = tooltipRef.current;
+      setTooltipDimensions({ width: offsetWidth, height: offsetHeight });
+    }
+  }, [hoveredColor]); // Update dimensions when hovered color changes
 
   const getMarkerColor = (color: ColorSubmission) => {
     return color.hex || '#6B7280';
   };
 
   const calculateTooltipPosition = (markerRect: DOMRect) => {
-    if (!tooltipRef.current) return { x: 0, y: 0 };
-
-    const tooltipHeight = tooltipRef.current.offsetHeight;
-    const tooltipWidth = tooltipRef.current.offsetWidth;
+    // Use actual tooltip dimensions if available, otherwise use defaults
+    const tooltipWidth = tooltipDimensions.width;
+    const tooltipHeight = tooltipDimensions.height;
     
-    // Calculate initial position (centered above marker)
+    // Calculate centered position above marker
     let x = markerRect.left + (markerRect.width / 2) - (tooltipWidth / 2);
-    let y = markerRect.top - tooltipHeight - 10; // 10px gap
+    let y = markerRect.top - tooltipHeight - 16; // 16px gap above marker
 
     // Get viewport dimensions
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
+    
     // Ensure tooltip stays within horizontal bounds
     if (x + tooltipWidth > viewportWidth - 20) {
-      x = viewportWidth - tooltipWidth - 20; // 20px padding from right
+      x = viewportWidth - tooltipWidth - 20;
     }
     if (x < 20) {
-      x = 20; // 20px padding from left
+      x = 20;
     }
 
-    // If tooltip would go above viewport, position it below the marker instead
+    // Ensure minimum distance from top of viewport
     if (y < 20) {
-      y = markerRect.bottom + 10; // 10px gap below marker
-    }
-
-    // Ensure tooltip stays within vertical bounds
-    if (y + tooltipHeight > viewportHeight - 20) {
-      y = viewportHeight - tooltipHeight - 20;
+      y = 20;
     }
 
     return { x, y };
@@ -64,14 +65,12 @@ export default function Map({ colors }: MapProps) {
     const target = event.target as HTMLElement;
     const rect = target.getBoundingClientRect();
     
-    // First set the color to trigger the tooltip render
-    setHoveredColor(color);
+    // Calculate position immediately with current dimensions
+    const position = calculateTooltipPosition(rect);
     
-    // Use requestAnimationFrame to wait for the tooltip to render before calculating position
-    requestAnimationFrame(() => {
-      const position = calculateTooltipPosition(rect);
-      setTooltipPosition(position);
-    });
+    // Update state in a single batch
+    setHoveredColor(color);
+    setTooltipPosition(position);
   };
 
   const getColorImage = (color: ColorSubmission) => {
@@ -109,27 +108,39 @@ export default function Map({ colors }: MapProps) {
       {hoveredColor && (
         <div 
           ref={tooltipRef}
-          className="fixed z-50 w-96 bg-white rounded-xl shadow-2xl overflow-hidden transition-all duration-200 ease-out"
+          className="fixed z-50 w-96 bg-white rounded-xl shadow-2xl overflow-hidden"
           style={{
             top: `${tooltipPosition.y}px`,
             left: `${tooltipPosition.x}px`,
-            opacity: hoveredColor ? 1 : 0,
-            transform: `translateY(${hoveredColor ? '0' : '10px'})`,
-            pointerEvents: 'auto'
+            opacity: 1,
+            transform: 'translateY(0)',
+            pointerEvents: 'auto',
+            transition: 'opacity 0.2s ease-out',
           }}
           onMouseEnter={(e) => {
             e.stopPropagation();
-            // Keep the tooltip visible while hovering over it
           }}
           onMouseLeave={() => setHoveredColor(null)}
         >
+          {/* Tooltip Arrow */}
+          <div 
+            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full"
+            style={{
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: `8px solid ${hoveredColor.hex}`,
+            }}
+          />
+
           {/* Color Preview Banner */}
           <div 
             className="w-full h-3"
             style={{ backgroundColor: hoveredColor.hex }}
           />
 
-          <div className="p-4 max-h-[70vh] overflow-y-auto">
+          <div className="p-4 max-h-[60vh] overflow-y-auto">
             {/* Header with Cultural Context */}
             <div className="mb-4">
               <h2 className="text-2xl font-bold text-gray-900 mb-1">{hoveredColor.name}</h2>
