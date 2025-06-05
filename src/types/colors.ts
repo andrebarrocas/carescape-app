@@ -5,20 +5,28 @@ export interface MediaUpload {
   url: string;
   type: 'outcome' | 'landscape' | 'process';
   caption?: string;
+  filename: string;
+  mimetype: string;
 }
 
 export interface Material {
   id: string;
   name: string;
   partUsed: string;
-  originNote?: string;
+  originNote: string;
+  colorId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Process {
   id: string;
   technique: string;
   application: string;
-  notes?: string;
+  notes: string;
+  colorId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ColorSubmission {
@@ -30,7 +38,7 @@ export interface ColorSubmission {
   coordinates: {
     lat: number;
     lng: number;
-  };
+  } | null;
   materials: Material[];
   processes: Process[];
   season: string;
@@ -38,4 +46,5 @@ export interface ColorSubmission {
   mediaUploads: MediaUpload[];
   createdAt: string;
   updatedAt: string;
+  userId: string;
 } 

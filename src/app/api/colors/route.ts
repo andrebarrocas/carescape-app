@@ -10,20 +10,41 @@ interface ColorWithMedia {
   hex: string;
   description: string;
   location: string;
-  coordinates: string;
+  coordinates: string | null;
   season: string;
   dateCollected: Date;
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-  materials: any[];
-  processes: any[];
+  materials: {
+    id: string;
+    name: string;
+    partUsed: string;
+    originNote: string;
+    colorId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+  processes: {
+    id: string;
+    technique: string;
+    application: string;
+    notes: string;
+    colorId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
   mediaUploads: {
     id: string;
     filename: string;
     mimetype: string;
     type: string;
   }[];
+}
+
+interface TransformedColor extends Omit<ColorWithMedia, 'coordinates'> {
+  coordinates: { lat: number; lng: number } | null;
+  mediaUploads: Array<ColorWithMedia['mediaUploads'][0] & { url: string }>;
 }
 
 export async function GET() {
@@ -46,20 +67,26 @@ export async function GET() {
       },
     });
 
-    // Add debug logging
-    console.log('Fetched colors:', colors);
+    // Transform the response to include image URLs and parse coordinates
+    const transformedColors: TransformedColor[] = colors.map((color: ColorWithMedia) => {
+      // Parse coordinates from string to object
+      let parsedCoordinates = null;
+      if (color.coordinates) {
+        try {
+          parsedCoordinates = JSON.parse(color.coordinates) as { lat: number; lng: number };
+        } catch (e) {
+          console.error('Failed to parse coordinates for color:', color.name, e);
+        }
+      }
 
-    // Transform the response to include image URLs
-    const transformedColors = colors.map((color: ColorWithMedia) => {
-      const transformed = {
+      return {
         ...color,
+        coordinates: parsedCoordinates,
         mediaUploads: color.mediaUploads.map(media => ({
           ...media,
           url: `/api/images/${media.id}`,
         })),
       };
-      console.log('Transformed color:', transformed);
-      return transformed;
     });
 
     return NextResponse.json(transformedColors);
@@ -106,7 +133,17 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(color);
+    // Parse coordinates before sending response
+    const response: TransformedColor = {
+      ...color,
+      coordinates: color.coordinates ? JSON.parse(color.coordinates) : null,
+      mediaUploads: color.mediaUploads.map(media => ({
+        ...media,
+        url: `/api/images/${media.id}`,
+      })),
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error creating color:', error);
     return NextResponse.json({ error: 'Failed to create color' }, { status: 500 });

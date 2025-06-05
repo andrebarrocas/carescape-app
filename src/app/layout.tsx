@@ -6,7 +6,7 @@ import Link from "next/link";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CAreScape - Caring Dictionary of Landscape Colors",
+  title: "CAreScape",
   description: "A platform for collecting and sharing natural colors and pigments.",
 };
 
