@@ -13,7 +13,7 @@ export default function Navigation() {
           <div className="flex items-center">
             <Link 
               href="/"
-              className="flex items-center text-xl font-bold text-indigo-600 hover:text-indigo-500 transition-colors"
+              className="flex items-center text-xl font-bold text-sky-600 hover:text-sky-500 transition-colors"
             >
               CAreScape
             </Link>
@@ -24,8 +24,8 @@ export default function Navigation() {
               href="/colors"
               className={`${
                 isActive('/colors')
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-600 hover:text-indigo-600 hover:border-b-2 hover:border-indigo-600'
+                  ? 'text-sky-600 border-b-2 border-sky-600'
+                  : 'text-gray-600 hover:text-sky-600 hover:border-b-2 hover:border-sky-600'
               } px-3 py-2 text-sm font-medium transition-all duration-200`}
             >
               Colors
@@ -35,8 +35,8 @@ export default function Navigation() {
               href="/map"
               className={`${
                 isActive('/map')
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-600 hover:text-indigo-600 hover:border-b-2 hover:border-indigo-600'
+                  ? 'text-sky-600 border-b-2 border-sky-600'
+                  : 'text-gray-600 hover:text-sky-600 hover:border-b-2 hover:border-sky-600'
               } px-3 py-2 text-sm font-medium transition-all duration-200`}
             >
               Map
@@ -46,8 +46,8 @@ export default function Navigation() {
               href="/about"
               className={`${
                 isActive('/about')
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-600 hover:text-indigo-600 hover:border-b-2 hover:border-indigo-600'
+                  ? 'text-sky-600 border-b-2 border-sky-600'
+                  : 'text-gray-600 hover:text-sky-600 hover:border-b-2 hover:border-sky-600'
               } px-3 py-2 text-sm font-medium transition-all duration-200`}
             >
               About
@@ -55,7 +55,7 @@ export default function Navigation() {
 
             <Link
               href="/auth/signin"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-500 transition-colors duration-200"
+              className="bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-all duration-200"
             >
               Sign In
             </Link>

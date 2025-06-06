@@ -360,7 +360,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                className="px-6 py-2 bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white rounded-md hover:opacity-90 disabled:opacity-50 transition-all duration-200"
               >
                 {submitting ? 'Submitting...' : 'Submit Color'}
               </button>

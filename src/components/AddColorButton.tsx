@@ -60,7 +60,7 @@ export default function AddColorButton() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-full p-6 shadow-xl hover:shadow-2xl hover:scale-105 transform transition-all duration-200 z-50 flex items-center gap-2 group"
+        className="fixed bottom-8 right-8 bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white rounded-full p-6 shadow-xl hover:shadow-2xl hover:scale-105 transform transition-all duration-200 z-50 flex items-center gap-2 group"
       >
         <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" />
         <span className="text-lg font-semibold">Add New Color</span>

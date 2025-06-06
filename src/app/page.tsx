@@ -15,23 +15,23 @@ export default function HomePage() {
   const features = [
     {
       icon: Globe,
-      title: 'Global Color Heritage',
-      description: 'Explore natural colors from diverse cultures around the world',
+      title: 'Community Knowledge',
+      description: 'Share knowledge of making pigments and dyes from elements of the surrounding landscapes worldwide, unveiling their natural, cultural and social contexts.',
     },
     {
       icon: Palette,
-      title: 'Traditional Techniques',
-      description: 'Learn ancient and modern methods of natural color creation',
+      title: 'Making Techniques',
+      description: 'Explore ancient and contemporary methods for creating natural color and its possible material applications',
     },
     {
       icon: Users,
-      title: 'Community Knowledge',
-      description: 'Share and discover color-making wisdom across cultures',
+      title: 'Networks of Care',
+      description: 'Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.',
     },
     {
       icon: Leaf,
-      title: 'Sustainable Practices',
-      description: 'Embrace eco-friendly approaches to color production',
+      title: 'Sustainable Practice',
+      description: 'Highlight natural local materials and promote their use, disseminating situated knowledge for positive global impact.',
     },
   ];
 
@@ -43,14 +43,14 @@ export default function HomePage() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-r from-sky-500/20 via-blue-500/20 to-cyan-500/20 backdrop-blur-3xl" />
           <motion.div
             className="absolute -inset-[10px] opacity-50"
             animate={{
               background: [
-                'linear-gradient(0deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
-                'linear-gradient(120deg, #ec4899 0%, #6366f1 50%, #a855f7 100%)',
-                'linear-gradient(240deg, #a855f7 0%, #ec4899 50%, #6366f1 100%)',
+                'linear-gradient(0deg, #0EA5E9 0%, #0284C7 50%, #0C4A6E 100%)',
+                'linear-gradient(120deg, #0C4A6E 0%, #0EA5E9 50%, #0284C7 100%)',
+                'linear-gradient(240deg, #0284C7 0%, #0C4A6E 50%, #0EA5E9 100%)',
               ],
             }}
             transition={{
@@ -68,7 +68,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+            className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500"
           >
             Caring Archive of
             <br />
@@ -80,8 +80,7 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto"
           >
-            Join our global community in documenting and preserving the rich heritage of natural colors
-            and traditional dyeing techniques.
+            Join our community on sharing knowledge of making colors from natural elements, unveiling landscape through first-person stories while understanding networks of ecosystem relationships
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -91,7 +90,7 @@ export default function HomePage() {
           >
             <Link
               href="/colors"
-              className="inline-flex items-center px-8 py-4 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-lg font-semibold hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="inline-flex items-center px-8 py-4 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white text-lg font-semibold hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Explore Colors
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -111,7 +110,7 @@ export default function HomePage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+            <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500">
               Preserving Color Heritage
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -130,7 +129,7 @@ export default function HomePage() {
                   viewport={{ once: true }}
                   className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 flex items-center justify-center mb-6">
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
@@ -143,13 +142,13 @@ export default function HomePage() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+      <section className="py-20 bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-8">
             Join Our Color Community
           </h2>
           <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
-            Be part of a global movement to document and preserve natural color traditions
+            Be part of a global movement to document and highlight the potential of natural color
           </p>
           <Link
             href="/auth/signin"

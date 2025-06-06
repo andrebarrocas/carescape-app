@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
@@ -18,12 +18,15 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/manifest.json',
-  themeColor: '#6366F1',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'CAreScape',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0EA5E9',
 };
 
 export default function RootLayout({
@@ -36,7 +39,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
-      <body className={`${inter.className} bg-background text-primary`}>
+      <body className={`${inter.className} bg-background text-primary`} suppressHydrationWarning>
         <nav className="backdrop-blur-lg bg-white/10 border-b border-white/10 shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
@@ -71,7 +74,7 @@ export default function RootLayout({
               <div>
                 <Link
                   href="/auth/signin"
-                  className="px-5 py-2 text-sm font-semibold rounded-full shadow-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105"
+                  className="px-5 py-2 text-sm font-semibold rounded-full shadow-lg bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
                 >
                   Sign In
                 </Link>

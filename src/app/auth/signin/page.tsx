@@ -43,14 +43,14 @@ export default function SignInPage() {
       <div className="max-w-md w-full space-y-8 relative" style={{ marginTop: '2%' }}>
         {/* Background Effects */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-r from-sky-500/20 via-blue-500/20 to-cyan-500/20 backdrop-blur-3xl" />
           <motion.div
             className="absolute -inset-[100px] opacity-50"
             animate={{
               background: [
-                'linear-gradient(0deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
-                'linear-gradient(120deg, #ec4899 0%, #6366f1 50%, #a855f7 100%)',
-                'linear-gradient(240deg, #a855f7 0%, #ec4899 50%, #6366f1 100%)',
+                'linear-gradient(0deg, #0EA5E9 0%, #0284C7 50%, #0C4A6E 100%)',
+                'linear-gradient(120deg, #0C4A6E 0%, #0EA5E9 50%, #0284C7 100%)',
+                'linear-gradient(240deg, #0284C7 0%, #0C4A6E 50%, #0EA5E9 100%)',
               ],
             }}
             transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse' }}
@@ -65,7 +65,7 @@ export default function SignInPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500"
             >
               Start Coloring
             </motion.h2>
@@ -101,7 +101,7 @@ export default function SignInPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent placeholder-gray-400"
                     placeholder="Email address"
                   />
                 </div>
@@ -120,7 +120,7 @@ export default function SignInPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-400"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent placeholder-gray-400"
                     placeholder="Password"
                   />
                 </div>
@@ -141,7 +141,7 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
+                className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-white bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-all duration-200"
               >
                 {isLoading ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -165,7 +165,7 @@ export default function SignInPage() {
               Don't have an account?{' '}
               <Link
                 href="/auth/signup"
-                className="font-medium text-purple-500 hover:text-purple-400 transition-colors duration-200"
+                className="font-medium text-sky-500 hover:text-sky-400 transition-colors duration-200"
               >
                 Sign up
               </Link>

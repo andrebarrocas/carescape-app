@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Plus } from 'lucide-react';
 import Map from '@/components/Map';
 import { ColorSubmission } from '@/types/colors';
 import { ToastProvider } from '@/components/ui/toast';
 import AddColorButton from '@/components/AddColorButton';
 import { MapPin } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function MapPage() {
+  const [mounted, setMounted] = useState(false);
   const [colors, setColors] = useState<ColorSubmission[]>([]);
   const [filteredColors, setFilteredColors] = useState<ColorSubmission[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,8 +21,10 @@ export default function MapPage() {
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
     fetchColors();
   }, []);
 
@@ -86,11 +90,19 @@ export default function MapPage() {
     setFilteredColors(filtered);
   };
 
+  const handleAddColor = () => {
+    router.push('/colors/new');
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <ToastProvider>
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
+        <div className="bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white">
           <div className="container mx-auto px-4 py-12">
             <h1 className="text-4xl font-bold mb-4">Caring Dictionary of Landscape Colors</h1>
             <p className="text-lg opacity-90">Explore natural colors by their geographic origins</p>
@@ -109,7 +121,7 @@ export default function MapPage() {
                   placeholder="Search colors, materials, or locations..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 />
               </div>
 
@@ -163,7 +175,7 @@ export default function MapPage() {
           {/* Loading State */}
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto"></div>
               <p className="mt-4 text-gray-500">Loading colors...</p>
             </div>
           ) : (
