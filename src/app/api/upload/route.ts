@@ -1,28 +1,8 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { getServerSession } from 'next-auth';
-import { GET as authHandler } from '@/app/api/auth/[...nextauth]/route';
-import { Session } from 'next-auth';
-
-interface ExtendedSession extends Session {
-  user?: {
-    id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  };
-}
-
-const authOptions = authHandler.config;
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions) as ExtendedSession;
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const type = formData.get('type') as string;
@@ -31,19 +11,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Create unique filename
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const timestamp = Date.now();
-    const filename = `${timestamp}-${file.name}`;
 
-    // Save to public directory based on type
-    const directory = join(process.cwd(), 'public', 'uploads', type);
-    await writeFile(join(directory, filename), buffer);
+    // Store in database without color relation (will be connected later)
+    const mediaUpload = await prisma.mediaUpload.create({
+      data: {
+        filename: file.name,
+        mimetype: file.type,
+        type,
+        data: buffer,
+      } as any, // Temporarily cast to any to bypass type checking
+    });
 
-    // Return the URL
-    const url = `/uploads/${type}/${filename}`;
-    return NextResponse.json({ url });
+    // Return the media upload info
+    return NextResponse.json({
+      id: mediaUpload.id,
+      filename: mediaUpload.filename,
+      mimetype: mediaUpload.mimetype,
+      type: mediaUpload.type,
+    });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(

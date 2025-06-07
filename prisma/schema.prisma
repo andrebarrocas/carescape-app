@@ -107,10 +107,10 @@ model MediaUpload {
   id          String   @id @default(cuid())
   filename    String
   mimetype    String
-  data        Bytes    // Binary data storage
-  type        String   // 'process' or 'outcome'
-  colorId     String
-  color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  type        String   // 'process', 'outcome', or 'landscape'
+  data        Bytes    // Binary data of the file
+  colorId     String?  // Make colorId optional for initial upload
+  color       Color?   @relation(fields: [colorId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

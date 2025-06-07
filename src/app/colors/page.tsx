@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, Plus } from 'lucide-react';
 import AddColorButton from '@/components/AddColorButton';
+import ColorCard from '@/components/ColorCard';
 import { ColorSubmission } from '@/types/colors';
 import ColorPlaceholder from '@/components/ColorPlaceholder';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 export default function ColorsPage() {
   const [mounted, setMounted] = useState(false);
@@ -192,48 +195,14 @@ export default function ColorsPage() {
             {Array.isArray(filteredColors) && filteredColors.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredColors.map((color) => (
-                  <div
+                  <ColorCard
                     key={color.id}
-                    className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-200"
-                  >
-                    <div className="relative aspect-square">
-                      {color.mediaUploads && color.mediaUploads.length > 0 && !imageLoadErrors[color.id] ? (
-                        <div 
-                          className="w-full h-full bg-cover bg-center rounded-t-xl"
-                          style={{
-                            backgroundColor: color.hex,
-                            backgroundImage: `url(${color.mediaUploads[0].url})`,
-                          }}
-                          onError={() => handleImageError(color.id, color.mediaUploads[0].url)}
-                        />
-                      ) : (
-                        <div className="w-full h-full">
-                          <ColorPlaceholder hex={color.hex} name={color.name} />
-                        </div>
-                      )}
-                      <div
-                        className="absolute bottom-4 right-4 w-12 h-12 rounded-full shadow-lg border-4 border-white"
-                        style={{ backgroundColor: color.hex }}
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900">{color.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {color.materials.map(m => m.name).join(', ')}
-                      </p>
-                      <p className="text-sm text-gray-500">{color.location}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {color.processes.map(p => (
-                          <span
-                            key={p.id}
-                            className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
-                          >
-                            {p.application}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                    color={color}
+                    onDelete={(id) => {
+                      setFilteredColors(colors => colors.filter(c => c.id !== id));
+                      setColors(colors => colors.filter(c => c.id !== id));
+                    }}
+                  />
                 ))}
               </div>
             ) : (

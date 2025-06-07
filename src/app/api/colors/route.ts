@@ -101,14 +101,24 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authHandler.config) as Session;
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const data = await request.json();
     
-    // Create the color entry
+    // Create or find user by email
+    let user = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (!user) {
+      // Create new user if doesn't exist
+      user = await prisma.user.create({
+        data: {
+          email: data.email,
+          pseudonym: data.pseudonym || data.email.split('@')[0],
+        },
+      });
+    }
+    
+    // Create the color entry with media uploads
     const color = await prisma.color.create({
       data: {
         name: data.name,
@@ -118,12 +128,17 @@ export async function POST(request: Request) {
         coordinates: JSON.stringify({ lat: data.coordinates.lat, lng: data.coordinates.lng }),
         season: data.season,
         dateCollected: new Date(data.dateCollected),
-        userId: session.user.id,
+        userId: user.id,
         materials: {
-          create: data.materials,
+          create: data.materials || [],
         },
         processes: {
-          create: data.processes,
+          create: data.processes || [],
+        },
+        mediaUploads: {
+          connect: data.mediaUploads?.map((media: any) => ({
+            id: media.id
+          })) || [],
         },
       },
       include: {
@@ -134,7 +149,7 @@ export async function POST(request: Request) {
     });
 
     // Parse coordinates before sending response
-    const response: TransformedColor = {
+    const response = {
       ...color,
       coordinates: color.coordinates ? JSON.parse(color.coordinates) : null,
       mediaUploads: color.mediaUploads.map(media => ({
