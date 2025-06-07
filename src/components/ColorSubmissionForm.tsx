@@ -7,6 +7,7 @@ import * as z from 'zod';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Map as PigeonMap, Marker } from 'pigeon-maps';
 import { Upload, X, Camera, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const colorSubmissionSchema = z.object({
   name: z.string().min(1, 'Color name is required'),
@@ -65,6 +66,7 @@ const osmProvider = (x: number, y: number, z: number) => {
 }
 
 export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: ColorSubmissionFormProps) {
+  const router = useRouter();
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([40, -74.5]);
   const [mapZoom, setMapZoom] = useState(9);
@@ -255,7 +257,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       const mediaUploads = await Promise.all(
         mediaFiles.map(async (media) => {
           const formData = new FormData();
-          formData.append('file', media.file);
+          formData.append('file', new Blob([media.file], { type: media.file.type }));
           formData.append('type', media.type);
           
           const response = await fetch('/api/upload', {
@@ -264,7 +266,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
           });
           
           if (!response.ok) {
-            throw new Error('Failed to upload media');
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to upload media');
           }
           
           const uploadedMedia = await response.json();
@@ -277,15 +280,31 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
         })
       );
 
+      // Create materials and processes arrays
+      const materials = [{
+        name: data.sourceMaterial,
+        partUsed: 'whole', // Default value
+        originNote: data.description,
+      }];
+
+      const processes = [{
+        technique: data.type,
+        application: data.application || data.type,
+        notes: data.process,
+      }];
+
       // Then submit the color data with media files
       const formData = {
         ...data,
+        materials,
+        processes,
         mediaUploads,
         coordinates: { lat: selectedLocation[0], lng: selectedLocation[1] }
       };
 
       await onSubmit(formData);
       onClose();
+      router.refresh(); // Refresh the page after successful submission
     } catch (error) {
       console.error('Error submitting color:', error);
       throw error;

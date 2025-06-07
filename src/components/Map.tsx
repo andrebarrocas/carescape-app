@@ -75,8 +75,8 @@ export default function Map({ colors }: MapProps) {
 
   const getColorImage = (color: ColorSubmission) => {
     if (!color.mediaUploads?.length) return null;
-    const outcomeImage = color.mediaUploads.find(media => media.type === 'outcome');
-    return outcomeImage ? outcomeImage.url : color.mediaUploads[0].url;
+    const landscapeImage = color.mediaUploads.find(media => media.type === 'landscape');
+    return landscapeImage ? landscapeImage.url : color.mediaUploads[0].url;
   };
 
   return (
@@ -206,6 +206,18 @@ export default function Map({ colors }: MapProps) {
                 </div>
               )}
 
+              {/* Source Material */}
+              {hoveredColor.sourceMaterial && (
+                <div>
+                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Source Material</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors">
+                      {hoveredColor.sourceMaterial}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Processes */}
               {hoveredColor.processes && hoveredColor.processes.length > 0 && (
                 <div>
@@ -219,6 +231,18 @@ export default function Map({ colors }: MapProps) {
                         {process.application}
                       </span>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Type */}
+              {hoveredColor.type && (
+                <div>
+                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Type</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors">
+                      {hoveredColor.type.charAt(0).toUpperCase() + hoveredColor.type.slice(1)}
+                    </span>
                   </div>
                 </div>
               )}

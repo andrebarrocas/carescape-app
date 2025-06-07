@@ -63,7 +63,7 @@ export async function GET() {
         },
       },
       orderBy: {
-        dateCollected: 'desc',
+        createdAt: 'desc',
       },
     });
 
@@ -118,6 +118,9 @@ export async function POST(request: Request) {
       });
     }
     
+    // Filter out any media uploads with undefined IDs
+    const validMediaUploads = data.mediaUploads?.filter((media: any) => media.id) || [];
+    
     // Create the color entry with media uploads
     const color = await prisma.color.create({
       data: {
@@ -136,9 +139,9 @@ export async function POST(request: Request) {
           create: data.processes || [],
         },
         mediaUploads: {
-          connect: data.mediaUploads?.map((media: any) => ({
+          connect: validMediaUploads.map((media: any) => ({
             id: media.id
-          })) || [],
+          })),
         },
       },
       include: {

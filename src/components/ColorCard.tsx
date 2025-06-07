@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import ColorPlaceholder from './ColorPlaceholder';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog } from '@/components/ui/AlertDialog';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface Material {
   id: string;
@@ -12,10 +14,12 @@ interface Material {
 interface Process {
   id: string;
   application: string;
+  technique: string;
 }
 
 interface MediaUpload {
   url: string;
+  type: string;
 }
 
 interface Color {
@@ -37,6 +41,13 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
   const [imageError, setImageError] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+
+  const getDisplayImage = () => {
+    if (!color.mediaUploads?.length) return null;
+    const landscapeImage = color.mediaUploads.find(m => m.type === 'landscape');
+    return landscapeImage || color.mediaUploads[0];
+  };
 
   const handleDelete = async () => {
     try {
@@ -53,6 +64,7 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
         title: 'Success',
         description: 'Color deleted successfully',
       });
+      router.refresh();
     } catch (error) {
       console.error('Error deleting color:', error);
       toast({
@@ -62,6 +74,8 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
       });
     }
   };
+
+  const displayImage = getDisplayImage();
 
   return (
     <>
@@ -75,15 +89,25 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
             <X className="w-4 h-4 text-red-500" />
           </button>
           
-          {color.mediaUploads && color.mediaUploads.length > 0 && !imageError ? (
-            <div 
-              className="w-full h-full bg-cover bg-center rounded-t-xl"
-              style={{
-                backgroundColor: color.hex,
-                backgroundImage: `url(${color.mediaUploads[0].url})`,
-              }}
-              onError={() => setImageError(true)}
-            />
+          {displayImage && !imageError ? (
+            <div className="relative w-full h-full">
+              <Image
+                src={displayImage.url}
+                alt={color.name}
+                fill
+                className="object-cover rounded-t-xl"
+                onError={() => setImageError(true)}
+                priority
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: color.hex,
+                  opacity: 0.1,
+                  mixBlendMode: 'multiply'
+                }}
+              />
+            </div>
           ) : (
             <div className="w-full h-full">
               <ColorPlaceholder hex={color.hex} name={color.name} />
@@ -106,7 +130,7 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
                 key={p.id}
                 className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
               >
-                {p.application}
+                {p.technique.charAt(0).toUpperCase() + p.technique.slice(1)} - {p.application}
               </span>
             ))}
           </div>

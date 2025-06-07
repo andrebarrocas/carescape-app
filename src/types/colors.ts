@@ -41,6 +41,8 @@ export interface ColorSubmission {
   } | null;
   materials: Material[];
   processes: Process[];
+  sourceMaterial: string;
+  type: 'pigment' | 'dye' | 'ink';
   season: string;
   dateCollected: string;
   mediaUploads: MediaUpload[];

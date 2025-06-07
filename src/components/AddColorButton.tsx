@@ -3,53 +3,18 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import ColorSubmissionForm from './ColorSubmissionForm';
-import { useRouter } from 'next/navigation';
 
-export default function AddColorButton() {
+interface AddColorButtonProps {
+  onSubmit: (data: any) => Promise<void>;
+}
+
+export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (data: any) => {
     try {
-      // First, upload all media files
-      const mediaUploads = await Promise.all(
-        data.mediaUploads?.map(async (media: any) => {
-          const formData = new FormData();
-          formData.append('file', media.file);
-          formData.append('type', media.type);
-          
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          
-          const { url } = await response.json();
-          return {
-            type: media.type,
-            url,
-            caption: media.caption,
-          };
-        }) || []
-      );
-
-      // Then submit the color data with media URLs
-      const response = await fetch('/api/colors', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...data,
-          mediaUploads,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit color');
-      }
-
-      // Refresh the page data
-      router.refresh();
+      await onSubmit(data);
+      setIsOpen(false);
     } catch (error) {
       console.error('Error submitting color:', error);
       throw error;
@@ -60,10 +25,9 @@ export default function AddColorButton() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white rounded-full p-6 shadow-xl hover:shadow-2xl hover:scale-105 transform transition-all duration-200 z-50 flex items-center gap-2 group"
+        className="fixed bottom-8 right-8 bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-shadow duration-200"
       >
-        <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-200" />
-        <span className="text-lg font-semibold">Add New Color</span>
+        <Plus className="w-6 h-6" />
       </button>
 
       <ColorSubmissionForm

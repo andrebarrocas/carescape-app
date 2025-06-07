@@ -10,11 +10,11 @@ export const metadata: Metadata = {
   description: "A platform for collecting and sharing natural colors and pigments.",
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
-    shortcut: ['/favicon.svg'],
+    shortcut: ['/icon.svg'],
     apple: [
-      { url: '/favicon.svg' }
+      { url: '/icon.svg', type: 'image/svg+xml' }
     ],
   },
   manifest: '/manifest.json',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0EA5E9',
+  themeColor: '#3B82F6',
 };
 
 export default function RootLayout({
@@ -37,7 +37,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="shortcut icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon.svg" type="image/svg+xml" />
       </head>
       <body className={`${inter.className} bg-background text-primary`} suppressHydrationWarning>
         <nav className="backdrop-blur-lg bg-white/10 border-b border-white/10 shadow-md">
