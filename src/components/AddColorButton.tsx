@@ -2,21 +2,23 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import ColorSubmissionForm from './ColorSubmissionForm';
+import ColorSubmissionForm, { ColorSubmissionForm as ColorSubmissionFormType } from './ColorSubmissionForm';
 
 interface AddColorButtonProps {
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: ColorSubmissionFormType) => Promise<void>;
 }
 
 export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: ColorSubmissionFormType) => {
     try {
       await onSubmit(data);
       setIsOpen(false);
     } catch (error) {
       console.error('Error submitting color:', error);
+      // Show error message to user
+      alert('Failed to submit color. Please try again.');
       throw error;
     }
   };

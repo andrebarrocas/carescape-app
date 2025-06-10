@@ -109,88 +109,83 @@ async function imageUrlToBuffer(url: string): Promise<Buffer> {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
+    const data = await request.json();
 
-    const formData = await request.formData();
+    // Get or create the anonymous user
+    let anonymousUser = await prisma.user.findFirst({
+      where: { email: 'anonymous@carespace.app' }
+    });
+
+    if (!anonymousUser) {
+      anonymousUser = await prisma.user.create({
+        data: {
+          email: 'anonymous@carespace.app',
+          name: 'Anonymous User',
+        }
+      });
+    }
     
-    // Create the color first
+    // Create the color using the anonymous user
     const color = await prisma.color.create({
       data: {
-        name: "Citrus Yellow",
-        hex: "#FFD700",
-        description: "A vibrant yellow extracted from fresh lemon peels, capturing the essence of Mediterranean citrus groves.",
-        location: "Sorrento Lemon Grove, Amalfi Coast, Italy",
-        coordinates: JSON.stringify({ lat: 40.6262, lng: 14.3757 }), // Sorrento coordinates
-        bioregion: JSON.stringify({
-          description: "Mediterranean coastal citrus-growing region",
-          boundary: {
-            type: "Polygon",
-            coordinates: [[[14.3757, 40.6262], [14.3857, 40.6362], [14.3957, 40.6262], [14.3857, 40.6162], [14.3757, 40.6262]]]
-          }
-        }),
-        season: "Summer",
-        dateCollected: new Date("2024-06-15"),
-        userId: session.user.id,
+        name: data.name,
+        hex: data.hex,
+        description: data.description,
+        location: data.location,
+        coordinates: JSON.stringify(data.coordinates),
+        season: data.season,
+        dateCollected: new Date(data.dateCollected),
+        userId: anonymousUser.id,
         materials: {
           create: [{
-            name: "Lemon",
-            partUsed: "Peel",
-            originNote: "Fresh Sorrento lemons from local groves"
+            name: data.sourceMaterial,
+            partUsed: data.application || 'Not specified',
+            originNote: data.process || 'Not specified'
           }]
         },
         processes: {
           create: [{
-            technique: "Extraction and grinding",
-            application: "Direct pigment extraction",
-            notes: "Carefully peeled and ground to extract natural pigments"
+            technique: data.type,
+            application: data.application || 'Not specified',
+            notes: data.process
           }]
         }
       }
     });
 
-    // Create media uploads
-    const mediaUploads = await Promise.all([
-      // Landscape image
-      prisma.mediaUpload.create({
-        data: {
-          filename: "sorrento-lemon-grove.jpg",
-          mimetype: "image/jpeg",
-          type: "landscape",
-          data: await imageUrlToBuffer("https://images.unsplash.com/photo-1528821128474-27f963b062bf"),
-          caption: "Sorrento lemon grove with the Amalfi Coast in the background",
-          colorId: color.id
-        }
-      }),
-      // Process images
-      prisma.mediaUpload.create({
-        data: {
-          filename: "lemon-zest.jpg",
-          mimetype: "image/jpeg",
-          type: "process",
-          data: await imageUrlToBuffer("https://images.unsplash.com/photo-1582087463261-ddea03f80e5d"),
-          caption: "Freshly grated lemon zest showing the intense yellow pigment",
-          colorId: color.id
-        }
-      }),
-      prisma.mediaUpload.create({
-        data: {
-          filename: "lemon-cross-section.jpg",
-          mimetype: "image/jpeg",
-          type: "process",
-          data: await imageUrlToBuffer("https://images.unsplash.com/photo-1582087463261-ddea03f80e5d"),
-          caption: "Cross-section of Sorrento lemons revealing their structure",
-          colorId: color.id
-        }
-      })
-    ]);
+    // Update media uploads with the color ID if any were provided
+    if (data.mediaUploads && data.mediaUploads.length > 0) {
+      await Promise.all(
+        data.mediaUploads.map((media: { id: string }) =>
+          prisma.mediaUpload.update({
+            where: { id: media.id },
+            data: { colorId: color.id }
+          })
+        )
+      );
+    }
 
-    return NextResponse.json({ color, mediaUploads });
+    // Return the created color with its media uploads
+    const createdColor = await prisma.color.findUnique({
+      where: { id: color.id },
+      include: {
+        materials: true,
+        processes: true,
+        mediaUploads: {
+          select: {
+            id: true,
+            filename: true,
+            mimetype: true,
+            type: true,
+            caption: true,
+          }
+        }
+      }
+    });
+
+    return NextResponse.json({ success: true, color: createdColor });
   } catch (error) {
     console.error('Error creating color:', error);
-    return new NextResponse('Error creating color', { status: 500 });
+    return new NextResponse(error instanceof Error ? error.message : 'Error creating color', { status: 500 });
   }
 } 

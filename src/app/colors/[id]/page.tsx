@@ -81,21 +81,23 @@ export default async function ColorDetails({
       <main className="min-h-screen bg-[#FFFCF5] py-12">
         <div className="max-w-[1800px] mx-auto px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* Left Column - Color Info and Images */}
-            <div className="space-y-6">
-              {/* Color Swatch and Hex */}
-              <div className="flex items-start gap-4 mb-8">
-                <div 
-                  className="w-16 h-16 rounded-lg shadow-lg"
-                  style={{ backgroundColor: color.hex }}
-                />
-                <p className="font-mono text-base text-[#2C3E50]">
-                  HEX: {color.hex}
+              {/* Left Column - Color Information */}
+              <div className="relative">
+              {/* Title */}
+              <div className="mb-12">
+                <h1 className="font-handwritten text-6xl text-[#2C3E50] mb-3 leading-tight">
+                  {color.name}
+                </h1>
+                <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
+                  by {session?.user?.name || 'Anonymous'}
+                </p>
+                <p className="font-handwritten text-lg text-[#2C3E50]/60">
+                  {format(new Date(color.dateCollected), 'MMMM d, yyyy')}
                 </p>
               </div>
 
-              {/* Main Landscape Image */}
-              {landscapeImage && (
+               {/* Main Landscape Image */}
+               {landscapeImage && (
                 <div className="mb-8">
                   <div className="relative w-full aspect-[4/3] bg-white rounded-lg overflow-hidden">
                     <Image
@@ -116,48 +118,17 @@ export default async function ColorDetails({
                   )}
                 </div>
               )}
-
-              {/* Process Images */}
-              {processImages.length > 0 && (
-                <div className="grid grid-cols-2 gap-6">
-                  {processImages.map(media => (
-                    <div key={media.id} className="relative">
-                      <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden">
-                        <Image
-                          src={`/api/images/${media.id}`}
-                          alt={media.caption || 'Process image'}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 50vw, 25vw"
-                          unoptimized
-                          loading="eager"
-                        />
-                      </div>
-                      {media.caption && (
-                        <p className="mt-2 font-handwritten text-sm text-[#2C3E50]/80">
-                          {media.caption}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Right Column - Color Information */}
-            <div className="relative">
-              {/* Title */}
-              <div className="mb-12">
-                <h1 className="font-handwritten text-6xl text-[#2C3E50] mb-3 leading-tight">
-                  {color.name}
-                </h1>
-                <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
-                  by {session?.user?.name || 'Anonymous'}
-                </p>
-                <p className="font-handwritten text-lg text-[#2C3E50]/60">
-                  {format(new Date(color.dateCollected), 'MMMM d, yyyy')}
+                {/* Color Swatch and Hex */}
+                <div className="flex items-start gap-4 mb-8">
+                <div 
+                  className="w-16 h-16 rounded-lg shadow-lg"
+                  style={{ backgroundColor: color.hex }}
+                />
+                <p className="font-mono text-base text-[#2C3E50]">
+                  HEX: {color.hex}
                 </p>
               </div>
+
 
               {/* Personal Description */}
               <div className="mb-10">
@@ -213,6 +184,37 @@ export default async function ColorDetails({
                 </div>
               </div>
             </div>
+            {/* Right Column - Color Info and Images */}
+            <div className="space-y-6">
+
+              {/* Process Images */}
+              {processImages.length > 0 && (
+                <div className="grid grid-cols-2 gap-6">
+                  {processImages.map(media => (
+                    <div key={media.id} className="relative">
+                      <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden">
+                        <Image
+                          src={`/api/images/${media.id}`}
+                          alt={media.caption || 'Process image'}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          unoptimized
+                          loading="eager"
+                        />
+                      </div>
+                      {media.caption && (
+                        <p className="mt-2 font-handwritten text-sm text-[#2C3E50]/80">
+                          {media.caption}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+
           </div>
         </div>
       </main>

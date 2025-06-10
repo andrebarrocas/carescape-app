@@ -12,31 +12,43 @@ interface MediaUploadResult {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file');
+    const file = formData.get('file') as File | null;
     const type = formData.get('type') as string;
     const caption = formData.get('caption') as string | null;
 
-    if (!file || typeof file === 'string') {
+    if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Convert file to buffer
-    const buffer = Buffer.from(await (file as Blob).arrayBuffer());
+    // Read the file as ArrayBuffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    // Create media upload using raw SQL
-    const [mediaUpload] = await prisma.$queryRaw<MediaUploadResult[]>`
-      INSERT INTO "media_uploads" ("id", "filename", "mimetype", "type", "data", "caption", "createdAt", "updatedAt")
-      VALUES (gen_random_uuid(), ${(file as any).name}, ${(file as any).type}, ${type}, ${buffer}, ${caption}, NOW(), NOW())
-      RETURNING "id", "filename", "mimetype", "type", "caption"
-    `;
+    // Create media upload using Prisma
+    const mediaUpload = await prisma.mediaUpload.create({
+      data: {
+        filename: file.name,
+        mimetype: file.type,
+        type,
+        data: buffer,
+        caption: caption || undefined,
+      },
+      select: {
+        id: true,
+        filename: true,
+        mimetype: true,
+        type: true,
+        caption: true,
+      },
+    });
 
     // Return the media upload info
     return NextResponse.json(mediaUpload);
   } catch (error) {
     console.error('Error uploading file:', error);
-    return NextResponse.json(
-      { error: `Error uploading file: ${error}` },
-      { status: 500 }
-    );
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: 'Error uploading file' }, { status: 500 });
   }
 } 

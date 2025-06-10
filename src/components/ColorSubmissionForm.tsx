@@ -40,7 +40,8 @@ const colorSubmissionSchema = z.object({
   })).optional(),
 });
 
-type ColorSubmissionForm = z.infer<typeof colorSubmissionSchema>;
+export type ColorSubmissionForm = z.infer<typeof colorSubmissionSchema>;
+export { colorSubmissionSchema };
 
 interface ColorSubmissionFormProps {
   isOpen: boolean;
@@ -312,53 +313,84 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   const handleFormSubmit = async (data: ColorSubmissionForm) => {
     setSubmitting(true);
     try {
-      // Upload media files first
-      const mediaUploadPromises = mediaFiles.map(async (media) => {
-        const formData = new FormData();
-        formData.append('file', media.file);
-        formData.append('type', media.type);
-        if (media.caption) {
-          formData.append('caption', media.caption);
-        }
-        
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to upload media');
-        }
-        
-        const uploadedFile = await response.json();
-        
-        // Transform the response to match the schema
-        return {
-          id: uploadedFile.id,
-          filename: media.file.name,
-          mimetype: media.file.type,
-          type: media.type,
-          caption: media.caption,
-        };
-      });
+      // Set default coordinates if not selected
+      if (!data.coordinates) {
+        data.coordinates = { lat: 0, lng: 0 };
+      }
 
-      const uploadedMedia = await Promise.all(mediaUploadPromises);
+      // Set a default hex color if not set
+      if (!data.hex) {
+        data.hex = '#000000';
+      }
+
+      // Define the type for media uploads
+      type MediaUpload = {
+        id: string;
+        filename: string;
+        mimetype: string;
+        type: 'outcome' | 'landscape' | 'process';
+        caption?: string;
+      };
+
+      // If there are media files, try to upload them
+      let mediaUploads: MediaUpload[] = [];
+      if (mediaFiles.length > 0) {
+        try {
+          const mediaUploadPromises = mediaFiles.map(async (media) => {
+            const formData = new FormData();
+            formData.append('file', media.file);
+            formData.append('type', media.type);
+            if (media.caption) {
+              formData.append('caption', media.caption);
+            }
+            
+            try {
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+              });
+              
+              if (!response.ok) {
+                throw new Error('Failed to upload media');
+              }
+              
+              const uploadedFile = await response.json();
+              
+              return {
+                id: uploadedFile.id,
+                filename: media.file.name,
+                mimetype: media.file.type,
+                type: media.type,
+                caption: media.caption,
+              } as MediaUpload;
+            } catch (error) {
+              console.error('Error uploading media:', error);
+              return null;
+            }
+          });
+
+          mediaUploads = (await Promise.all(mediaUploadPromises))
+            .filter((upload): upload is MediaUpload => upload !== null);
+        } catch (error) {
+          console.error('Error handling media uploads:', error);
+          // Continue with form submission even if media upload fails
+        }
+      }
       
       // Format the date properly
       const formattedDate = new Date(data.dateCollected).toISOString();
       
-      // Add uploaded media to form data
+      // Add uploaded media to form data if any were successfully uploaded
       const formData = {
         ...data,
         dateCollected: formattedDate,
-        mediaUploads: uploadedMedia,
+        mediaUploads: mediaUploads.length > 0 ? mediaUploads : undefined,
       };
 
       await onSubmit(formData);
       onClose();
     } catch (error) {
       console.error('Error submitting form:', error);
-      // Show error message to user
       alert('Failed to submit form. Please try again.');
     } finally {
       setSubmitting(false);
