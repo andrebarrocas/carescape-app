@@ -26,6 +26,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "color-thief-ts": "^1.1.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.16.0",
     "lucide-react": "^0.511.0",
     "mapbox-gl": "^3.12.0",
@@ -35,6 +36,7 @@
     "next-auth": "^4.24.11",
     "node-fetch": "^2.7.0",
     "nodemailer": "^6.10.1",
+    "openai": "^5.2.0",
     "pg": "^8.16.0",
     "pigeon-maps": "^0.22.1",
     "prisma": "^6.9.0",
@@ -46,6 +48,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/date-fns": "^2.5.3",
     "@types/node": "^20.17.57",
     "@types/react": "^19",
     "@types/react-dom": "^19",

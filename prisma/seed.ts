@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import fetch from 'node-fetch';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -12,10 +14,11 @@ async function downloadImage(url: string): Promise<{ buffer: Buffer; type: strin
 
 async function main() {
   // Clear all existing data
-  await prisma.mediaUpload.deleteMany({});
-  await prisma.process.deleteMany({});
-  await prisma.material.deleteMany({});
-  await prisma.color.deleteMany({});
+  await prisma.comment.deleteMany();
+  await prisma.mediaUpload.deleteMany();
+  await prisma.process.deleteMany();
+  await prisma.material.deleteMany();
+  await prisma.color.deleteMany();
   await prisma.user.deleteMany({});
 
   // Create test user
@@ -75,25 +78,37 @@ async function main() {
 
   const citrusYellow = await prisma.color.create({
     data: {
+      id: 'citrus-yellow',
       name: 'Citrus Yellow',
       hex: '#FFD700',
-      description: 'Bright yellow from fresh lemons',
-      location: 'Amalfi Coast, Italy',
-      coordinates: JSON.stringify({ lat: 40.6333, lng: 14.6029 }),
+      description: 'A vibrant yellow extracted from fresh lemon peels, capturing the essence of Mediterranean citrus groves.',
+      location: 'Sorrento Lemon Grove, Amalfi Coast, Italy',
+      coordinates: JSON.stringify({
+        lat: 40.6262,
+        lng: 14.3757
+      }),
       season: 'Summer',
       dateCollected: new Date('2024-06-15'),
       userId: user.id,
       materials: {
         create: [
-          { name: 'Amalfi Lemon', partUsed: 'Peel', originNote: 'Locally sourced citrus' },
-        ],
+          {
+            name: 'Lemon',
+            partUsed: 'Peel',
+            originNote: 'Organically grown Sorrento lemons, known for their intense fragrance and rich oils'
+          }
+        ]
       },
       processes: {
         create: [
-          { technique: 'Extraction', application: 'Natural pigment', notes: 'Cold press method' },
-        ],
-      },
-    },
+          {
+            technique: 'Natural Extraction',
+            application: 'Cold Press',
+            notes: 'Gentle extraction of pigments from fresh lemon peels, preserving the natural vibrancy'
+          }
+        ]
+      }
+    }
   });
 
   const saffronRed = await prisma.color.create({
@@ -153,12 +168,54 @@ async function main() {
           data: buffer,
           type: 'outcome',
           colorId: image.colorId,
+          caption: `Sample image for ${image.filename}`
         },
       });
       console.log(`Successfully stored image: ${image.filename}`);
     } catch (error) {
       console.error(`Failed to download/store image ${image.filename}:`, error);
     }
+  }
+
+  // Add test images for Citrus Yellow
+  const testImages = [
+    {
+      filename: 'lemon-zest.jpg',
+      type: 'process',
+      caption: 'Freshly grated lemon zest showing the intense yellow pigment',
+      url: 'https://example.com/images/lemon-zest.jpg'
+    },
+    {
+      filename: 'lemon-halves.jpg',
+      type: 'process',
+      caption: 'Cross-section of Sorrento lemons revealing their structure',
+      url: 'https://example.com/images/lemon-halves.jpg'
+    },
+    {
+      filename: 'lemon-illustration.jpg',
+      type: 'process',
+      caption: 'Traditional botanical illustration of a lemon slice',
+      url: 'https://example.com/images/lemon-illustration.jpg'
+    },
+    {
+      filename: 'lemon-landscape.jpg',
+      type: 'landscape',
+      caption: 'Sorrento lemon grove with the Amalfi Coast in the background',
+      url: 'https://example.com/images/lemon-landscape.jpg'
+    }
+  ];
+
+  for (const image of testImages) {
+    await prisma.mediaUpload.create({
+      data: {
+        filename: image.filename,
+        mimetype: 'image/jpeg',
+        type: image.type,
+        caption: image.caption,
+        colorId: citrusYellow.id,
+        data: Buffer.from('test-image-data'),
+      },
+    });
   }
 
   console.log('Database has been seeded with fresh data and binary images. 🌱');

@@ -1,18 +1,63 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Color, MediaUpload } from '@/types';
+import { Color, MediaUpload, Comment, User, Prisma } from '@prisma/client';
 
-interface ColorWithMedia extends Omit<Color, 'mediaUploads'> {
-  mediaUploads: Array<Omit<MediaUpload, 'url'> & { data: Buffer }>;
+interface MediaUploadWithComments extends MediaUpload {
+  comments: (Comment & {
+    user: Pick<User, 'name' | 'image'> | null;
+  })[];
 }
+
+interface ColorWithRelations extends Color {
+  materials: any[];
+  processes: any[];
+  mediaUploads: MediaUploadWithComments[];
+}
+
+const mediaUploadSelect = {
+  id: true,
+  type: true,
+  caption: true,
+  mimetype: true,
+  data: false,
+  comments: {
+    include: {
+      user: {
+        select: {
+          name: true,
+          image: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  }
+} as const;
+
+type MediaUploadSelect = Prisma.MediaUploadSelect & {
+  comments?: {
+    include: {
+      user: {
+        select: {
+          name: true;
+          image: true;
+        };
+      };
+    };
+    orderBy: {
+      createdAt: 'desc';
+    };
+  };
+};
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = params;
+  const { id } = await context.params;
 
+  try {
     // Delete the color and all related records (cascade delete is set up in schema)
     await prisma.color.delete({
       where: { id },
@@ -29,59 +74,70 @@ export async function DELETE(
 }
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
+    
+    if (!id) {
+      return new NextResponse('Color ID is required', { status: 400 });
+    }
+
+    console.log('Fetching color with ID:', id);
     const color = await prisma.color.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         materials: true,
         processes: true,
-        mediaUploads: true,
-      },
+        mediaUploads: {
+          select: {
+            id: true,
+            type: true,
+            caption: true,
+            mimetype: true,
+            data: false, // Exclude binary data from the response
+            comments: {
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                    image: true
+                  }
+                }
+              },
+              orderBy: {
+                createdAt: 'desc'
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      }
     });
 
     if (!color) {
-      return NextResponse.json(
-        { error: 'Color not found' },
-        { status: 404 }
-      );
+      return new NextResponse('Color not found', { status: 404 });
     }
 
-    // Parse coordinates from string to object
-    let parsedCoordinates = null;
-    if (color.coordinates) {
-      try {
-        parsedCoordinates = JSON.parse(color.coordinates) as { lat: number; lng: number };
-      } catch (e) {
-        console.error('Failed to parse coordinates for color:', color.name, e);
-      }
-    }
-
-    // Transform the response to include image URLs
+    // Transform the response to include proper timestamps
     const transformedColor = {
       ...color,
-      coordinates: parsedCoordinates,
-      mediaUploads: color.mediaUploads.map(media => ({
-        id: media.id,
-        filename: media.filename,
-        mimetype: media.mimetype,
-        type: media.type,
-        caption: media.caption,
-        url: `/api/images/${media.id}`,
-        colorId: media.colorId,
-        createdAt: media.createdAt,
-        updatedAt: media.updatedAt,
-      })),
+      mediaUploads: (color as ColorWithRelations).mediaUploads.map((media: MediaUploadWithComments) => ({
+        ...media,
+        comments: media.comments.map((comment) => ({
+          ...comment,
+          createdAt: comment.createdAt.toISOString()
+        }))
+      }))
     };
 
+    console.log('Color found:', color.id);
     return NextResponse.json(transformedColor);
   } catch (error) {
     console.error('Error fetching color:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch color' },
-      { status: 500 }
-    );
+    return new NextResponse('Error fetching color', { status: 500 });
   }
 } 

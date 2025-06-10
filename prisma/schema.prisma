@@ -119,6 +119,7 @@ model MediaUpload {
   caption     String?  // Caption for the image
   colorId     String?  // Make colorId optional for initial upload
   color       Color?   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -131,7 +132,8 @@ model Comment {
   content   String
   colorId   String
   color     Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  mediaId   String?
+  mediaId   String
+  media     MediaUpload @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

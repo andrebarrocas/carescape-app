@@ -48,11 +48,11 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
       return null;
     }
 
-    // Try to find a non-landscape image first
-    const mainImage = color.mediaUploads.find(m => m.type !== 'landscape' && m.url);
+    // Try to find a landscape image first
+    const landscapeImage = color.mediaUploads.find(m => m.type === 'landscape' && m.url);
     
-    // If no non-landscape image found, use any image
-    return mainImage?.url || color.mediaUploads[0]?.url || null;
+    // If no landscape image found, use any image
+    return landscapeImage?.url || color.mediaUploads[0]?.url || null;
   };
 
   const handleDelete = async () => {

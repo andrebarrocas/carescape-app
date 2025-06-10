@@ -46,11 +46,26 @@ export async function POST(
       );
     }
 
-    const { content } = await request.json();
-    if (!content) {
+    const { content, mediaId } = await request.json();
+    if (!content || !mediaId) {
       return NextResponse.json(
-        { error: 'Comment content is required' },
+        { error: 'Missing required fields' },
         { status: 400 }
+      );
+    }
+
+    // Verify that the media belongs to the color
+    const media = await prisma.mediaUpload.findFirst({
+      where: {
+        id: mediaId,
+        colorId: params.id
+      }
+    });
+
+    if (!media) {
+      return NextResponse.json(
+        { error: 'Media not found or does not belong to this color' },
+        { status: 404 }
       );
     }
 
@@ -58,16 +73,17 @@ export async function POST(
       data: {
         content,
         colorId: params.id,
-        userId: session.user.id,
+        mediaId,
+        userId: session.user.id
       },
       include: {
         user: {
           select: {
             name: true,
-            image: true,
-          },
-        },
-      },
+            image: true
+          }
+        }
+      }
     });
 
     return NextResponse.json(comment);

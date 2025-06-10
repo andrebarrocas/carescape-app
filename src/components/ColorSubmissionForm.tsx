@@ -23,10 +23,14 @@ const colorSubmissionSchema = z.object({
   application: z.string().optional(),
   process: z.string().min(1, 'Process description is required'),
   season: z.string().min(1, 'Season is required'),
-  dateCollected: z.string(),
+  dateCollected: z.string().refine((date) => {
+    const d = new Date(date);
+    return !isNaN(d.getTime());
+  }, "Please enter a valid date"),
   pseudonym: z.string().optional(),
   email: z.string().email('Valid email is required'),
   agreeToTerms: z.boolean().optional(),
+  hex: z.string().min(1, 'Hex color is required'),
   mediaUploads: z.array(z.object({
     id: z.string(),
     filename: z.string(),
@@ -204,14 +208,15 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       // If it's an outcome image, generate hex code
       if (type === 'outcome') {
         const hex = await getAverageColor(file);
-        // Store hex code in mediaUploads metadata instead of a separate field
+        setValue('hex', hex); // Set the hex value in the form
         const newMedia: MediaFile = {
           file,
           type,
           preview,
-          caption: hex, // Store hex in caption for outcome image
+          caption: hex,
         };
-        setMediaFiles(prev => [...prev, newMedia]);
+        // Remove any existing outcome image
+        setMediaFiles(prev => [...prev.filter(m => m.type !== 'outcome'), newMedia]);
       } else {
         const newMedia: MediaFile = {
           file,
@@ -219,7 +224,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
           preview,
           caption: '',
         };
-        setMediaFiles(prev => [...prev, newMedia]);
+        // Remove any existing landscape image
+        setMediaFiles(prev => [...prev.filter(m => m.type !== 'landscape'), newMedia]);
       }
     }
   };
@@ -324,14 +330,27 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
           throw new Error('Failed to upload media');
         }
         
-        return response.json();
+        const uploadedFile = await response.json();
+        
+        // Transform the response to match the schema
+        return {
+          id: uploadedFile.id,
+          filename: media.file.name,
+          mimetype: media.file.type,
+          type: media.type,
+          caption: media.caption,
+        };
       });
 
       const uploadedMedia = await Promise.all(mediaUploadPromises);
       
+      // Format the date properly
+      const formattedDate = new Date(data.dateCollected).toISOString();
+      
       // Add uploaded media to form data
       const formData = {
         ...data,
+        dateCollected: formattedDate,
         mediaUploads: uploadedMedia,
       };
 
@@ -339,6 +358,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       onClose();
     } catch (error) {
       console.error('Error submitting form:', error);
+      // Show error message to user
+      alert('Failed to submit form. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -478,6 +499,21 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 </div>
               </div>
 
+              <div>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">
+                  Process Description
+                </label>
+                <textarea
+                  {...register('process')}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[100px]"
+                  placeholder="Describe the process used to create this color"
+                  rows={4}
+                />
+                {errors.process && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.process.message}</p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block font-mono text-sm text-[#2C3E50]">Application (optional)</label>
@@ -505,7 +541,34 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   <input
                     {...register('dateCollected')}
                     type="date"
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    max={new Date().toISOString().split('T')[0]}
                     className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                  />
+                  {errors.dateCollected && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.dateCollected.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block font-mono text-sm text-[#2C3E50]">Email</label>
+                  <input
+                    {...register('email')}
+                    type="email"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                    placeholder="Enter your email"
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block font-mono text-sm text-[#2C3E50]">Pseudonym (optional)</label>
+                  <input
+                    {...register('pseudonym')}
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                    placeholder="Enter a pseudonym"
                   />
                 </div>
               </div>
@@ -514,6 +577,11 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
             {/* Media Upload Section */}
             <div className="space-y-6">
               <h3 className="font-serif text-xl text-[#2C3E50]">Media Upload</h3>
+              {/* Hidden hex input */}
+              <input type="hidden" {...register('hex')} />
+              {errors.hex && (
+                <p className="mt-1 text-red-500 text-xs">{errors.hex.message}</p>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Outcome Image Upload */}
                 <div className="space-y-2">
@@ -526,9 +594,32 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                         onChange={(e) => handleFileUpload(e, 'outcome')}
                         className="hidden"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
-                      </div>
+                      {mediaFiles.find(m => m.type === 'outcome') ? (
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={mediaFiles.find(m => m.type === 'outcome')?.preview || ''}
+                            alt="Color outcome preview"
+                            fill
+                            className="object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(mediaFiles.findIndex(m => m.type === 'outcome'))}
+                            className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg z-10"
+                          >
+                            <X className="w-4 h-4 text-[#2C3E50]" />
+                          </button>
+                          {mediaFiles.find(m => m.type === 'outcome')?.caption && (
+                            <div className="absolute bottom-2 left-2 right-2 bg-white/90 p-2 rounded text-xs font-mono">
+                              Hex: {mediaFiles.find(m => m.type === 'outcome')?.caption}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
+                        </div>
+                      )}
                     </label>
                   </div>
                   <p className="font-mono text-xs text-[#2C3E50]">Upload an image to generate the hex color code</p>
@@ -545,9 +636,27 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                         onChange={(e) => handleFileUpload(e, 'landscape')}
                         className="hidden"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
-                      </div>
+                      {mediaFiles.find(m => m.type === 'landscape') ? (
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={mediaFiles.find(m => m.type === 'landscape')?.preview || ''}
+                            alt="Landscape preview"
+                            fill
+                            className="object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(mediaFiles.findIndex(m => m.type === 'landscape'))}
+                            className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg z-10"
+                          >
+                            <X className="w-4 h-4 text-[#2C3E50]" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
+                        </div>
+                      )}
                     </label>
                   </div>
                 </div>
@@ -574,32 +683,36 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {mediaFiles
                       .filter(m => m.type === 'process')
-                      .map((media, index) => (
-                        <div key={index} className="space-y-4">
-                          <div className="relative aspect-square border-2 border-[#2C3E50]">
-                            <Image
-                              src={media.preview}
-                              alt={`Media image ${index + 1}`}
-                              fill
-                              className="object-cover"
+                      .map((media, index) => {
+                        // Find the actual index in the full mediaFiles array
+                        const actualIndex = mediaFiles.findIndex(m => m === media);
+                        return (
+                          <div key={actualIndex} className="space-y-4">
+                            <div className="relative aspect-square border-2 border-[#2C3E50]">
+                              <Image
+                                src={media.preview}
+                                alt={`Media image ${index + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFile(actualIndex)}
+                                className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg"
+                              >
+                                <X className="w-4 h-4 text-[#2C3E50]" />
+                              </button>
+                            </div>
+                            <textarea
+                              placeholder="Add caption..."
+                              value={media.caption}
+                              onChange={(e) => handleCaptionChange(actualIndex, e.target.value)}
+                              className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm resize-none focus:outline-none"
+                              rows={4}
                             />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveFile(index)}
-                              className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg"
-                            >
-                              <X className="w-4 h-4 text-[#2C3E50]" />
-                            </button>
                           </div>
-                          <textarea
-                            placeholder="Add caption..."
-                            value={media.caption}
-                            onChange={(e) => handleCaptionChange(index, e.target.value)}
-                            className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm resize-none focus:outline-none"
-                            rows={4}
-                          />
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 )}
               </div>
