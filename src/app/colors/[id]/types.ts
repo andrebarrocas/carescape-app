@@ -1,41 +1,32 @@
-import type { MediaUpload, User } from '@prisma/client';
+import { Color, Material, Process, MediaUpload, Comment, User } from '@prisma/client';
 
-export interface MediaUploadWithComments extends Omit<MediaUpload, 'data'> {
-  comments: Array<{
-    id: string;
-    content: string;
-    createdAt: Date;
-    user: Pick<User, 'name' | 'image'> | null;
-  }>;
+export interface ExtendedComment extends Comment {
+  user: Pick<User, 'name' | 'image'>;
 }
 
-export interface ExtendedColor {
-  id: string;
-  name: string;
-  hex: string;
-  description: string;
-  location: string;
-  coordinates: string | null;
+export interface ExtendedMediaUpload extends Omit<MediaUpload, 'data'> {
+  comments: ExtendedComment[];
+}
+
+export interface ExtendedColor extends Omit<Color, 'bioregion'> {
   bioregion: {
     description: string;
-    boundary: [number, number][];
+    boundary?: {
+      type: string;
+      coordinates: number[][][];
+    };
   } | null;
-  bioregionMap: string | null;
-  season: string;
-  dateCollected: Date;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  materials: Array<{
-    id: string;
-    name: string;
-    partUsed: string;
-  }>;
-  processes: Array<{
-    id: string;
-    technique: string;
-    application: string;
-    notes: string;
-  }>;
-  mediaUploads: MediaUploadWithComments[];
-} 
+  materials: Material[];
+  processes: Process[];
+  mediaUploads: ExtendedMediaUpload[];
+}
+
+export type ColorWithRelations = Color & {
+  materials: Material[];
+  processes: Process[];
+  mediaUploads: (MediaUpload & {
+    comments: (Comment & {
+      user: Pick<User, 'name' | 'image'>;
+    })[];
+  })[];
+}; 

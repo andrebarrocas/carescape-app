@@ -51,6 +51,16 @@ type MediaUploadSelect = Prisma.MediaUploadSelect & {
   };
 };
 
+type ExtendedMediaUpload = MediaUpload & {
+  comments: Array<Comment & {
+    user: Pick<User, 'name' | 'image'>;
+  }>;
+};
+
+type ExtendedColor = Color & {
+  mediaUploads: ExtendedMediaUpload[];
+};
+
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> }
@@ -74,7 +84,7 @@ export async function DELETE(
 }
 
 export async function GET(
-  request: NextRequest,
+  request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -84,37 +94,13 @@ export async function GET(
       return new NextResponse('Color ID is required', { status: 400 });
     }
 
-    console.log('Fetching color with ID:', id);
+    // First, get the color with basic relations
     const color = await prisma.color.findUnique({
       where: { id },
       include: {
         materials: true,
         processes: true,
-        mediaUploads: {
-          select: {
-            id: true,
-            type: true,
-            caption: true,
-            mimetype: true,
-            data: false, // Exclude binary data from the response
-            comments: {
-              include: {
-                user: {
-                  select: {
-                    name: true,
-                    image: true
-                  }
-                }
-              },
-              orderBy: {
-                createdAt: 'desc'
-              }
-            }
-          },
-          orderBy: {
-            createdAt: 'asc'
-          }
-        }
+        mediaUploads: true
       }
     });
 
@@ -122,20 +108,36 @@ export async function GET(
       return new NextResponse('Color not found', { status: 404 });
     }
 
-    // Transform the response to include proper timestamps
-    const transformedColor = {
+    // Then, get comments for each media upload
+    const mediaUploadsWithComments = await Promise.all(
+      color.mediaUploads.map(async (media) => {
+        const comments = await prisma.comment.findMany({
+          where: { mediaId: media.id },
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true
+              }
+            }
+          }
+        });
+
+        const { data, ...mediaWithoutData } = media;
+        return {
+          ...mediaWithoutData,
+          comments
+        };
+      })
+    );
+
+    // Combine all data
+    const fullColor = {
       ...color,
-      mediaUploads: (color as ColorWithRelations).mediaUploads.map((media: MediaUploadWithComments) => ({
-        ...media,
-        comments: media.comments.map((comment) => ({
-          ...comment,
-          createdAt: comment.createdAt.toISOString()
-        }))
-      }))
+      mediaUploads: mediaUploadsWithComments
     };
 
-    console.log('Color found:', color.id);
-    return NextResponse.json(transformedColor);
+    return NextResponse.json(fullColor);
   } catch (error) {
     console.error('Error fetching color:', error);
     return new NextResponse('Error fetching color', { status: 500 });

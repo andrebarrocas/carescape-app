@@ -3,53 +3,47 @@ import { authOptions } from '@/lib/auth';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { prisma } from '@/lib/prisma';
-import { MapComponent } from '@/components/MapComponent';
+import { MapComponent } from '../../../components/MapComponent';
 import { ColorDetailsClient } from './ColorDetailsClient';
-import type { ExtendedColor } from './types';
+import type { ExtendedColor, ColorWithRelations } from './types';
 
 async function getColorDetails(id: string): Promise<ExtendedColor> {
+  // First, get the color with basic relations
   const color = await prisma.color.findUnique({
     where: { id },
     include: {
-      materials: {
-        select: {
-          id: true,
-          name: true,
-          partUsed: true
-        }
-      },
-      processes: {
-        select: {
-          id: true,
-          technique: true,
-          application: true,
-          notes: true
-        }
-      },
-      mediaUploads: {
-        select: {
-          id: true,
-          type: true,
-          caption: true,
-          mimetype: true,
-          comments: {
-            include: {
-              user: {
-                select: {
-                  name: true,
-                  image: true
-                }
-              }
-            }
-          }
-        }
-      }
+      materials: true,
+      processes: true,
+      mediaUploads: true
     }
   });
 
   if (!color) {
     throw new Error('Color not found');
   }
+
+  // Then, get comments for each media upload
+  const mediaUploadsWithComments = await Promise.all(
+    color.mediaUploads.map(async (media) => {
+      const comments = await prisma.comment.findMany({
+        where: { mediaId: media.id },
+        include: {
+          user: {
+            select: {
+              name: true,
+              image: true
+            }
+          }
+        }
+      });
+
+      const { data, ...mediaWithoutData } = media;
+      return {
+        ...mediaWithoutData,
+        comments
+      };
+    })
+  );
 
   // Parse bioregion data from string
   const bioregion = color.bioregion ? JSON.parse(color.bioregion) : null;
@@ -59,20 +53,29 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
     bioregion,
     materials: color.materials,
     processes: color.processes,
-    mediaUploads: color.mediaUploads
+    mediaUploads: mediaUploadsWithComments
   } as ExtendedColor;
 }
 
-export default async function ColorDetails({ params }: { params: { id: string } }) {
+export default async function ColorDetails({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
   try {
+    const { id } = await params;
     const [session, color] = await Promise.all([
       getServerSession(authOptions),
-      getColorDetails(params.id)
+      getColorDetails(id)
     ]);
 
     // Separate media by type
     const landscapeImage = color.mediaUploads.find(media => media.type === 'landscape');
     const processImages = color.mediaUploads.filter(media => media.type === 'process');
+
+    // Parse coordinates for the map
+    const coordinates = color.coordinates ? JSON.parse(color.coordinates) : null;
+    const boundary = color.bioregion?.boundary?.coordinates?.[0]?.map(([lng, lat]) => [lat, lng]) as [number, number][] | undefined;
 
     const content = (
       <main className="min-h-screen bg-[#FFFCF5] py-12">
@@ -102,7 +105,8 @@ export default async function ColorDetails({ params }: { params: { id: string } 
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 50vw"
                       priority
-                      unoptimized={true}
+                      unoptimized
+                      loading="eager"
                     />
                   </div>
                   {landscapeImage.caption && (
@@ -125,7 +129,8 @@ export default async function ColorDetails({ params }: { params: { id: string } 
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 50vw, 25vw"
-                          unoptimized={true}
+                          unoptimized
+                          loading="eager"
                         />
                       </div>
                       {media.caption && (
@@ -176,11 +181,11 @@ export default async function ColorDetails({ params }: { params: { id: string } 
                 </h2>
                 <div className="space-y-4 text-data">
                   <p>- Specific Location: {color.location}</p>
-                  {color.coordinates && (
+                  {coordinates && (
                     <div className="pl-4">
                       <MapComponent 
-                        coordinates={typeof color.coordinates === 'string' ? JSON.parse(color.coordinates) : color.coordinates}
-                        boundary={color.bioregion?.boundary}
+                        coordinates={coordinates}
+                        boundary={boundary}
                       />
                     </div>
                   )}
