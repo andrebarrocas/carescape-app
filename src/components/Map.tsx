@@ -87,6 +87,7 @@ export default function Map({ colors }: MapProps) {
         minZoom={2}
         maxZoom={8}
         onClick={() => setHoveredColor(null)}
+        boxClassname="w-full h-full"
       >
         {colors.map((color) => {
           if (!color.coordinates) return null;

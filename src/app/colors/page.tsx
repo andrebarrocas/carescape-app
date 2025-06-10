@@ -60,7 +60,6 @@ export default function ColorsPage() {
         throw new Error('Failed to submit color');
       }
 
-      // Fetch colors again to update the list
       await fetchColors();
       router.refresh();
     } catch (error) {
@@ -119,11 +118,17 @@ export default function ColorsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-8">
+    <div className="min-h-screen bg-[#FFFCF5]">
+      <div className="container mx-auto px-4 py-8">
+        <div className="relative mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">Colors</h1>
+            <div className="flex-1">
+              <h1 className="text-4xl font-serif text-[#2C3E50] mb-2">Colors</h1>
+              <p className="font-mono text-sm text-[#2C3E50] opacity-80">
+                Explore and document natural colors from around the world
+              </p>
+            </div>
+            
             <div className="flex items-center gap-4">
               <div className="relative">
                 <input
@@ -131,60 +136,82 @@ export default function ColorsPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search colors..."
-                  className="w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-64 px-4 py-2 border-2 border-[#2C3E50] rounded-none bg-transparent font-mono text-sm focus:outline-none focus:ring-1 focus:ring-[#2C3E50]"
                 />
               </div>
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-2 px-4 py-2 text-[#2C3E50] hover:bg-[#2C3E50] hover:text-[#FFFCF5] border-2 border-[#2C3E50] transition-colors font-mono text-sm"
               >
-                <Filter className="w-5 h-5" />
+                <Filter className="w-4 h-4" />
                 Filters
               </button>
             </div>
           </div>
 
           {isFilterOpen && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-6 border-2 border-[#2C3E50] bg-[#FFFCF5]">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Color Name</label>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">Color Name</label>
                 <input
                   type="text"
                   value={filters.color}
                   onChange={(e) => setFilters({ ...filters, color: e.target.value })}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border-2 border-[#2C3E50] bg-transparent font-mono text-sm"
                   placeholder="Filter by color name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Source Material</label>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">Source Material</label>
                 <input
                   type="text"
                   value={filters.source}
                   onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border-2 border-[#2C3E50] bg-transparent font-mono text-sm"
                   placeholder="Filter by source"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">Location</label>
                 <input
                   type="text"
                   value={filters.place}
                   onChange={(e) => setFilters({ ...filters, place: e.target.value })}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border-2 border-[#2C3E50] bg-transparent font-mono text-sm"
                   placeholder="Filter by location"
                 />
               </div>
             </div>
           )}
+          
+          {/* Add Color Button - Fixed Position */}
+          <div className="fixed bottom-8 right-8 z-50">
+            <AddColorButton onSubmit={handleColorSubmit} />
+          </div>
         </div>
 
         {/* Loading State */}
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto"></div>
-            <p className="mt-4 text-gray-500">Loading colors...</p>
+            <div className="relative w-12 h-12 mx-auto">
+              <svg className="animate-spin" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="#2C3E50"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="#2C3E50"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            </div>
+            <p className="mt-4 font-mono text-sm text-[#2C3E50]">Loading colors...</p>
           </div>
         ) : (
           <>
@@ -201,14 +228,12 @@ export default function ColorsPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-500">No colors found matching your criteria.</p>
+                <p className="font-mono text-[#2C3E50]">No colors found</p>
               </div>
             )}
           </>
         )}
       </div>
-
-      <AddColorButton onSubmit={handleColorSubmit} />
     </div>
   );
 } 

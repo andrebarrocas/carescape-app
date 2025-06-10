@@ -8,6 +8,8 @@ import { ToastProvider } from '@/components/ui/toast';
 import AddColorButton from '@/components/AddColorButton';
 import { MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import ColorSubmissionForm from '@/components/ColorSubmissionForm';
 
 export default function MapPage() {
   const [mounted, setMounted] = useState(false);
@@ -21,6 +23,7 @@ export default function MapPage() {
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -90,8 +93,26 @@ export default function MapPage() {
     setFilteredColors(filtered);
   };
 
-  const handleAddColor = () => {
-    router.push('/colors/new');
+  const handleSubmit = async (data: any) => {
+    try {
+      const response = await fetch('/api/colors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit color');
+      }
+
+      setIsFormOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error('Error submitting color:', error);
+      throw error;
+    }
   };
 
   if (!mounted) {
@@ -99,36 +120,36 @@ export default function MapPage() {
   }
 
   return (
-    <ToastProvider>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white">
-          <div className="container mx-auto px-4 py-12">
-            <h1 className="text-4xl font-bold mb-4">Caring Dictionary of Landscape Colors</h1>
-            <p className="text-lg opacity-90">Explore natural colors by their geographic origins</p>
+    <main className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="space-y-4">
+            <h1 className="font-serif text-4xl text-[#2C3E50]">Color Map</h1>
+            <p className="font-mono text-sm text-[#2C3E50] max-w-2xl">
+              Explore the geographic distribution of natural colors across the world. Each point represents a documented color and its origin.
+            </p>
           </div>
-        </div>
 
-        {/* Search and Filters */}
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          {/* Search and Filters */}
+          <div className="border-2 border-[#2C3E50] p-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2C3E50]" />
                 <input
                   type="text"
                   placeholder="Search colors, materials, or locations..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                 />
               </div>
 
               {/* Filter Button */}
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="flex items-center gap-2 px-6 py-3 border-2 border-[#2C3E50] font-mono text-sm hover:bg-[#2C3E50] hover:text-white transition-colors"
               >
                 <Filter className="w-5 h-5" />
                 <span>Filters</span>
@@ -137,34 +158,34 @@ export default function MapPage() {
 
             {/* Filter Panel */}
             {isFilterOpen && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t-2 border-[#2C3E50]">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Color Name</label>
+                  <label className="block font-mono text-sm text-[#2C3E50] mb-2">Color Name</label>
                   <input
                     type="text"
                     value={filters.color}
                     onChange={(e) => setFilters({ ...filters, color: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                     placeholder="Filter by color name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Source Material</label>
+                  <label className="block font-mono text-sm text-[#2C3E50] mb-2">Source Material</label>
                   <input
                     type="text"
                     value={filters.source}
                     onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                     placeholder="Filter by source"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <label className="block font-mono text-sm text-[#2C3E50] mb-2">Location</label>
                   <input
                     type="text"
                     value={filters.place}
                     onChange={(e) => setFilters({ ...filters, place: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                     placeholder="Filter by location"
                   />
                 </div>
@@ -172,21 +193,37 @@ export default function MapPage() {
             )}
           </div>
 
-          {/* Loading State */}
-          {isLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto"></div>
-              <p className="mt-4 text-gray-500">Loading colors...</p>
-            </div>
-          ) : (
-            <div className="h-[calc(100vh-24rem)] rounded-xl overflow-hidden shadow-lg">
-              <Map colors={filteredColors} />
-            </div>
-          )}
-        </div>
+          {/* Map Container */}
+          <div className="border-2 border-[#2C3E50] overflow-hidden h-[calc(50vh-12rem)] min-h-[300px] relative">
+            {isLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-white">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-[#2C3E50] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="font-mono text-sm text-[#2C3E50]">Loading colors...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="absolute inset-0">
+                <Map colors={filteredColors} />
+              </div>
+            )}
+          </div>
 
-        <AddColorButton />
+          {/* Add Color Button - Fixed Position */}
+          <div className="fixed bottom-8 right-8 z-50">
+            <AddColorButton onSubmit={handleSubmit} />
+          </div>
+        </div>
       </div>
-    </ToastProvider>
+
+      {/* Color Submission Form Modal */}
+      {isFormOpen && (
+        <ColorSubmissionForm
+          isOpen={isFormOpen}
+          onSubmit={handleSubmit}
+          onClose={() => setIsFormOpen(false)}
+        />
+      )}
+    </main>
   );
 } 

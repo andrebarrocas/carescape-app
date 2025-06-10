@@ -8,10 +8,10 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { Map as PigeonMap, Marker } from 'pigeon-maps';
 import { Upload, X, Camera, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const colorSubmissionSchema = z.object({
   name: z.string().min(1, 'Color name is required'),
-  hex: z.string().regex(/^#[0-9A-F]{6}$/i, 'Invalid hex color'),
   description: z.string().min(1, 'Description is required'),
   location: z.string().min(1, 'Location is required'),
   coordinates: z.object({
@@ -32,6 +32,7 @@ const colorSubmissionSchema = z.object({
     filename: z.string(),
     mimetype: z.string(),
     type: z.enum(['outcome', 'landscape', 'process']),
+    caption: z.string().optional(),
   })).optional(),
 });
 
@@ -53,6 +54,13 @@ interface MediaFile {
   file: File;
   type: 'outcome' | 'landscape' | 'process';
   preview: string;
+  caption: string;
+}
+
+interface ProcessImage {
+  file: File;
+  preview: string;
+  caption: string;
 }
 
 // Add maptiler provider for better map tiles
@@ -69,13 +77,15 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   const router = useRouter();
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([40, -74.5]);
-  const [mapZoom, setMapZoom] = useState(9);
+  const [mapZoom, setMapZoom] = useState(3);
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const [processImages, setProcessImages] = useState<ProcessImage[]>([]);
+  const [currentCaption, setCurrentCaption] = useState('');
 
   const {
     register,
@@ -86,15 +96,16 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   } = useForm<ColorSubmissionForm>({
     resolver: zodResolver(colorSubmissionSchema),
     defaultValues: {
-      hex: '#000000',
       type: 'pigment',
       season: 'Spring',
     }
   });
 
   const handleMapClick = useCallback((coords: { lat: number; lng: number }) => {
-    setSelectedLocation([coords.lat, coords.lng]);
-    setMapCenter([coords.lat, coords.lng]);
+    const newLocation: [number, number] = [coords.lat, coords.lng];
+    setSelectedLocation(newLocation);
+    setMapCenter(newLocation);
+    setMapZoom(6);
     setValue('coordinates', coords);
     
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`)
@@ -146,12 +157,13 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   const handleSuggestionClick = (suggestion: LocationSuggestion) => {
     const lat = parseFloat(suggestion.lat);
     const lng = parseFloat(suggestion.lon);
+    const newLocation: [number, number] = [lat, lng];
     
     setValue('location', suggestion.display_name);
     setValue('coordinates', { lat, lng });
-    setSelectedLocation([lat, lng]);
-    setMapCenter([lat, lng]);
-    setMapZoom(12);
+    setSelectedLocation(newLocation);
+    setMapCenter(newLocation);
+    setMapZoom(6);
     setShowSuggestions(false);
   };
 
@@ -169,34 +181,54 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'outcome' | 'landscape' | 'process') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files) return;
 
-    // Create a preview URL
-    const preview = URL.createObjectURL(file);
+    // Handle multiple files for process type
+    if (type === 'process') {
+      Array.from(files).forEach(async (file) => {
+        const preview = URL.createObjectURL(file);
+        const newMedia: MediaFile = {
+          file,
+          type,
+          preview,
+          caption: '',
+        };
+        setMediaFiles(prev => [...prev, newMedia]);
+      });
+    } else {
+      // For outcome and landscape, only handle one file
+      const file = files[0];
+      const preview = URL.createObjectURL(file);
 
-    // If it's an outcome image, generate hex code
-    if (type === 'outcome') {
-      const hex = await getAverageColor(file);
-      setValue('hex', hex);
+      // If it's an outcome image, generate hex code
+      if (type === 'outcome') {
+        const hex = await getAverageColor(file);
+        // Store hex code in mediaUploads metadata instead of a separate field
+        const newMedia: MediaFile = {
+          file,
+          type,
+          preview,
+          caption: hex, // Store hex in caption for outcome image
+        };
+        setMediaFiles(prev => [...prev, newMedia]);
+      } else {
+        const newMedia: MediaFile = {
+          file,
+          type,
+          preview,
+          caption: '',
+        };
+        setMediaFiles(prev => [...prev, newMedia]);
+      }
     }
-
-    // Create a new media file object
-    const newMedia: MediaFile = {
-      file,
-      preview,
-      type,
-    };
-
-    // Add to media files
-    setMediaFiles(prev => [...prev, newMedia]);
   };
 
   const getAverageColor = async (file: File): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise<string>((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        const img = document.createElement('img');
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -245,173 +277,176 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleCaptionChange = (index: number, caption: string) => {
+    setMediaFiles(prev => {
+      const newFiles = [...prev];
+      newFiles[index] = { ...newFiles[index], caption };
+      return newFiles;
+    });
+  };
+
+  const handleProcessImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const preview = URL.createObjectURL(file);
+    setProcessImages(prev => [...prev, { file, preview, caption: '' }]);
+  };
+
+  const handleProcessImageCaptionChange = (index: number, caption: string) => {
+    setProcessImages(prev => prev.map((img, i) => 
+      i === index ? { ...img, caption } : img
+    ));
+  };
+
+  const handleRemoveProcessImage = (index: number) => {
+    setProcessImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleFormSubmit = async (data: ColorSubmissionForm) => {
+    setSubmitting(true);
     try {
-      if (!selectedLocation) {
-        throw new Error('Please select a location on the map');
-      }
+      // Upload media files first
+      const mediaUploadPromises = mediaFiles.map(async (media) => {
+        const formData = new FormData();
+        formData.append('file', media.file);
+        formData.append('type', media.type);
+        if (media.caption) {
+          formData.append('caption', media.caption);
+        }
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload media');
+        }
+        
+        return response.json();
+      });
+
+      const uploadedMedia = await Promise.all(mediaUploadPromises);
       
-      setSubmitting(true);
-      
-      // First, upload all media files
-      const mediaUploads = await Promise.all(
-        mediaFiles.map(async (media) => {
-          const formData = new FormData();
-          formData.append('file', new Blob([media.file], { type: media.file.type }));
-          formData.append('type', media.type);
-          
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to upload media');
-          }
-          
-          const uploadedMedia = await response.json();
-          return {
-            id: uploadedMedia.id,
-            filename: uploadedMedia.filename,
-            mimetype: uploadedMedia.mimetype,
-            type: uploadedMedia.type
-          };
-        })
-      );
-
-      // Create materials and processes arrays
-      const materials = [{
-        name: data.sourceMaterial,
-        partUsed: 'whole', // Default value
-        originNote: data.description,
-      }];
-
-      const processes = [{
-        technique: data.type,
-        application: data.application || data.type,
-        notes: data.process,
-      }];
-
-      // Then submit the color data with media files
+      // Add uploaded media to form data
       const formData = {
         ...data,
-        materials,
-        processes,
-        mediaUploads,
-        coordinates: { lat: selectedLocation[0], lng: selectedLocation[1] }
+        mediaUploads: uploadedMedia,
       };
 
       await onSubmit(formData);
       onClose();
-      router.refresh(); // Refresh the page after successful submission
     } catch (error) {
-      console.error('Error submitting color:', error);
-      throw error;
+      console.error('Error submitting form:', error);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={onClose}>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-[90vw] max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
-          <Dialog.Title className="text-2xl font-bold mb-6">Color Submission Form</Dialog.Title>
-          
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
-            {/* 1. Color Name */}
+        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
+          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+            <div className="flex justify-between items-start">
+              <Dialog.Title className="text-2xl font-serif text-[#2C3E50]">
+                Add New Color
+              </Dialog.Title>
+              <Dialog.Close className="text-[#2C3E50] hover:text-[#2C3E50]/80">
+                <X className="w-6 h-6" />
+              </Dialog.Close>
+            </div>
+
+            {/* Basic Information */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">1. Color Name</h2>
               <div>
-                <label className="block text-sm font-medium mb-1">What would you call this color?</label>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">
+                  Color Name
+                </label>
                 <input
                   {...register('name')}
-                  className="w-full border rounded-md p-2"
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                   placeholder="Enter color name"
                 />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+                {errors.name && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.name.message}</p>
+                )}
               </div>
-            </div>
 
-            {/* 2. Color Outcome */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">2. Color Outcome</h2>
-              <div className="border rounded-md p-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(e, 'outcome')}
-                  className="hidden"
-                  id="outcome-upload"
-                />
-                <label
-                  htmlFor="outcome-upload"
-                  className="flex flex-col items-center justify-center border-2 border-dashed rounded-md p-6 cursor-pointer hover:bg-gray-50"
-                >
-                  <Camera className="w-8 h-8 mb-2 text-gray-400" />
-                  <span className="text-sm text-gray-600">Upload photo of the final color</span>
-                  <span className="text-xs text-gray-400 mt-1">Hex code will be generated automatically</span>
-                </label>
-                {mediaFiles.filter(f => f.type === 'outcome').map((file, i) => (
-                  <div key={i} className="relative mt-4">
-                    <img 
-                      src={file.preview} 
-                      alt="Color outcome" 
-                      className="w-full object-cover rounded-md"
-                      style={{ height: '160px' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile(i)}
-                      className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 3. Origins */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">3. Origins</h2>
               <div>
-                <label className="block text-sm font-medium mb-1">Describe landscape, place or environment</label>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">
+                  Description
+                </label>
                 <textarea
                   {...register('description')}
-                  className="w-full border rounded-md p-2"
-                  rows={3}
-                  placeholder="Describe the environment where you found this color"
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[100px]"
+                  placeholder="Describe the color and its significance"
                 />
-                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
+                {errors.description && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.description.message}</p>
+                )}
               </div>
-              
+
+              <div>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">
+                  Source Material
+                </label>
+                <input
+                  {...register('sourceMaterial')}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                  placeholder="Enter source material"
+                />
+                {errors.sourceMaterial && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.sourceMaterial.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">
+                  Type
+                </label>
+                <select
+                  {...register('type')}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                >
+                  <option value="pigment">Pigment</option>
+                  <option value="dye">Dye</option>
+                  <option value="ink">Ink</option>
+                </select>
+                {errors.type && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.type.message}</p>
+                )}
+              </div>
+
               <div className="relative">
-                <label className="block text-sm font-medium mb-1">Location</label>
+                <label className="block font-mono text-sm text-[#2C3E50] mb-2">
+                  Location
+                </label>
                 <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2C3E50] w-4 h-4" />
                   <input
                     {...register('location')}
                     onChange={handleLocationInput}
-                    className="w-full border rounded-md p-2 pr-10"
-                    placeholder="Search for a location"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                    placeholder="Search for a location..."
                   />
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 </div>
-                {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location.message}</p>}
-                {errors.coordinates && <p className="text-red-500 text-sm mt-1">Please select a location on the map</p>}
-                
+                {errors.location && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.location.message}</p>
+                )}
+                {/* Location suggestions dropdown */}
                 {showSuggestions && locationSuggestions.length > 0 && (
-                  <div 
+                  <div
                     ref={suggestionsRef}
-                    className="absolute z-10 w-full bg-white mt-1 rounded-md shadow-lg border max-h-60 overflow-y-auto"
+                    className="absolute z-10 w-full mt-1 bg-white border-2 border-[#2C3E50] max-h-60 overflow-auto"
                   >
                     {locationSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
                         type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                        className="w-full p-2 text-left hover:bg-gray-100 font-mono text-sm"
                         onClick={() => handleSuggestionClick(suggestion)}
                       >
                         {suggestion.display_name}
@@ -419,213 +454,163 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                     ))}
                   </div>
                 )}
-              </div>
-
-              <div className="h-60 rounded-md overflow-hidden border">
-                <PigeonMap
-                  provider={osmProvider}
-                  center={mapCenter}
-                  zoom={mapZoom}
-                  onClick={({ latLng }) => handleMapClick({ lat: latLng[0], lng: latLng[1] })}
-                  animate={true}
-                >
-                  {selectedLocation && (
-                    <Marker
-                      width={50}
-                      anchor={selectedLocation}
-                      color={watch('hex') || '#000000'}
-                    />
-                  )}
-                </PigeonMap>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Landscape Photo</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(e, 'landscape')}
-                  className="hidden"
-                  id="landscape-upload"
-                />
-                <label
-                  htmlFor="landscape-upload"
-                  className="flex items-center justify-center border-2 border-dashed rounded-md p-4 cursor-pointer hover:bg-gray-50"
-                >
-                  <Upload className="w-6 h-6 mr-2" />
-                  <span>Upload photo of landscape</span>
-                </label>
-                
-                {/* Display landscape photos */}
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  {mediaFiles
-                    .filter(file => file.type === 'landscape')
-                    .map((file, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={file.preview}
-                          alt="Landscape"
-                          className="w-full object-cover rounded-md"
-                          style={{ 
-                            height: mediaFiles.find(f => f.type === 'outcome') ? '160px' : '160px' // Match the height of outcome photo
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFile(mediaFiles.findIndex(f => f === file))}
-                          className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                {/* Map for location selection */}
+                <div className="mt-4 h-[300px] border-2 border-[#2C3E50] rounded-lg overflow-hidden">
+                  <PigeonMap
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    defaultCenter={[40, -74.5]}
+                    defaultZoom={3}
+                    minZoom={2}
+                    maxZoom={8}
+                    onClick={({ latLng }) => handleMapClick({ lat: latLng[0], lng: latLng[1] })}
+                    boxClassname="w-full h-full"
+                  >
+                    {selectedLocation && (
+                      <Marker
+                        width={50}
+                        anchor={selectedLocation}
+                        color="#2C3E50"
+                        className="cursor-pointer transition-transform hover:scale-110"
+                      />
+                    )}
+                  </PigeonMap>
                 </div>
               </div>
-            </div>
 
-            {/* 4. Process */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">4. Process</h2>
-              <div>
-                <label className="block text-sm font-medium mb-1">Source Material</label>
-                <input
-                  {...register('sourceMaterial')}
-                  className="w-full border rounded-md p-2"
-                  placeholder="What material did you use?"
-                />
-                {errors.sourceMaterial && <p className="text-red-500 text-sm mt-1">{errors.sourceMaterial.message}</p>}
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block font-mono text-sm text-[#2C3E50]">Application (optional)</label>
+                  <input
+                    {...register('application')}
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Type</label>
-                <select {...register('type')} className="w-full border rounded-md p-2">
-                  <option value="pigment">Pigment</option>
-                  <option value="dye">Dye</option>
-                  <option value="ink">Ink</option>
-                </select>
-                {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type.message}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Application (optional)</label>
-                <input
-                  {...register('application')}
-                  className="w-full border rounded-md p-2"
-                  placeholder="How was the color applied?"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Process / Recipe</label>
-                <textarea
-                  {...register('process')}
-                  className="w-full border rounded-md p-2"
-                  rows={4}
-                  placeholder="How did you gather and prepare your color?"
-                />
-                {errors.process && <p className="text-red-500 text-sm mt-1">{errors.process.message}</p>}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Season</label>
-                  <select {...register('season')} className="w-full border rounded-md p-2">
+                <div className="space-y-2">
+                  <label className="block font-mono text-sm text-[#2C3E50]">Season</label>
+                  <select
+                    {...register('season')}
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                  >
                     <option value="Spring">Spring</option>
                     <option value="Summer">Summer</option>
-                    <option value="Fall">Fall</option>
+                    <option value="Autumn">Autumn</option>
                     <option value="Winter">Winter</option>
                   </select>
-                  {errors.season && <p className="text-red-500 text-sm mt-1">{errors.season.message}</p>}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Date Collected</label>
+                <div className="space-y-2">
+                  <label className="block font-mono text-sm text-[#2C3E50]">Date Collected</label>
                   <input
-                    type="date"
                     {...register('dateCollected')}
-                    className="w-full border rounded-md p-2"
+                    type="date"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                   />
-                  {errors.dateCollected && <p className="text-red-500 text-sm mt-1">{errors.dateCollected.message}</p>}
                 </div>
               </div>
             </div>
 
-            {/* 5. Media Uploads */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">5. Media Uploads (Optional)</h2>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Photos of process and materials, final results, foraging and landscape, drawings,
-                  other related inspiring material
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => handleFileUpload(e, 'process')}
-                  className="hidden"
-                  id="process-upload"
-                />
-                <label
-                  htmlFor="process-upload"
-                  className="flex items-center justify-center border-2 border-dashed rounded-md p-6 cursor-pointer hover:bg-gray-50"
-                >
-                  <Upload className="w-8 h-8 mr-2" />
-                  <span>Upload additional photos</span>
-                </label>
-              </div>
-            </div>
+            {/* Media Upload Section */}
+            <div className="space-y-6">
+              <h3 className="font-serif text-xl text-[#2C3E50]">Media Upload</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Outcome Image Upload */}
+                <div className="space-y-2">
+                  <span className="font-mono text-sm text-[#2C3E50] block">Color Outcome</span>
+                  <div className="max-w-[300px]">
+                    <label className="block w-full aspect-square border-2 border-[#2C3E50] relative cursor-pointer group">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'outcome')}
+                        className="hidden"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
+                      </div>
+                    </label>
+                  </div>
+                  <p className="font-mono text-xs text-[#2C3E50]">Upload an image to generate the hex color code</p>
+                </div>
 
-            {/* 6. Personal Data */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">6. Personal Data</h2>
-              <div>
-                <label className="block text-sm font-medium mb-1">Name or pseudonym (optional)</label>
-                <input
-                  {...register('pseudonym')}
-                  className="w-full border rounded-md p-2"
-                  placeholder="Enter your name or pseudonym"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
-                <input
-                  {...register('email')}
-                  className="w-full border rounded-md p-2"
-                  type="email"
-                  placeholder="Enter your email"
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+                {/* Landscape Image Upload */}
+                <div className="space-y-2">
+                  <span className="font-mono text-sm text-[#2C3E50] block">Landscape Photo</span>
+                  <div className="max-w-[300px]">
+                    <label className="block w-full aspect-square border-2 border-[#2C3E50] relative cursor-pointer group">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'landscape')}
+                        className="hidden"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
+                      </div>
+                    </label>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  {...register('agreeToTerms')}
-                  id="terms"
-                  className="rounded border-gray-300"
-                />
-                <label htmlFor="terms" className="text-sm">
-                  I agree to the terms and conditions
+              {/* Media Images Upload */}
+              <div className="space-y-4">
+                <span className="font-mono text-sm text-[#2C3E50] block">Media Images</span>
+                <label className="block cursor-pointer group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleFileUpload(e, 'process')}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-2 px-6 py-3 border-2 border-[#2C3E50] font-mono text-sm hover:bg-[#2C3E50] hover:text-white transition-colors">
+                    <Upload className="w-5 h-5" />
+                    <span>Add Images</span>
+                  </div>
                 </label>
-                {errors.agreeToTerms && <p className="text-red-500 text-sm">{errors.agreeToTerms.message}</p>}
+
+                {mediaFiles.filter(m => m.type === 'process').length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {mediaFiles
+                      .filter(m => m.type === 'process')
+                      .map((media, index) => (
+                        <div key={index} className="space-y-4">
+                          <div className="relative aspect-square border-2 border-[#2C3E50]">
+                            <Image
+                              src={media.preview}
+                              alt={`Media image ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFile(index)}
+                              className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg"
+                            >
+                              <X className="w-4 h-4 text-[#2C3E50]" />
+                            </button>
+                          </div>
+                          <textarea
+                            placeholder="Add caption..."
+                            value={media.caption}
+                            onChange={(e) => handleCaptionChange(index, e.target.value)}
+                            className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm resize-none focus:outline-none"
+                            rows={4}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end space-x-2 pt-4 border-t">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
+            <div className="flex justify-end pt-6">
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-2 bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 text-white rounded-md hover:opacity-90 disabled:opacity-50 transition-all duration-200"
+                className="px-6 py-3 bg-[#2C3E50] text-white font-mono text-sm hover:bg-opacity-90 transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Submitting...' : 'Submit Color'}
               </button>
@@ -635,4 +620,4 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       </Dialog.Portal>
     </Dialog.Root>
   );
-} 
+}

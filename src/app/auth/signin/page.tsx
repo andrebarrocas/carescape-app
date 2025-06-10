@@ -39,33 +39,28 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-start justify-center pt-2 pb-4 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FFFCF5] flex items-start justify-center pt-2 pb-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 relative" style={{ marginTop: '2%' }}>
-        {/* Background Effects */}
+        {/* Background Pattern */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-sky-500/20 via-blue-500/20 to-cyan-500/20 backdrop-blur-3xl" />
-          <motion.div
-            className="absolute -inset-[100px] opacity-50"
-            animate={{
-              background: [
-                'linear-gradient(0deg, #0EA5E9 0%, #0284C7 50%, #0C4A6E 100%)',
-                'linear-gradient(120deg, #0C4A6E 0%, #0EA5E9 50%, #0284C7 100%)',
-                'linear-gradient(240deg, #0284C7 0%, #0C4A6E 50%, #0EA5E9 100%)',
-              ],
-            }}
-            transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse' }}
-            style={{ filter: 'blur(100px)' }}
-          />
+          <svg width="100%" height="100%" className="absolute inset-0 opacity-5">
+            <pattern id="lupi-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="20" r="1" fill="#2C3E50" />
+              <line x1="0" y1="20" x2="40" y2="20" stroke="#2C3E50" strokeWidth="0.5" />
+              <line x1="20" y1="0" x2="20" y2="40" stroke="#2C3E50" strokeWidth="0.5" />
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#lupi-pattern)" />
+          </svg>
         </div>
 
         {/* Content */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 relative z-10">
+        <div className="border-2 border-[#2C3E50] bg-[#FFFCF5] p-8 relative z-10">
           <div className="text-center">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500"
+              className="font-serif text-3xl text-[#2C3E50] tracking-wide"
             >
               Start Coloring
             </motion.h2>
@@ -73,7 +68,7 @@ export default function SignInPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="mt-2 text-gray-600"
+              className="mt-2 font-mono text-sm text-[#2C3E50] opacity-80"
             >
               Sign in to continue your color journey
             </motion.p>
@@ -92,7 +87,7 @@ export default function SignInPage() {
                   Email address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2C3E50] w-5 h-5 opacity-80" />
                   <input
                     id="email"
                     name="email"
@@ -101,7 +96,7 @@ export default function SignInPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent placeholder-gray-400"
+                    className="block w-full pl-10 pr-3 py-3 border-2 border-[#2C3E50] font-mono text-sm text-[#2C3E50] bg-transparent focus:outline-none focus:ring-1 focus:ring-[#2C3E50]"
                     placeholder="Email address"
                   />
                 </div>
@@ -111,7 +106,7 @@ export default function SignInPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2C3E50] w-5 h-5 opacity-80" />
                   <input
                     id="password"
                     name="password"
@@ -120,7 +115,7 @@ export default function SignInPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent placeholder-gray-400"
+                    className="block w-full pl-10 pr-3 py-3 border-2 border-[#2C3E50] font-mono text-sm text-[#2C3E50] bg-transparent focus:outline-none focus:ring-1 focus:ring-[#2C3E50]"
                     placeholder="Password"
                   />
                 </div>
@@ -131,7 +126,7 @@ export default function SignInPage() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-red-500 text-sm text-center"
+                className="font-mono text-sm text-red-500 text-center"
               >
                 {error}
               </motion.p>
@@ -141,10 +136,10 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-white bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-all duration-200"
+                className="w-full flex items-center justify-center px-4 py-3 border-2 border-[#2C3E50] text-[#2C3E50] hover:bg-[#2C3E50] hover:text-[#FFFCF5] transition-colors duration-200 font-mono text-sm"
               >
                 {isLoading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     Sign in
@@ -161,11 +156,11 @@ export default function SignInPage() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-6 text-center"
           >
-            <p className="text-sm text-gray-600">
+            <p className="font-mono text-sm text-[#2C3E50] opacity-80">
               Don't have an account?{' '}
               <Link
                 href="/auth/signup"
-                className="font-medium text-sky-500 hover:text-sky-400 transition-colors duration-200"
+                className="font-mono text-[#2C3E50] hover:opacity-60 transition-opacity duration-200 border-b-2 border-[#2C3E50]"
               >
                 Sign up
               </Link>

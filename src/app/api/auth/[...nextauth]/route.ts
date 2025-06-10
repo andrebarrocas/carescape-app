@@ -51,34 +51,39 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials, req) {
-        if (!credentials?.email || !credentials?.password) {
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('Missing credentials');
+          }
+
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
+
+          if (!user?.password) {
+            throw new Error('User not found');
+          }
+
+          const isPasswordValid = await compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            throw new Error('Invalid password');
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            pseudonym: user.pseudonym || undefined,
+            name: null,
+            image: null,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
           return null;
         }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
-        if (!user?.password) {
-          return null;
-        }
-
-        const isPasswordValid = await compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          pseudonym: user.pseudonym || undefined,
-          name: null,
-          image: null,
-        };
       }
     }),
   ],
@@ -86,22 +91,41 @@ const handler = NextAuth({
     signIn: '/auth/signin',
     error: '/auth/error',
   },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-        // Set pseudonym as email username if not set
-        if (!user.pseudonym) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { pseudonym: user.email?.split('@')[0] || 'Anonymous' },
+    async session({ session, token, user }) {
+      try {
+        if (session.user) {
+          session.user.id = token.sub || user.id;
+          const dbUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { pseudonym: true, email: true },
           });
+          
+          if (dbUser && !dbUser.pseudonym) {
+            await prisma.user.update({
+              where: { id: session.user.id },
+              data: { pseudonym: dbUser.email?.split('@')[0] || 'Anonymous' },
+            });
+          }
+          session.user.pseudonym = dbUser?.pseudonym || dbUser?.email?.split('@')[0] || 'Anonymous';
         }
-        session.user.pseudonym = user.pseudonym || user.email?.split('@')[0] || 'Anonymous';
+        return session;
+      } catch (error) {
+        console.error('Session callback error:', error);
+        return session;
       }
-      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
     },
   },
-})
+});
 
 export { handler as GET, handler as POST }; 

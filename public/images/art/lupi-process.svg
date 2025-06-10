@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .annotation { font-family: 'Courier New', monospace; font-size: 12px; fill: #2C3E50; }
+    .process-line { fill: none; stroke: #2C3E50; stroke-width: 1; }
+    .process-point { fill: #2C3E50; }
+  </style>
+  
+  <!-- Process visualization -->
+  <g transform="translate(50, 50)">
+    <!-- Process timeline -->
+    <line class="process-line" x1="0" y1="150" x2="700" y2="150"/>
+    
+    <!-- Process points -->
+    <g transform="translate(100, 150)">
+      <circle class="process-point" r="3"/>
+      <line class="process-line" x1="0" y1="-20" x2="0" y2="20"/>
+      <text class="annotation" x="-30" y="40">Collection</text>
+      <path class="process-line" d="M -10 -30 Q 0 -40, 10 -30" />
+    </g>
+    
+    <g transform="translate(300, 150)">
+      <circle class="process-point" r="3"/>
+      <line class="process-line" x1="0" y1="-20" x2="0" y2="20"/>
+      <text class="annotation" x="-30" y="40">Processing</text>
+      <rect x="-15" y="-40" width="30" height="20" fill="none" stroke="#2C3E50" stroke-width="1"/>
+    </g>
+    
+    <g transform="translate(500, 150)">
+      <circle class="process-point" r="3"/>
+      <line class="process-line" x1="0" y1="-20" x2="0" y2="20"/>
+      <text class="annotation" x="-20" y="40">Creation</text>
+      <circle cx="0" cy="-30" r="15" fill="none" stroke="#2C3E50" stroke-width="1"/>
+    </g>
+  </g>
+  
+  <!-- Annotations -->
+  <g transform="translate(50, 300)">
+    <text class="annotation">
+      <tspan x="0" y="0">A systematic approach to</tspan>
+      <tspan x="0" y="20">natural color creation</tspan>
+    </text>
+  </g>
+</svg> 

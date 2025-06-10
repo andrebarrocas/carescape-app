@@ -44,9 +44,15 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
   const router = useRouter();
 
   const getDisplayImage = () => {
-    if (!color.mediaUploads?.length) return null;
-    const landscapeImage = color.mediaUploads.find(m => m.type === 'landscape');
-    return landscapeImage || color.mediaUploads[0];
+    if (!color.mediaUploads || !Array.isArray(color.mediaUploads) || color.mediaUploads.length === 0) {
+      return null;
+    }
+
+    // Try to find a non-landscape image first
+    const mainImage = color.mediaUploads.find(m => m.type !== 'landscape' && m.url);
+    
+    // If no non-landscape image found, use any image
+    return mainImage?.url || color.mediaUploads[0]?.url || null;
   };
 
   const handleDelete = async () => {
@@ -79,11 +85,17 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-200 group relative">
+      <div 
+        className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-200 group relative cursor-pointer"
+        onClick={() => router.push(`/colors/${color.id}`)}
+      >
         <div className="relative aspect-square">
           {/* Delete button - visible on hover */}
           <button
-            onClick={() => setShowDeleteDialog(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDeleteDialog(true);
+            }}
             className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
             <X className="w-4 h-4 text-red-500" />
@@ -92,7 +104,7 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
           {displayImage && !imageError ? (
             <div className="relative w-full h-full">
               <Image
-                src={displayImage.url}
+                src={displayImage}
                 alt={color.name}
                 fill
                 className="object-cover rounded-t-xl"
@@ -119,16 +131,16 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
           />
         </div>
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-gray-900">{color.name}</h3>
-          <p className="text-sm text-gray-500 mt-1">
+          <h3 className="font-serif text-2xl tracking-wide text-[#2C3E50] border-b-2 border-[#2C3E50] inline-block pb-1">{color.name}</h3>
+          <p className="font-mono text-xs text-[#2C3E50] mt-3 opacity-80">
             {color.materials.map(m => m.name).join(', ')}
           </p>
-          <p className="text-sm text-gray-500">{color.location}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <p className="font-mono text-xs text-[#2C3E50] opacity-80">{color.location}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
             {color.processes.map(p => (
               <span
                 key={p.id}
-                className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                className="inline-block px-2 py-1 text-xs font-mono bg-[#FFFCF5] text-[#2C3E50] border-2 border-[#2C3E50]"
               >
                 {p.technique.charAt(0).toUpperCase() + p.technique.slice(1)} - {p.application}
               </span>

@@ -11,15 +11,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String        @id @default(cuid())
+  name          String?
+  email         String       @unique
+  emailVerified DateTime?
+  image         String?
   pseudonym     String?
   password      String?   // Hashed password for credentials provider
   colors        Color[]
+  comments      Comment[]
   accounts      Account[] // Relation to accounts for OAuth providers
   sessions      Session[] // Relation to sessions
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@map("users")
 }
@@ -61,6 +65,8 @@ model Color {
   description   String
   location      String
   coordinates   String?       // JSON string with lat/lng
+  bioregion     String?      // AI-generated bioregion description
+  bioregionMap  String?      // URL to the bioregion map image
   season        String
   dateCollected DateTime
   userId        String
@@ -68,6 +74,7 @@ model Color {
   materials     Material[]
   processes     Process[]
   mediaUploads  MediaUpload[]
+  comments      Comment[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -109,6 +116,7 @@ model MediaUpload {
   mimetype    String
   type        String   // 'process', 'outcome', or 'landscape'
   data        Bytes    // Binary data of the file
+  caption     String?  // Caption for the image
   colorId     String?  // Make colorId optional for initial upload
   color       Color?   @relation(fields: [colorId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
@@ -116,4 +124,21 @@ model MediaUpload {
 
   @@map("media_uploads")
   @@index([colorId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  colorId   String
+  color     Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  mediaId   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+  @@index([colorId])
+  @@index([userId])
+  @@index([mediaId])
 } 

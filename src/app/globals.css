@@ -64,6 +64,10 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 192 70% 51%;
   }
+
+  .font-handwritten {
+    font-family: var(--font-caveat), cursive;
+  }
 }
 
 @layer base {
@@ -86,4 +90,28 @@
   button {
     @apply transition-transform duration-200 hover:scale-105;
   }
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
 }
