@@ -99,8 +99,8 @@ export default async function ColorDetails({
       getColorDetails(id)
     ]);
 
-    // Separate media by type
-    const landscapeImage = color.mediaUploads.find(media => media.type === 'landscape');
+    // Separate media by type - check for both landscape and outcome types
+    const mainImage = color.mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome');
     const processImages = color.mediaUploads.filter(media => media.type === 'process');
 
     // Parse coordinates for the map
@@ -132,12 +132,12 @@ export default async function ColorDetails({
               </div>
 
                {/* Main Landscape Image */}
-               {landscapeImage && (
+               {mainImage && (
                 <div className="mb-8">
                   <div className="relative w-full aspect-[4/3] bg-white rounded-lg overflow-hidden">
                     <Image
-                      src={`/api/images/${landscapeImage.id}`}
-                      alt={landscapeImage.caption || 'Landscape'}
+                      src={`/api/images/${mainImage.id}`}
+                      alt={mainImage.caption || 'Landscape'}
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 50vw"
@@ -146,9 +146,9 @@ export default async function ColorDetails({
                       loading="eager"
                     />
                   </div>
-                  {landscapeImage.caption && (
+                  {mainImage.caption && (
                     <p className="mt-2 font-handwritten text-base text-[#2C3E50]/80">
-                      {landscapeImage.caption}
+                      {mainImage.caption}
                     </p>
                   )}
                 </div>
