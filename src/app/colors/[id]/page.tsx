@@ -5,7 +5,9 @@ import { format } from 'date-fns';
 import { prisma } from '@/lib/prisma';
 import { MapComponent } from '../../../components/MapComponent';
 import { ColorDetailsClient } from './ColorDetailsClient';
-import type { ExtendedColor, ColorWithRelations } from './types';
+import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
+import type { ExtendedColor, MediaUploadWithComments } from './types';
+import { Pencil } from 'lucide-react';
 
 async function getColorDetails(id: string): Promise<ExtendedColor> {
   // First, get the color with basic relations
@@ -40,7 +42,15 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
       const { data, ...mediaWithoutData } = media;
       return {
         ...mediaWithoutData,
-        comments
+        comments: comments.map(comment => ({
+          id: comment.id,
+          content: comment.content,
+          createdAt: comment.createdAt.toISOString(),
+          user: comment.user
+        })),
+        createdAt: mediaWithoutData.createdAt.toISOString(),
+        type: mediaWithoutData.type as 'outcome' | 'landscape' | 'process',
+        caption: mediaWithoutData.caption
       };
     })
   );
@@ -49,12 +59,32 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
   const bioregion = color.bioregion ? JSON.parse(color.bioregion) : null;
 
   return {
-    ...color,
+    id: color.id,
+    name: color.name,
+    hex: color.hex,
+    description: color.description,
+    location: color.location,
+    coordinates: color.coordinates,
     bioregion,
-    materials: color.materials,
-    processes: color.processes,
-    mediaUploads: mediaUploadsWithComments
-  } as ExtendedColor;
+    dateCollected: color.dateCollected.toISOString(),
+    season: color.season,
+    materials: color.materials.map(m => ({
+      ...m,
+      createdAt: m.createdAt.toISOString(),
+      updatedAt: m.updatedAt.toISOString()
+    })),
+    processes: color.processes.map(p => ({
+      ...p,
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString()
+    })),
+    mediaUploads: mediaUploadsWithComments,
+    createdAt: color.createdAt.toISOString(),
+    updatedAt: color.updatedAt.toISOString(),
+    userId: color.userId,
+    sourceMaterial: color.materials[0]?.name || '',
+    type: color.processes[0]?.technique as 'pigment' | 'dye' | 'ink'
+  };
 }
 
 export default async function ColorDetails({ 
@@ -186,42 +216,32 @@ export default async function ColorDetails({
             </div>
             {/* Right Column - Color Info and Images */}
             <div className="space-y-6">
-
               {/* Process Images */}
               {processImages.length > 0 && (
                 <div className="grid grid-cols-2 gap-6">
                   {processImages.map(media => (
                     <div key={media.id} className="relative">
-                      <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden">
-                        <Image
-                          src={`/api/images/${media.id}`}
-                          alt={media.caption || 'Process image'}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 50vw, 25vw"
-                          unoptimized
-                          loading="eager"
-                        />
-                      </div>
-                      {media.caption && (
-                        <p className="mt-2 font-handwritten text-sm text-[#2C3E50]/80">
-                          {media.caption}
-                        </p>
-                      )}
+                      <ImageGalleryWrapper
+                        media={{
+                          ...media,
+                          colorId: color.id
+                        }}
+                      />
                     </div>
                   ))}
                 </div>
               )}
             </div>
-
-
           </div>
         </div>
       </main>
     );
 
     return (
-      <ColorDetailsClient mediaUploads={color.mediaUploads}>
+      <ColorDetailsClient 
+        color={color}
+        mediaUploads={color.mediaUploads}
+      >
         {content}
       </ColorDetailsClient>
     );

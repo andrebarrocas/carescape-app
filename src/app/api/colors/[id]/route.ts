@@ -63,21 +63,21 @@ type ExtendedColor = Color & {
 
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
-  const { id } = await context.params;
-
   try {
+    const { id } = context.params;
+
     // Delete the color and all related records (cascade delete is set up in schema)
     await prisma.color.delete({
       where: { id },
     });
 
-    return NextResponse.json({ message: 'Color deleted successfully' });
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Error deleting color:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete color' },
+    return new NextResponse(
+      error instanceof Error ? error.message : 'Error deleting color',
       { status: 500 }
     );
   }
@@ -141,5 +141,67 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching color:', error);
     return new NextResponse('Error fetching color', { status: 500 });
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  context: { params: { id: string } }
+) {
+  try {
+    const { id } = context.params;
+    const data = await request.json();
+
+    // Update the color
+    const color = await prisma.color.update({
+      where: { id },
+      data: {
+        name: data.name,
+        description: data.description,
+        location: data.location,
+        season: data.season,
+        materials: {
+          updateMany: {
+            where: {},
+            data: {
+              name: data.material.name,
+              partUsed: data.material.partUsed,
+              originNote: data.material.originNote,
+            },
+          },
+        },
+        processes: {
+          updateMany: {
+            where: {},
+            data: {
+              technique: data.process.technique,
+              application: data.process.application,
+              notes: data.process.notes,
+            },
+          },
+        },
+      },
+      include: {
+        materials: true,
+        processes: true,
+        mediaUploads: {
+          select: {
+            id: true,
+            filename: true,
+            mimetype: true,
+            type: true,
+            caption: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(color);
+  } catch (error) {
+    console.error('Error updating color:', error);
+    return new NextResponse(
+      error instanceof Error ? error.message : 'Error updating color',
+      { status: 500 }
+    );
   }
 } 

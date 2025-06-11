@@ -35,62 +35,56 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
+    const { id: colorId } = context.params;
     const { content, mediaId } = await request.json();
-    if (!content || !mediaId) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
 
-    // Verify that the media belongs to the color
-    const media = await prisma.mediaUpload.findFirst({
-      where: {
-        id: mediaId,
-        colorId: params.id
+    // Get or create anonymous user if no session
+    let userId = session?.user?.id;
+    if (!userId) {
+      const anonymousUser = await prisma.user.findFirst({
+        where: { email: 'anonymous@carespace.app' }
+      });
+
+      if (!anonymousUser) {
+        const newAnonymousUser = await prisma.user.create({
+          data: {
+            email: 'anonymous@carespace.app',
+            name: 'Anonymous User',
+          }
+        });
+        userId = newAnonymousUser.id;
+      } else {
+        userId = anonymousUser.id;
       }
-    });
-
-    if (!media) {
-      return NextResponse.json(
-        { error: 'Media not found or does not belong to this color' },
-        { status: 404 }
-      );
     }
 
+    // Create the comment
     const comment = await prisma.comment.create({
       data: {
         content,
-        colorId: params.id,
+        colorId,
         mediaId,
-        userId: session.user.id
+        userId,
       },
       include: {
         user: {
           select: {
             name: true,
-            image: true
-          }
-        }
-      }
+            image: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json(comment);
   } catch (error) {
     console.error('Error creating comment:', error);
-    return NextResponse.json(
-      { error: 'Failed to create comment' },
+    return new NextResponse(
+      error instanceof Error ? error.message : 'Error creating comment',
       { status: 500 }
     );
   }
