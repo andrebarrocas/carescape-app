@@ -48,7 +48,7 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
           {/* Image Section */}
-          <div className="w-full md:w-2/3 relative bg-black flex items-center">
+          <div className="w-full md:w-2/3 relative bg-white flex items-center">
             <div className="relative w-full aspect-square">
               <Image
                 src={`/api/images/${media.id}`}
@@ -102,20 +102,20 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
             </div>
 
             {/* Add Comment Form */}
-            <form onSubmit={handleSubmit} className="p-4 border-t bg-gray-50">
-              <div className="flex gap-2">
+            <form onSubmit={handleSubmit} className="p-4 border-t bg-gray-50 w-full">
+              <div className="flex items-center">
                 <input
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#2C3E50]/20"
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#2C3E50]/20"
                   disabled={isSubmitting}
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting || !newComment.trim()}
-                  className="bg-[#2C3E50] text-white px-4 py-2 rounded-lg hover:bg-[#2C3E50]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="ml-2 mr-2 bg-[#2C3E50] text-white px-4 py-2 rounded-lg hover:bg-[#2C3E50]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {isSubmitting ? 'Posting...' : 'Post'}
                 </button>
@@ -126,4 +126,4 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
       </div>
     </div>
   );
-} 
+}
