@@ -7,7 +7,7 @@ import { MapComponent } from '../../../components/MapComponent';
 import { ColorDetailsClient } from './ColorDetailsClient';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import type { ExtendedColor, MediaUploadWithComments } from './types';
-import { Pencil } from 'lucide-react';
+import { EditButton } from './EditButton';
 
 async function getColorDetails(id: string): Promise<ExtendedColor> {
   // First, get the color with basic relations
@@ -115,15 +115,20 @@ export default async function ColorDetails({
               <div className="relative">
               {/* Title */}
               <div className="mb-12">
-                <h1 className="font-handwritten text-6xl text-[#2C3E50] mb-3 leading-tight">
-                  {color.name}
-                </h1>
-                <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
-                  by {session?.user?.name || 'Anonymous'}
-                </p>
-                <p className="font-handwritten text-lg text-[#2C3E50]/60">
-                  {format(new Date(color.dateCollected), 'MMMM d, yyyy')}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="font-handwritten text-6xl text-[#2C3E50] mb-3 leading-tight">
+                      {color.name}
+                    </h1>
+                    <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
+                      by {session?.user?.name || 'Anonymous'}
+                    </p>
+                    <p className="font-handwritten text-lg text-[#2C3E50]/60">
+                      {format(new Date(color.dateCollected), 'MMMM d, yyyy')}
+                    </p>
+                  </div>
+                  <EditButton />
+                </div>
               </div>
 
                {/* Main Landscape Image */}
