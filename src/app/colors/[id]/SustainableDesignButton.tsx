@@ -4,6 +4,7 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Palette, X } from "lucide-react";
 import PigmentAnalysis from "@/components/PigmentAnalysis";
+import { Leaf } from 'lucide-react'
 
 interface SustainableDesignButtonProps {
   color: string;
@@ -27,14 +28,23 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
           <span className="font-handwritten text-[#2C3E50]">Sustainable Design</span>
         </button>
       </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-        <Dialog.Content className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{fontFamily:'Caveat, cursive'}}>
-          <Dialog.Title>Sustainable Design Chat</Dialog.Title>
-          <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
-          <PigmentAnalysis {...props} />
-        </Dialog.Content>
-      </Dialog.Portal>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+          <Dialog.Content className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{ fontFamily: 'Caveat, cursive' }}>
+            
+            {/* Title with Icon */}
+            <div className="flex items-center space-x-2 text-black">
+              <Leaf className="w-6 h-6" />
+              <Dialog.Title>Sustainable Design Chat</Dialog.Title>
+            </div>
+
+            <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setOpen(false)}>
+              <X className="w-5 h-5" strokeWidth={1.2} />
+            </button>
+            
+            <PigmentAnalysis {...props} />
+          </Dialog.Content>
+        </Dialog.Portal>
     </Dialog.Root>
   );
 } 

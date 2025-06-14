@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface Message {
@@ -20,60 +19,93 @@ interface PigmentAnalysisProps {
   bioregion: string;
 }
 
-export default function PigmentAnalysis({ color, hex, location, materials, date, season, bioregion }: PigmentAnalysisProps) {
+export default function PigmentAnalysis({
+  color,
+  hex,
+  location,
+  materials,
+  date,
+  season,
+  bioregion,
+}: PigmentAnalysisProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Compose a context string for the pigment
+  const hasGeneratedInitial = useRef(false); // prevents multiple runs
+
   const pigmentContext = `Pigment/Color: ${color} (${hex})\nSource Material: ${materials}\nLocation: ${location}\nDate Collected: ${date}\nSeason: ${season}\nBioregion: ${bioregion}`;
 
-  // On first load, generate a contextual AI message
   useEffect(() => {
-    if (!messages.length && color && hex && materials) {
-      const initialPrompt = `This pigment/color sample has the following details:\n${pigmentContext}\n\nPlease provide sustainable design inspiration and ideas for using this pigment or color in an eco-friendly way.\nInclude:\n1. Sustainable applications in design\n2. Ethical considerations\n3. Potential implementation methods\n4. Visual design suggestions\n\nRespond as if you are an expert in sustainable design, and ask a follow-up question to continue the conversation. Example: "This red pigment from Gelidium seaweed, collected in the Estremoz region during Spring, reflects both the coastal bioregion and seasonal abundance. You could design bioplastic packaging dyed with this pigment, intended for short-lifecycle products, such as coastal herb seed kits, aligning with local biodiversity and circular use. Ethically, consider limiting collection to post-bloom material and involving local marine stewards. Would you like a recipe for creating bioplastic using this pigment?"`;
-      generateResponse(initialPrompt, true, true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (hasGeneratedInitial.current || !color || !hex || !materials) return;
+
+    const initialPrompt = `You are a sustainable design expert.
+
+This pigment/color sample has the following details:
+${pigmentContext}
+
+Respond with a short, poetic and expert-level suggestion for eco-friendly use of this pigment. Format your response as:
+
+1. A poetic description of the pigment and place.
+2. A sustainable design idea using this pigment.
+3. An ethical consideration.
+4. A follow-up question.
+
+Respond in under 4 sentences.`;
+
+    generateResponse(initialPrompt, true, true);
+    hasGeneratedInitial.current = true;
   }, [color, hex, materials]);
 
-  // Generate a response from the AI, optionally as the initial system message
-  const generateResponse = async (prompt: string, isInitial = false, isStyledInitial = false) => {
+  const generateResponse = async (
+    prompt: string,
+    isInitial = false,
+    isStyledInitial = false
+  ) => {
     setIsLoading(true);
     setError(null);
+
     try {
       const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
       if (!apiKey) {
         setError('Google Generative AI API key is missing. Please set NEXT_PUBLIC_GEMINI_API_KEY in your environment.');
-        setIsLoading(false);
         return;
       }
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' });
 
-      // For follow-up messages, include the pigment context and chat history
-      let fullPrompt = '';
-      if (!isInitial) {
-        fullPrompt = `Pigment/Color Context:\n${pigmentContext}\n\nConversation so far:\n`;
-        messages.forEach((msg) => {
-          fullPrompt += `${msg.role === 'user' ? 'Designer' : 'Agent'}: ${msg.content}\n`;
-        });
-        fullPrompt += `Designer: ${prompt}\nAgent:`;
-      } else {
-        fullPrompt = prompt;
-      }
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: 'models/gemini-1.5-flash',
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 300,
+          topP: 1,
+          topK: 40,
+        },
+      });
+
+      const fullPrompt = isInitial
+        ? prompt
+        : `Pigment/Color Context:\n${pigmentContext}\n\nConversation so far:\n` +
+          messages.map(msg => `${msg.role === 'user' ? 'Designer' : 'Agent'}: ${msg.content}`).join('\n') +
+          `\nDesigner: ${prompt}\nAgent:`;
 
       const result = await model.generateContent(fullPrompt);
       const response = await result.response;
-      const text = response.text();
+      const text = response.text().trim();
 
-      // Add user message and AI response to chat
-      setMessages(prev => [
-        ...prev,
-        ...(isInitial ? [] : [{ role: 'user' as const, content: prompt }]),
-        { role: 'assistant' as const, content: text, styled: isStyledInitial }
-      ]);
+      const newMessages: Message[] = isInitial
+        ? [{ role: 'assistant', content: text, styled: isStyledInitial }]
+        : [
+            { role: 'user', content: prompt },
+            { role: 'assistant', content: text, styled: false },
+          ];
+
+      setMessages(prev => {
+        // avoid duplicate assistant messages
+        if (isInitial && prev.some(m => m.role === 'assistant' && m.content === text)) return prev;
+        return [...prev, ...newMessages];
+      });
     } catch (err: any) {
       setError('Error generating response: ' + (err?.message || 'Unknown error'));
     } finally {
@@ -84,47 +116,43 @@ export default function PigmentAnalysis({ color, hex, location, materials, date,
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+
     const userMessage = input;
     setInput('');
-    // Show user message immediately
-    setMessages(prev => [...prev, { role: 'user' as const, content: userMessage }]);
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     await generateResponse(userMessage);
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-white rounded-lg shadow-md p-6">
         <div className="space-y-6 mb-6">
           {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[80%] rounded-lg p-4 ${
+                className={`max-w-[80%] whitespace-pre-line rounded-xl p-4 leading-relaxed shadow ${
                   message.role === 'user'
-                    ? 'bg-[#2C3E50] text-white'
-                    : message.styled
-                      ? 'bg-[#FEFAE0] border-2 border-[#D4A373] text-[#2C3E50] shadow-lg'
-                      : 'bg-gray-100 text-gray-900'
-                }`}
-                style={message.styled ? { fontStyle: 'italic', fontSize: '1.1rem' } : {}}
+                    ? 'bg-[#2C3E50] text-white self-end'
+                    : 'bg-[#F9FAFB] text-gray-800 border border-gray-200'
+                } ${message.styled ? 'italic' : ''}`}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p>{message.content}</p>
               </div>
             </div>
           ))}
+
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg p-4">
-                <p className="text-gray-500">Generating response...</p>
+              <div className="bg-gray-100 rounded-xl p-4 text-gray-500 shadow-inner">
+                Generating response...
               </div>
             </div>
           )}
+
           {error && (
             <div className="flex justify-start">
-              <div className="bg-red-100 rounded-lg p-4">
-                <p className="text-red-500">{error}</p>
+              <div className="bg-red-100 rounded-xl p-4 text-red-600 shadow">
+                {error}
               </div>
             </div>
           )}
@@ -136,13 +164,13 @@ export default function PigmentAnalysis({ color, hex, location, materials, date,
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about sustainable design ideas..."
-            className="flex-1 p-3 border-2 border-[#2C3E50] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
+            className="flex-1 p-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-[#2C3E50] text-white hover:bg-[#1A252F] transition disabled:opacity-50"
           >
             Send
           </button>
@@ -150,4 +178,4 @@ export default function PigmentAnalysis({ color, hex, location, materials, date,
       </div>
     </div>
   );
-} 
+}
