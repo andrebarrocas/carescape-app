@@ -8,6 +8,7 @@ import { ColorDetailsClient } from './ColorDetailsClient';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import type { ExtendedColor, MediaUploadWithComments } from './types';
 import { EditButton } from './EditButton';
+import MenuAndBreadcrumbs from '@/components/MenuAndBreadcrumbs';
 
 async function getColorDetails(id: string): Promise<ExtendedColor> {
   // First, get the color with basic relations
@@ -108,8 +109,12 @@ export default async function ColorDetails({
     const boundary = color.bioregion?.boundary?.coordinates?.[0]?.map(([lng, lat]) => [lat, lng]) as [number, number][] | undefined;
 
     const content = (
-      <main className="min-h-screen bg-[#FFFCF5] py-12">
+      <main className="min-h-screen bg-[#FFFCF5] py-12 pt-24">
+        <MenuAndBreadcrumbs colorName={color.name} />
         <div className="max-w-[1800px] mx-auto px-8">
+          <div className="flex justify-end mb-6">
+            <a href="/pigment-analysis" className="px-6 py-3 bg-[#D4A373] text-[#2C3E50] rounded-lg font-mono text-lg shadow hover:bg-[#b98a5a] transition-colors border-2 border-[#2C3E50]">Pigment Analysis</a>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {/* Left Column - Color Information */}
               <div className="relative">

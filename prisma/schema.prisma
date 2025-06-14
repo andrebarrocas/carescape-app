@@ -62,11 +62,12 @@ model Color {
   id            String        @id @default(cuid())
   name          String
   hex           String
-  description   String
+  description   String?       @db.Text
+  aiDescription String?       @db.Text
   location      String
   coordinates   String?       // JSON string with lat/lng
-  bioregion     String?      // AI-generated bioregion description
-  bioregionMap  String?      // URL to the bioregion map image
+  bioregion     String?       // AI-generated bioregion description
+  bioregionMap  String?       // URL to the bioregion map image
   season        String
   dateCollected DateTime
   userId        String
@@ -77,6 +78,7 @@ model Color {
   comments      Comment[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  bioregionId   String?
 
   @@map("colors")
   @@index([userId])

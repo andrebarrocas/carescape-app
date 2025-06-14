@@ -9,28 +9,19 @@ export interface Color {
   id: string;
   name: string;
   hex: string;
-  description: string;
+  description?: string;
+  aiDescription?: string;
   location: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  } | null;
-  bioregion?: string;
-  bioregionMap?: string;
-  season: string;
-  dateCollected: string;
+  coordinates?: string;
+  dateCollected: Date;
+  createdAt: Date;
+  updatedAt: Date;
   userId: string;
-  author?: string;
-  type: 'pigment' | 'dye' | 'ink';
-  sourceMaterial: string;
-  application?: string;
-  process: string;
   materials: Material[];
   processes: Process[];
   mediaUploads: MediaUpload[];
-  comments: Comment[];
-  createdAt: string;
-  updatedAt: string;
+  bioregion?: Bioregion;
+  bioregionId?: string;
 }
 
 export interface Source {
@@ -109,4 +100,14 @@ export interface Comment {
     email: string;
   };
   updatedAt: string;
+}
+
+export interface Bioregion {
+  id: string;
+  name: string;
+  description?: string;
+  coordinates?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  colors: Color[];
 } 

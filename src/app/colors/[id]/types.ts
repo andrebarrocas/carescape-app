@@ -11,7 +11,7 @@ export interface Comment {
 }
 
 export interface MediaUploadWithComments extends Omit<MediaUpload, 'data'> {
-  colorId: string;
+  colorId: string | null;
   comments: Comment[];
   createdAt: string;
   type: 'outcome' | 'landscape' | 'process';
@@ -23,6 +23,7 @@ export interface ExtendedColor {
   name: string;
   hex: string;
   description: string;
+  aiDescription?: string;
   location: string;
   coordinates: string | null;
   bioregion: {

@@ -120,7 +120,7 @@ export default function MapPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white pt-24">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Header */}
@@ -215,15 +215,6 @@ export default function MapPage() {
           </div>
         </div>
       </div>
-
-      {/* Color Submission Form Modal */}
-      {isFormOpen && (
-        <ColorSubmissionForm
-          isOpen={isFormOpen}
-          onSubmit={handleSubmit}
-          onClose={() => setIsFormOpen(false)}
-        />
-      )}
     </main>
   );
 } 

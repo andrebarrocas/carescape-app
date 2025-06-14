@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from 'next/font/google';
+import { Inter, Caveat } from 'next/font/google';
 import "./globals.css";
-import ClientLayout from '@/components/ClientLayout';
-import { Caveat } from 'next/font/google';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/components/AuthProvider';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import ClientMenuAndBreadcrumbs from '@/components/ClientMenuAndBreadcrumbs';
 
 const inter = Inter({ subsets: ["latin"] });
 const caveat = Caveat({
   subsets: ["latin"],
-  display: "swap",
   variable: '--font-caveat',
 });
 
@@ -29,18 +30,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} ${caveat.variable} bg-background text-primary`}>
-        <div 
-          className="min-h-screen"
-          style={{
-            backgroundImage: 'url(/images/lupi-background.svg)',
-            backgroundRepeat: 'repeat',
-            backgroundSize: '800px',
-          }}
-        >
-          <ClientLayout>{children}</ClientLayout>
-        </div>
+    <html lang="en" suppressHydrationWarning>
+      <body 
+        className={`${inter.className} ${caveat.variable} bg-[#FFFCF5] text-primary`}
+        suppressHydrationWarning
+      >
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+          >
+            <ClientMenuAndBreadcrumbs />
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

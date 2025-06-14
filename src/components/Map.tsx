@@ -1,254 +1,269 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { Map as PigeonMap, Marker } from 'pigeon-maps';
+import { useState, useRef } from 'react';
+import MapGL, { Marker, NavigationControl, Popup } from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { ColorSubmission } from '@/types/colors';
 import Image from 'next/image';
+import { Menu, X, Plus } from 'lucide-react';
+import ColorSubmissionForm from '@/components/ColorSubmissionForm';
+import { Caveat } from 'next/font/google';
+import { useRouter } from 'next/navigation';
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
 
 interface MapProps {
   colors: ColorSubmission[];
+  titleColor?: string;
 }
 
-interface MarkerEventProps {
-  event: MouseEvent;
-  anchor: [number, number];
-  payload: any;
+function parseCoordinates(coords: any): { lat: number; lng: number } | null {
+  if (!coords) return null;
+  if (typeof coords === 'string') {
+    try {
+      return JSON.parse(coords);
+    } catch {
+      return null;
+    }
+  }
+  if (typeof coords === 'object' && 'lat' in coords && 'lng' in coords) {
+    return coords as { lat: number; lng: number };
+  }
+  return null;
 }
 
-export default function Map({ colors }: MapProps) {
+export default function Map({ colors, titleColor }: MapProps) {
   const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const [tooltipDimensions, setTooltipDimensions] = useState({ width: 384, height: 400 }); // Default dimensions
-
-  useEffect(() => {
-    if (tooltipRef.current) {
-      const { offsetWidth, offsetHeight } = tooltipRef.current;
-      setTooltipDimensions({ width: offsetWidth, height: offsetHeight });
-    }
-  }, [hoveredColor]); // Update dimensions when hovered color changes
-
-  const getMarkerColor = (color: ColorSubmission) => {
-    return color.hex || '#6B7280';
-  };
-
-  const calculateTooltipPosition = (markerRect: DOMRect) => {
-    // Use actual tooltip dimensions if available, otherwise use defaults
-    const tooltipWidth = tooltipDimensions.width;
-    const tooltipHeight = tooltipDimensions.height;
-    
-    // Calculate centered position above marker
-    let x = markerRect.left + (markerRect.width / 2) - (tooltipWidth / 2);
-    let y = markerRect.top - tooltipHeight - 16; // 16px gap above marker
-
-    // Get viewport dimensions
-    const viewportWidth = window.innerWidth;
-    
-    // Ensure tooltip stays within horizontal bounds
-    if (x + tooltipWidth > viewportWidth - 20) {
-      x = viewportWidth - tooltipWidth - 20;
-    }
-    if (x < 20) {
-      x = 20;
-    }
-
-    // Ensure minimum distance from top of viewport
-    if (y < 20) {
-      y = 20;
-    }
-
-    return { x, y };
-  };
-
-  const handleMarkerHover = (color: ColorSubmission) => ({ event }: MarkerEventProps) => {
-    const target = event.target as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    
-    // Calculate position immediately with current dimensions
-    const position = calculateTooltipPosition(rect);
-    
-    // Update state in a single batch
-    setHoveredColor(color);
-    setTooltipPosition(position);
-  };
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [homeOverlay, setHomeOverlay] = useState(true);
+  const mapRef = useRef<any>(null);
+  const [showColorForm, setShowColorForm] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
+  const [showFullDetails, setShowFullDetails] = useState(false);
+  const router = useRouter();
+  const [showColorsView, setShowColorsView] = useState(false);
 
   const getColorImage = (color: ColorSubmission) => {
     if (!color.mediaUploads?.length) return null;
-    const landscapeImage = color.mediaUploads.find(media => media.type === 'landscape');
-    return landscapeImage ? landscapeImage.url : color.mediaUploads[0].url;
+    const landscapeImage = color.mediaUploads.find(media => (media.type === 'landscape') && 'url' in media);
+    if (landscapeImage && 'url' in landscapeImage) return (landscapeImage as any).url;
+    const firstWithUrl = color.mediaUploads.find(media => 'url' in media);
+    return firstWithUrl ? (firstWithUrl as any).url : null;
   };
 
-  return (
-    <div className="relative w-full h-full" ref={mapContainerRef}>
-      <PigeonMap
-        defaultCenter={[40, -74.5]}
-        defaultZoom={3}
-        minZoom={2}
-        maxZoom={8}
-        onClick={() => setHoveredColor(null)}
-        boxClassname="w-full h-full"
-      >
-        {colors.map((color) => {
-          if (!color.coordinates) return null;
-          const coords = [color.coordinates.lat, color.coordinates.lng] as [number, number];
+  // Overlay/modal handlers
+  const openColors = () => {
+    setHomeOverlay(false);
+    setMenuOpen(false);
+    // TODO: Show colors overlay/modal
+  };
+  const openAbout = () => {
+    setHomeOverlay(false);
+    setMenuOpen(false);
+    // TODO: Show about overlay/modal
+  };
+  const goHome = () => {
+    setHomeOverlay(true);
+    setMenuOpen(false);
+    setHoveredColor(null);
+    // TODO: Hide overlays
+  };
 
+  const colorCoords = colors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
+  const defaultCenter = colorCoords.length ? {
+    latitude: colorCoords.reduce((sum, c) => sum + c!.lat, 0) / colorCoords.length,
+    longitude: colorCoords.reduce((sum, c) => sum + c!.lng, 0) / colorCoords.length,
+    zoom: colorCoords.length === 1 ? 8 : 4
+  } : { latitude: 40, longitude: -74.5, zoom: 3 };
+  const [viewport, setViewport] = useState(defaultCenter);
+
+  return (
+    <div className="relative w-full h-full">
+      {/* Floating Hamburger Menu */}
+      <button
+        className="fixed top-6 left-6 z-50 bg-black/60 rounded-full p-3 shadow-lg hover:bg-black/80 transition-colors"
+        onClick={() => setMenuOpen(true)}
+        aria-label="Open menu"
+        style={{ display: menuOpen ? 'none' : 'block' }}
+      >
+        <Menu className="w-7 h-7 text-white" />
+      </button>
+      {/* Side Menu Overlay */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex" onClick={()=>setMenuOpen(false)}>
+          <div className="w-72 bg-[#FFFCF5] h-full p-10 flex flex-col gap-10 shadow-2xl rounded-r-3xl border-r-4 border-[#D4A373] relative" onClick={e=>e.stopPropagation()}>
+            <button className="absolute top-6 right-6 text-[#2C3E50] hover:text-[#D4A373] text-3xl" onClick={()=>setMenuOpen(false)} aria-label="Close menu"><X className="w-8 h-8" /></button>
+            <div className="mt-20">
+              <nav className="flex flex-col gap-4 bg-white/80 rounded-xl shadow p-6 border border-[#D4A373]">
+                <button onClick={goHome} className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">Home</button>
+                <button onClick={() => { setShowColorsView(true); setHomeOverlay(false); setMenuOpen(false); }} className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">Colors</button>
+                <button onClick={()=>{setShowFullDetails(true);setMenuOpen(false);}} className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">About</button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Home Overlay */}
+      {homeOverlay && (
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="text-center mb-12">
+            <h1
+              className={`text-5xl md:text-7xl mb-6 drop-shadow-lg ${caveat.className}`}
+              style={titleColor ? { color: titleColor } : {}}
+            >
+              CAreScape
+            </h1>
+            <p className="text-xl md:text-2xl font-mono text-white mb-8 drop-shadow">A visual journey through natural colors and their stories</p>
+          </div>
+          <div className="flex flex-col md:flex-row gap-8">
+            <button onClick={() => { setShowColorsView(true); setHomeOverlay(false); setMenuOpen(false); }} className="px-12 py-6 bg-[#D4A373] text-[#181c1f] text-2xl font-mono rounded-lg shadow-lg hover:bg-[#b98a5a] transition-colors border-2 border-[#fff]">Colors</button>
+            <button onClick={()=>{setShowFullDetails(true);setHomeOverlay(false);}} className="px-12 py-6 bg-[#E9EDC9] text-[#181c1f] text-2xl font-mono rounded-lg shadow-lg hover:bg-[#bfc7a1] transition-colors border-2 border-[#fff]">About</button>
+          </div>
+        </div>
+      )}
+
+      <MapGL
+        ref={mapRef}
+        initialViewState={viewport}
+        mapStyle={{
+          version: 8,
+          name: 'Giorgia Lupi Inspired',
+          sources: {
+            'mapbox-streets': {
+              type: 'vector',
+              url: 'mapbox://mapbox.mapbox-streets-v8'
+            }
+          },
+          sprite: 'mapbox://sprites/mapbox/light-v11',
+          glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+          layers: [
+            {
+              id: 'background',
+              type: 'background',
+              paint: {
+                'background-color': '#F5F5F0'
+              }
+            },
+            {
+              id: 'land',
+              type: 'background',
+              paint: {
+                'background-color': '#E8E8E0',
+                'background-pattern': 'pattern-dots'
+              }
+            },
+            {
+              id: 'water',
+              type: 'fill',
+              source: 'mapbox-streets',
+              'source-layer': 'water',
+              paint: {
+                'fill-color': '#D4E4E8',
+                'fill-opacity': 0.8
+              }
+            },
+            {
+              id: 'landuse',
+              type: 'fill',
+              source: 'mapbox-streets',
+              'source-layer': 'landuse',
+              paint: {
+                'fill-color': '#E8E8E0',
+                'fill-opacity': 0.6
+              }
+            },
+            {
+              id: 'roads',
+              type: 'line',
+              source: 'mapbox-streets',
+              'source-layer': 'road',
+              paint: {
+                'line-color': '#2C3E50',
+                'line-width': 1,
+                'line-opacity': 0.4
+              }
+            },
+            {
+              id: 'buildings',
+              type: 'fill',
+              source: 'mapbox-streets',
+              'source-layer': 'building',
+              paint: {
+                'fill-color': '#2C3E50',
+                'fill-opacity': 0.2
+              }
+            }
+          ]
+        }}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        style={{ width: '100%', height: '100%' }}
+        onMove={evt => setViewport(evt.viewState)}
+      >
+        <NavigationControl position="bottom-right" />
+        {colors.map((color) => {
+          const coords = parseCoordinates(color.coordinates);
+          if (!coords) return null;
+          const img = getColorImage(color);
           return (
             <Marker
               key={color.id}
-              width={50}
-              anchor={coords}
-              color={getMarkerColor(color)}
-              onMouseOver={handleMarkerHover(color)}
-              onMouseOut={() => setHoveredColor(null)}
-            />
-          );
-        })}
-      </PigeonMap>
-
-      {hoveredColor && (
-        <div 
-          ref={tooltipRef}
-          className="fixed z-50 w-96 bg-white rounded-xl shadow-2xl overflow-hidden"
-          style={{
-            top: `${tooltipPosition.y}px`,
-            left: `${tooltipPosition.x}px`,
-            opacity: 1,
-            transform: 'translateY(0)',
-            pointerEvents: 'auto',
-            transition: 'opacity 0.2s ease-out',
-          }}
-          onMouseEnter={(e) => {
-            e.stopPropagation();
-          }}
-          onMouseLeave={() => setHoveredColor(null)}
-        >
-          {/* Tooltip Arrow */}
-          <div 
-            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full"
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: `8px solid ${hoveredColor.hex}`,
-            }}
-          />
-
-          {/* Color Preview Banner */}
-          <div 
-            className="w-full h-3"
-            style={{ backgroundColor: hoveredColor.hex }}
-          />
-
-          <div className="p-4 max-h-[60vh] overflow-y-auto">
-            {/* Header with Cultural Context */}
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{hoveredColor.name}</h2>
-              {hoveredColor.location && (
-                <p className="text-sm text-gray-600 italic">
-                  Discovered in {hoveredColor.location}
-                </p>
-              )}
-            </div>
-
-            {/* Image and Color Information Grid */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              {/* Left Column: Image */}
-              {getColorImage(hoveredColor) && (
-                <div className="relative aspect-square rounded-lg overflow-hidden">
-                  <Image
-                    src={getColorImage(hoveredColor)!}
-                    alt={`Cultural context of ${hoveredColor.name}`}
-                    fill
-                    className="object-cover transition-transform hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 400px"
-                  />
-                </div>
-              )}
-
-              {/* Right Column: Color Story */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-12 h-12 rounded-lg shadow-lg transform hover:scale-110 transition-transform"
-                    style={{ backgroundColor: hoveredColor.hex }}
-                  />
-                  <div>
-                    <p className="font-mono text-sm">{hoveredColor.hex}</p>
-                    <p className="text-xs text-gray-500">HEX Code</p>
-                  </div>
-                </div>
-
-                {hoveredColor.description && (
-                  <p className="text-sm text-gray-700 italic leading-relaxed">
-                    "{hoveredColor.description}"
-                  </p>
+              longitude={coords.lng}
+              latitude={coords.lat}
+              anchor="bottom"
+              onClick={e => {
+                e.originalEvent.stopPropagation();
+                setSelectedColor(color);
+              }}
+            >
+              <div className="w-10 h-10 rounded-full border-4 border-white shadow-lg flex items-center justify-center cursor-pointer bg-white/80 hover:scale-110 transition-transform">
+                {img ? (
+                  <img src={img} alt={color.name} className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div style={{backgroundColor: color.hex}} className="w-8 h-8 rounded-full" />
                 )}
               </div>
-            </div>
-
-            {/* Cultural Elements */}
-            <div className="space-y-3">
-              {/* Materials */}
-              {hoveredColor.materials && hoveredColor.materials.length > 0 && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Traditional Materials</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {hoveredColor.materials.map((material) => (
-                      <span
-                        key={material.id}
-                        className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors"
-                      >
-                        {material.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Source Material */}
-              {hoveredColor.sourceMaterial && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Source Material</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors">
-                      {hoveredColor.sourceMaterial}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Processes */}
-              {hoveredColor.processes && hoveredColor.processes.length > 0 && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Cultural Techniques</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {hoveredColor.processes.map((process) => (
-                      <span
-                        key={process.id}
-                        className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors"
-                      >
-                        {process.application}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Type */}
-              {hoveredColor.type && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-gray-500 mb-1">Type</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="px-2 py-1 bg-gray-50 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors">
-                      {hoveredColor.type.charAt(0).toUpperCase() + hoveredColor.type.slice(1)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+            </Marker>
+          );
+        })}
+      </MapGL>
+      {/* Color submission modal */}
+      <ColorSubmissionForm
+        isOpen={showColorForm}
+        onClose={() => setShowColorForm(false)}
+        onSubmit={async () => { setShowColorForm(false); }}
+      />
+      {showColorsView && (
+        <button
+          className="fixed bottom-8 right-8 z-50 bg-[#D4A373] hover:bg-[#b98a5a] text-[#181c1f] rounded-full p-5 shadow-xl border-2 border-white flex items-center justify-center"
+          onClick={() => setShowColorForm(true)}
+          aria-label="Add new color"
+        >
+          <Plus className="w-8 h-8" />
+        </button>
+      )}
+      {selectedColor && (
+        <div className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white/95 shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-[#D4A373]" style={{fontFamily:'Caveat, cursive'}}>
+          <button className="absolute top-4 right-4 text-gray-500 hover:text-black" onClick={() => setSelectedColor(null)}><X className="w-6 h-6" /></button>
+          <div className="mb-6">
+            <h2 className="text-4xl font-handwritten text-[#2C3E50] mb-2">{selectedColor.name}</h2>
+            <p className="text-sm text-[#2C3E50]/70 italic mb-2">{selectedColor.location}</p>
           </div>
+          {getColorImage(selectedColor) && (
+            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-6">
+              <img src={getColorImage(selectedColor)!} alt={selectedColor.name} className="object-cover w-full h-full" />
+            </div>
+          )}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full border-2 border-[#D4A373]" style={{backgroundColor: selectedColor.hex}} />
+            <span className="font-mono text-lg text-[#2C3E50]">{selectedColor.hex}</span>
+          </div>
+          <blockquote className="text-xl font-handwritten text-[#2C3E50] mb-6">{selectedColor.description}</blockquote>
+          <button className="mt-4 px-6 py-3 bg-[#D4A373] text-[#181c1f] rounded-lg font-mono text-lg shadow hover:bg-[#b98a5a] transition-colors"
+            onClick={() => router.push(`/colors/${selectedColor.id}`)}>
+            View Full Details
+          </button>
         </div>
       )}
     </div>

@@ -71,7 +71,7 @@ export default function AboutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFCF5]">
+    <div className="min-h-screen bg-[#FFFCF5] pt-24">
       {/* Hero Section */}
       <section className="relative py-32 overflow-hidden">
         <DataPattern />

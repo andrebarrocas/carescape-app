@@ -107,85 +107,67 @@ async function imageUrlToBuffer(url: string): Promise<Buffer> {
   return Buffer.from(arrayBuffer);
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const data = await request.json();
+    const data = await req.json();
+    const {
+      name,
+      description,
+      aiDescription,
+      location,
+      coordinates,
+      hex,
+      sourceMaterial,
+      type,
+      application,
+      process,
+      season,
+      dateCollected,
+      mediaUploads,
+      userId,
+    } = data;
 
-    // Get or create the anonymous user
-    let anonymousUser = await prisma.user.findFirst({
-      where: { email: 'anonymous@carespace.app' }
-    });
-
-    if (!anonymousUser) {
-      anonymousUser = await prisma.user.create({
-        data: {
-          email: 'anonymous@carespace.app',
-          name: 'Anonymous User',
-        }
-      });
-    }
-    
-    // Create the color using the anonymous user
     const color = await prisma.color.create({
       data: {
-        name: data.name,
-        hex: data.hex,
-        description: data.description,
-        location: data.location,
-        coordinates: JSON.stringify(data.coordinates),
-        season: data.season,
-        dateCollected: new Date(data.dateCollected),
-        userId: anonymousUser.id,
+        name,
+        description,
+        aiDescription,
+        location,
+        coordinates: coordinates ? JSON.stringify(coordinates) : null,
+        hex,
+        dateCollected: new Date(dateCollected),
+        userId,
         materials: {
-          create: [{
-            name: data.sourceMaterial,
-            partUsed: data.application || 'Not specified',
-            originNote: data.process || 'Not specified'
-          }]
+          create: {
+            name: sourceMaterial,
+            partUsed: 'whole',
+            originNote: '',
+          },
         },
         processes: {
-          create: [{
-            technique: data.type,
-            application: data.application || 'Not specified',
-            notes: data.process
-          }]
-        }
-      }
+          create: {
+            technique: type,
+            application: application || '',
+            notes: process,
+          },
+        },
+        mediaUploads: mediaUploads ? {
+          create: mediaUploads.map((upload: any) => ({
+            filename: upload.filename,
+            mimetype: upload.mimetype,
+            type: upload.type,
+            caption: upload.caption,
+          })),
+        } : undefined,
+      },
     });
 
-    // Update media uploads with the color ID if any were provided
-    if (data.mediaUploads && data.mediaUploads.length > 0) {
-      await Promise.all(
-        data.mediaUploads.map((media: { id: string }) =>
-          prisma.mediaUpload.update({
-            where: { id: media.id },
-            data: { colorId: color.id }
-          })
-        )
-      );
-    }
-
-    // Return the created color with its media uploads
-    const createdColor = await prisma.color.findUnique({
-      where: { id: color.id },
-      include: {
-        materials: true,
-        processes: true,
-        mediaUploads: {
-          select: {
-            id: true,
-            filename: true,
-            mimetype: true,
-            type: true,
-            caption: true,
-          }
-        }
-      }
-    });
-
-    return NextResponse.json({ success: true, color: createdColor });
+    return NextResponse.json(color);
   } catch (error) {
     console.error('Error creating color:', error);
-    return new NextResponse(error instanceof Error ? error.message : 'Error creating color', { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create color' },
+      { status: 500 }
+    );
   }
 } 
