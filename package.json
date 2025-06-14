@@ -45,9 +45,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.57.0",
+    "react-map-gl": "^7.0.18",
     "tailwind-merge": "^3.3.0",
-    "zod": "^3.25.49",
-    "react-map-gl": "^7.0.18"
+    "zod": "^3.25.49"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -50,7 +50,7 @@ export default function PigmentAnalysis({ color, hex, location, materials, date,
         return;
       }
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' });
 
       // For follow-up messages, include the pigment context and chat history
       let fullPrompt = '';

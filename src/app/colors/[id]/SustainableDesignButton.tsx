@@ -30,6 +30,7 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
         <Dialog.Content className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{fontFamily:'Caveat, cursive'}}>
+          <Dialog.Title>Sustainable Design Chat</Dialog.Title>
           <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
           <PigmentAnalysis {...props} />
         </Dialog.Content>

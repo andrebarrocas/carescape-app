@@ -10,7 +10,7 @@ import ColorSubmissionForm from '@/components/ColorSubmissionForm';
 import { Caveat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import MenuAndBreadcrumbs from './MenuAndBreadcrumbs';
-
+import Link from "next/link";
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
 
@@ -83,12 +83,12 @@ export default function Map({ colors, titleColor }: MapProps) {
             >
               Colors
             </button>
-            <button
-              onClick={()=>{setShowFullDetails(true);setHomeOverlay(false);}}
-              className="px-12 py-6 bg-[#2C3E50] text-white text-2xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors"
+            <Link
+              href="/about"
+              className="px-12 py-6 bg-[#2C3E50] text-white text-2xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors text-center inline-block"
             >
               About
-            </button>
+            </Link>
           </div>
         </div>
       )}
