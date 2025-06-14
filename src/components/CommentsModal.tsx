@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Comment, MediaUploadWithComments } from '@/app/colors/[id]/types';
+import { X } from 'lucide-react';
 
 interface CommentsModalProps {
   media: MediaUploadWithComments;
@@ -31,19 +32,19 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur flex items-center justify-center z-50 p-4">
+      <div className="relative bg-white rounded-3xl max-w-lg w-full border border-[#2C3E50]/10 shadow-2xl p-10 flex flex-col items-center">
+        <button
+          onClick={onClose}
+          className="absolute -top-6 right-6 bg-black text-white rounded-full p-2 shadow-lg hover:bg-[#2C3E50] transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-6 h-6" strokeWidth={1.2} />
+        </button>
         {/* Header */}
-        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-          <h2 className="text-xl font-semibold text-[#2C3E50]">
-            {media.caption || 'Image Details'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-[#2C3E50] hover:text-[#2C3E50]/80 p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            ✕
-          </button>
+        <div className="w-full text-center mb-8">
+          <h2 className="font-handwritten text-3xl text-[#2C3E50] mb-2">{media.caption || 'Image Details'}</h2>
+          <div className="mx-auto w-16 h-1 bg-[#D4A373] rounded-full" />
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
@@ -115,7 +116,7 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                 <button
                   type="submit"
                   disabled={isSubmitting || !newComment.trim()}
-                  className="ml-2 mr-2 bg-[#2C3E50] text-white px-4 py-2 rounded-lg hover:bg-[#2C3E50]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="ml-2 mr-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Posting...' : 'Post'}
                 </button>

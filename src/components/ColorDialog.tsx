@@ -35,13 +35,13 @@ export default function ColorDialog({ isOpen, onOpenChange }: ColorDialogProps) 
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
+        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto border-2 border-black">
           <div className="flex items-center justify-between mb-6">
-            <Dialog.Title className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-500">
+            <Dialog.Title className="text-2xl font-bold text-black">
               Submit a New Color
             </Dialog.Title>
-            <Dialog.Close className="rounded-full p-1.5 hover:bg-gray-100">
-              <X className="h-5 w-5" />
+            <Dialog.Close className="rounded-full p-1.5 hover:bg-black/5">
+              <X className="h-5 w-5 text-black" />
             </Dialog.Close>
           </div>
           <ColorSubmissionForm

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Globe, Palette, Heart, Leaf, Users, ArrowRight, Circle, Square, Triangle } from 'lucide-react';
 import Link from 'next/link';
+import MenuAndBreadcrumbs from '@/components/MenuAndBreadcrumbs';
 
 const DataPattern = () => (
   <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none">
@@ -72,6 +73,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFCF5] pt-24">
+      <MenuAndBreadcrumbs />
       {/* Hero Section */}
       <section className="relative py-32 overflow-hidden">
         <DataPattern />

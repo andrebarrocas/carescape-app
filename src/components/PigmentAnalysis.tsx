@@ -10,21 +10,21 @@ interface Message {
   styled?: boolean;
 }
 
-export default function PigmentAnalysis() {
+interface PigmentAnalysisProps {
+  color: string;
+  hex: string;
+  location: string;
+  materials: string;
+  date: string;
+  season: string;
+  bioregion: string;
+}
+
+export default function PigmentAnalysis({ color, hex, location, materials, date, season, bioregion }: PigmentAnalysisProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-
-  // Extract color/material context from query params
-  const color = searchParams.get('color') || '';
-  const hex = searchParams.get('hex') || '';
-  const location = searchParams.get('location') || '';
-  const materials = searchParams.get('materials') || '';
-  const date = searchParams.get('date') || '';
-  const season = searchParams.get('season') || '';
-  const bioregion = searchParams.get('bioregion') || '';
 
   // Compose a context string for the pigment
   const pigmentContext = `Pigment/Color: ${color} (${hex})\nSource Material: ${materials}\nLocation: ${location}\nDate Collected: ${date}\nSeason: ${season}\nBioregion: ${bioregion}`;
@@ -142,7 +142,7 @@ export default function PigmentAnalysis() {
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-[#2C3E50] text-white px-6 py-3 rounded-lg hover:bg-[#2C3E50]/90 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] transition-colors disabled:opacity-50"
           >
             Send
           </button>

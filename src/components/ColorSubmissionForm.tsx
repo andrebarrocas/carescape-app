@@ -755,7 +755,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-3 bg-[#2C3E50] text-white font-mono text-sm hover:bg-opacity-90 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Submitting...' : 'Submit Color'}
               </button>

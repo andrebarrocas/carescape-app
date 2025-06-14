@@ -9,9 +9,10 @@ import { Pencil } from 'lucide-react';
 import React from 'react';
 
 interface ColorDetailsClientProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   color: ExtendedColor;
   mediaUploads: MediaUploadWithComments[];
+  session?: any;
 }
 
 interface TitleContainerProps {

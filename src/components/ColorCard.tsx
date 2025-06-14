@@ -96,9 +96,9 @@ export default function ColorCard({ color, onDelete }: ColorCardProps) {
               e.stopPropagation();
               setShowDeleteDialog(true);
             }}
-            className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-[#2C3E50]/10 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
-            <X className="w-4 h-4 text-red-500" />
+            <X className="w-4 h-4 text-[#2C3E50]" strokeWidth={1.2} />
           </button>
           
           {displayImage && !imageError ? (

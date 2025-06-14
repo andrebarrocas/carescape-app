@@ -9,6 +9,7 @@ import { Menu, X, Plus } from 'lucide-react';
 import ColorSubmissionForm from '@/components/ColorSubmissionForm';
 import { Caveat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
+import MenuAndBreadcrumbs from './MenuAndBreadcrumbs';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
@@ -35,7 +36,6 @@ function parseCoordinates(coords: any): { lat: number; lng: number } | null {
 
 export default function Map({ colors, titleColor }: MapProps) {
   const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [homeOverlay, setHomeOverlay] = useState(true);
   const mapRef = useRef<any>(null);
   const [showColorForm, setShowColorForm] = useState(false);
@@ -52,59 +52,18 @@ export default function Map({ colors, titleColor }: MapProps) {
     return firstWithUrl ? (firstWithUrl as any).url : null;
   };
 
-  // Overlay/modal handlers
-  const openColors = () => {
-    setHomeOverlay(false);
-    setMenuOpen(false);
-    // TODO: Show colors overlay/modal
-  };
-  const openAbout = () => {
-    setHomeOverlay(false);
-    setMenuOpen(false);
-    // TODO: Show about overlay/modal
-  };
-  const goHome = () => {
-    setHomeOverlay(true);
-    setMenuOpen(false);
-    setHoveredColor(null);
-    // TODO: Hide overlays
-  };
-
   const colorCoords = colors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
   const defaultCenter = colorCoords.length ? {
     latitude: colorCoords.reduce((sum, c) => sum + c!.lat, 0) / colorCoords.length,
     longitude: colorCoords.reduce((sum, c) => sum + c!.lng, 0) / colorCoords.length,
-    zoom: colorCoords.length === 1 ? 8 : 4
-  } : { latitude: 40, longitude: -74.5, zoom: 3 };
+    zoom: colorCoords.length === 1 ? 6 : 2
+  } : { latitude: 40, longitude: -74.5, zoom: 1 };
   const [viewport, setViewport] = useState(defaultCenter);
 
   return (
     <div className="relative w-full h-full">
-      {/* Floating Hamburger Menu */}
-      <button
-        className="fixed top-6 left-6 z-50 bg-black/60 rounded-full p-3 shadow-lg hover:bg-black/80 transition-colors"
-        onClick={() => setMenuOpen(true)}
-        aria-label="Open menu"
-        style={{ display: menuOpen ? 'none' : 'block' }}
-      >
-        <Menu className="w-7 h-7 text-white" />
-      </button>
-      {/* Side Menu Overlay */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex" onClick={()=>setMenuOpen(false)}>
-          <div className="w-72 bg-[#FFFCF5] h-full p-10 flex flex-col gap-10 shadow-2xl rounded-r-3xl border-r-4 border-[#D4A373] relative" onClick={e=>e.stopPropagation()}>
-            <button className="absolute top-6 right-6 text-[#2C3E50] hover:text-[#D4A373] text-3xl" onClick={()=>setMenuOpen(false)} aria-label="Close menu"><X className="w-8 h-8" /></button>
-            <div className="mt-20">
-              <nav className="flex flex-col gap-4 bg-white/80 rounded-xl shadow p-6 border border-[#D4A373]">
-                <button onClick={goHome} className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">Home</button>
-                <button onClick={() => { setShowColorsView(true); setHomeOverlay(false); setMenuOpen(false); }} className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">Colors</button>
-                <button onClick={()=>{setShowFullDetails(true);setMenuOpen(false);}} className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">About</button>
-              </nav>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Unified Menu and Breadcrumbs */}
+      <MenuAndBreadcrumbs />
       {/* Home Overlay */}
       {homeOverlay && (
         <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -118,8 +77,18 @@ export default function Map({ colors, titleColor }: MapProps) {
             <p className="text-xl md:text-2xl font-mono text-white mb-8 drop-shadow">A visual journey through natural colors and their stories</p>
           </div>
           <div className="flex flex-col md:flex-row gap-8">
-            <button onClick={() => { setShowColorsView(true); setHomeOverlay(false); setMenuOpen(false); }} className="px-12 py-6 bg-[#D4A373] text-[#181c1f] text-2xl font-mono rounded-lg shadow-lg hover:bg-[#b98a5a] transition-colors border-2 border-[#fff]">Colors</button>
-            <button onClick={()=>{setShowFullDetails(true);setHomeOverlay(false);}} className="px-12 py-6 bg-[#E9EDC9] text-[#181c1f] text-2xl font-mono rounded-lg shadow-lg hover:bg-[#bfc7a1] transition-colors border-2 border-[#fff]">About</button>
+            <button
+              onClick={() => { setShowColorsView(true); setHomeOverlay(false); }}
+              className="px-12 py-6 bg-white text-[#2C3E50] text-2xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-[#2C3E50]/10 hover:text-[#2C3E50] transition-colors"
+            >
+              Colors
+            </button>
+            <button
+              onClick={()=>{setShowFullDetails(true);setHomeOverlay(false);}}
+              className="px-12 py-6 bg-[#2C3E50] text-white text-2xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors"
+            >
+              About
+            </button>
           </div>
         </div>
       )}
@@ -236,32 +205,33 @@ export default function Map({ colors, titleColor }: MapProps) {
       />
       {showColorsView && (
         <button
-          className="fixed bottom-8 right-8 z-50 bg-[#D4A373] hover:bg-[#b98a5a] text-[#181c1f] rounded-full p-5 shadow-xl border-2 border-white flex items-center justify-center"
+          className="fixed bottom-8 z-50 bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 rounded-full p-4 shadow border border-[#2C3E50] flex items-center justify-center transition-colors"
+          style={{ right: "5%" }}
           onClick={() => setShowColorForm(true)}
           aria-label="Add new color"
         >
-          <Plus className="w-8 h-8" />
+          <Plus className="w-6 h-6 text-[#2C3E50]" strokeWidth={1.2} />
         </button>
+
       )}
       {selectedColor && (
-        <div className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white/95 shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-[#D4A373]" style={{fontFamily:'Caveat, cursive'}}>
-          <button className="absolute top-4 right-4 text-gray-500 hover:text-black" onClick={() => setSelectedColor(null)}><X className="w-6 h-6" /></button>
+        <div className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{fontFamily:'Caveat, cursive'}}>
+          <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setSelectedColor(null)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
           <div className="mb-6">
-            <h2 className="text-4xl font-handwritten text-[#2C3E50] mb-2">{selectedColor.name}</h2>
-            <p className="text-sm text-[#2C3E50]/70 italic mb-2">{selectedColor.location}</p>
+            <h2 className="text-4xl font-handwritten text-black mb-2">{selectedColor.name}</h2>
+            <p className="text-sm text-black/70 italic mb-2">{selectedColor.location}</p>
           </div>
           {getColorImage(selectedColor) && (
-            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-6">
+            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-6 border-2 border-black">
               <img src={getColorImage(selectedColor)!} alt={selectedColor.name} className="object-cover w-full h-full" />
             </div>
           )}
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full border-2 border-[#D4A373]" style={{backgroundColor: selectedColor.hex}} />
-            <span className="font-mono text-lg text-[#2C3E50]">{selectedColor.hex}</span>
+            <div className="w-10 h-10 rounded-full border-2 border-black" style={{backgroundColor: selectedColor.hex}} />
+            <span className="font-mono text-lg text-black">{selectedColor.hex}</span>
           </div>
-          <blockquote className="text-xl font-handwritten text-[#2C3E50] mb-6">{selectedColor.description}</blockquote>
-          <button className="mt-4 px-6 py-3 bg-[#D4A373] text-[#181c1f] rounded-lg font-mono text-lg shadow hover:bg-[#b98a5a] transition-colors"
-            onClick={() => router.push(`/colors/${selectedColor.id}`)}>
+          <blockquote className="text-xl font-handwritten text-black mb-6">{selectedColor.description}</blockquote>
+          <button className="mt-4 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors" onClick={() => router.push(`/colors/${selectedColor.id}`)}>
             View Full Details
           </button>
         </div>

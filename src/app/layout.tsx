@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import ClientMenuAndBreadcrumbs from '@/components/ClientMenuAndBreadcrumbs';
 
 const inter = Inter({ subsets: ["latin"] });
 const caveat = Caveat({
@@ -41,7 +40,6 @@ export default function RootLayout({
             defaultTheme="light"
             enableSystem={false}
           >
-            <ClientMenuAndBreadcrumbs />
             {children}
             <Toaster />
           </ThemeProvider>

@@ -8,7 +8,13 @@ import { ColorDetailsClient } from './ColorDetailsClient';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import type { ExtendedColor, MediaUploadWithComments } from './types';
 import { EditButton } from './EditButton';
+import { Palette } from 'lucide-react';
 import MenuAndBreadcrumbs from '@/components/MenuAndBreadcrumbs';
+import dynamic from 'next/dynamic';
+import * as Dialog from '@radix-ui/react-dialog';
+import { useState } from 'react';
+import PigmentAnalysis from '@/components/PigmentAnalysis';
+import { X } from 'lucide-react';
 
 async function getColorDetails(id: string): Promise<ExtendedColor> {
   // First, get the color with basic relations
@@ -51,7 +57,7 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
         })),
         createdAt: mediaWithoutData.createdAt.toISOString(),
         type: mediaWithoutData.type as 'outcome' | 'landscape' | 'process',
-        caption: mediaWithoutData.caption
+        caption: mediaWithoutData.caption ?? ''
       };
     })
   );
@@ -112,9 +118,6 @@ export default async function ColorDetails({
       <main className="min-h-screen bg-[#FFFCF5] py-12 pt-24">
         <MenuAndBreadcrumbs colorName={color.name} />
         <div className="max-w-[1800px] mx-auto px-8">
-          <div className="flex justify-end mb-6">
-            <a href="/pigment-analysis" className="px-6 py-3 bg-[#D4A373] text-[#2C3E50] rounded-lg font-mono text-lg shadow hover:bg-[#b98a5a] transition-colors border-2 border-[#2C3E50]">Pigment Analysis</a>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {/* Left Column - Color Information */}
               <div className="relative">
@@ -243,18 +246,12 @@ export default async function ColorDetails({
               )}
             </div>
           </div>
+          <ColorDetailsClient color={color} session={session} mediaUploads={color.mediaUploads} />
         </div>
       </main>
     );
 
-    return (
-      <ColorDetailsClient 
-        color={color}
-        mediaUploads={color.mediaUploads}
-      >
-        {content}
-      </ColorDetailsClient>
-    );
+    return content;
   } catch (error) {
     console.error('Error in ColorDetails:', error);
     return (

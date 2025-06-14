@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
@@ -13,9 +13,7 @@ const breadcrumbMap: Record<string, string> = {
 export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
 
-  // Breadcrumbs logic
   const segments = pathname
     .split("/")
     .filter(Boolean)
@@ -24,55 +22,85 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
       label: breadcrumbMap[seg] || seg.charAt(0).toUpperCase() + seg.slice(1),
     }));
 
-  // Show color name in breadcrumbs if on color details page
   if (pathname.startsWith("/colors/") && segments.length > 1 && colorName) {
     segments[segments.length - 1].label = colorName;
   }
 
   return (
     <>
-      {/* Top left menu icon and breadcrumbs, pointer-events-none for wrapper, pointer-events-auto for interactive elements */}
+      {/* ─── Menu icon and breadcrumbs ───────────────────────── */}
       <div className="fixed top-0 left-0 z-50 w-full flex items-start pointer-events-none">
         <div className="flex items-center gap-4 m-6 pointer-events-auto">
-          {/* Hamburger menu icon */}
           <button
-            className="bg-black/60 rounded-full p-3 shadow-lg hover:bg-black/80 transition-colors"
+            className="bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 rounded-lg p-3 shadow transition-colors flex items-center"
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
           >
-            <Menu className="w-7 h-7 text-white" />
+            <Menu className="w-5 h-5 text-[#2C3E50]" strokeWidth={1.2} />
           </button>
-          {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 font-mono text-sm bg-white/80 rounded px-3 py-1 border border-[#D4A373] shadow">
-            <Link href="/" className="hover:underline text-[#2C3E50]">Home</Link>
-            {segments.map((seg, idx) => (
-              <span key={seg.href} className="flex items-center gap-2">
-                <span className="text-[#D4A373]">/</span>
-                {idx === segments.length - 1 ? (
-                  <span className="text-[#2C3E50]">{seg.label}</span>
-                ) : (
-                  <Link href={seg.href} className="hover:underline text-[#2C3E50]">{seg.label}</Link>
-                )}
-              </span>
-            ))}
-          </nav>
+
+          
+
+
+
         </div>
       </div>
-      {/* Side Menu Overlay */}
+
+      {/* ─── Left-side Menu Modal ─────────────────────────────── */}
       {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex" onClick={() => setMenuOpen(false)}>
-          <div className="w-72 bg-[#FFFCF5] h-full p-10 flex flex-col gap-10 shadow-2xl rounded-r-3xl border-r-4 border-[#D4A373] relative" onClick={e => e.stopPropagation()}>
-            <button className="absolute top-6 right-6 text-[#2C3E50] hover:text-[#D4A373] text-3xl" onClick={() => setMenuOpen(false)} aria-label="Close menu"><X className="w-8 h-8" /></button>
-            <div className="mt-20">
-              <nav className="flex flex-col gap-4 bg-white/80 rounded-xl shadow p-6 border border-[#D4A373]">
-                <Link href="/" className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">Home</Link>
-                <Link href="/colors" className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">Colors</Link>
-                <Link href="/about" className="text-2xl font-handwritten text-[#2C3E50] hover:text-[#D4A373] text-left transition-colors px-2 py-1 rounded hover:bg-[#E9EDC9]">About</Link>
-              </nav>
-            </div>
+        <div
+          className="fixed inset-0 z-50 flex"
+          onClick={() => setMenuOpen(false)}
+        >
+          {/* Dim background (blurred slightly) */}
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+
+          {/* Pure left-side panel, no box artifacts */}
+          <div
+            className="relative z-50 w-60 h-full bg-black text-white pl-6 pt-16"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              className="absolute top-4 left-4 text-white hover:opacity-70 transition-opacity"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close menu"
+            >
+              <X className="w-6 h-6" strokeWidth={1.2} />
+            </button>
+
+            {/* Floating links (no box) */}
+            <ul className="flex flex-col gap-6 mt-12">
+              {[
+                { href: "/", label: "Home", underline: "w-14" },
+                { href: "/colors", label: "Colors", underline: "w-20" },
+                { href: "/about", label: "About", underline: "w-16" },
+              ].map(({ href, label, underline }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className={`
+                      font-handwritten text-white
+                      text-3xl md:text-4xl
+                      relative group transition-all
+                    `}
+                  >
+                    {label}
+                    <span
+                      className={`
+                        block h-0.5
+                        w-0 group-hover:${underline}
+                        transition-all duration-300
+                        bg-white absolute left-0 -bottom-1
+                      `}
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
     </>
   );
-} 
+}
