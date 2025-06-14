@@ -106,6 +106,8 @@ export default async function ColorDetails({
       getColorDetails(id)
     ]);
 
+    // Modal state will be handled in a client component below
+
     // Separate media by type - check for both landscape and outcome types
     const mainImage = color.mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome');
     const processImages = color.mediaUploads.filter(media => media.type === 'process');
@@ -118,135 +120,11 @@ export default async function ColorDetails({
       <main className="min-h-screen bg-[#FFFCF5] py-12 pt-24">
         <MenuAndBreadcrumbs colorName={color.name} />
         <div className="max-w-[1800px] mx-auto px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {/* Left Column - Color Information */}
-              <div className="relative">
-              {/* Title */}
-              <div className="mb-12">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="font-handwritten text-6xl text-[#2C3E50] mb-3 leading-tight">
-                      {color.name}
-                    </h1>
-                    <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
-                      by {session?.user?.name || 'Anonymous'}
-                    </p>
-                    <p className="font-handwritten text-lg text-[#2C3E50]/60">
-                      {format(new Date(color.dateCollected), 'MMMM d, yyyy')}
-                    </p>
-                  </div>
-                  <EditButton />
-                </div>
-              </div>
-
-               {/* Main Landscape Image */}
-               {mainImage && (
-                <div className="mb-8">
-                  <div className="relative w-full aspect-[4/3] bg-white rounded-lg overflow-hidden">
-                    <Image
-                      src={`/api/images/${mainImage.id}`}
-                      alt={mainImage.caption || 'Landscape'}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      priority
-                      unoptimized
-                      loading="eager"
-                    />
-                  </div>
-                  {mainImage.caption && (
-                    <p className="mt-2 font-handwritten text-base text-[#2C3E50]/80">
-                      {mainImage.caption}
-                    </p>
-                  )}
-                </div>
-              )}
-                {/* Color Swatch and Hex */}
-                <div className="flex items-start gap-4 mb-8">
-                <div 
-                  className="w-16 h-16 rounded-lg shadow-lg"
-                  style={{ backgroundColor: color.hex }}
-                />
-                <p className="font-mono text-base text-[#2C3E50]">
-                  HEX: {color.hex}
-                </p>
-              </div>
-
-
-              {/* Personal Description */}
-              <div className="mb-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-7 h-7 rounded-full border-2 border-[#2C3E50] flex items-center justify-center">
-                    <span className="text-[#2C3E50] font-serif">ℹ</span>
-                  </div>
-                  <h2 className="font-handwritten text-2xl text-[#2C3E50]">
-                    Personal description of original landscape & source material
-                  </h2>
-                </div>
-                <p className="font-serif text-lg text-[#2C3E50] pl-10 leading-relaxed">
-                  {color.description}
-                </p>
-              </div>
-
-              {/* Landscape Details */}
-              <div className="mb-10">
-                <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 border-b border-[#2C3E50]/20 pb-2">
-                  LANDSCAPE DETAILS
-                </h2>
-                <div className="space-y-4 text-data">
-                  <p>- Specific Location: {color.location}</p>
-                  {coordinates && (
-                    <div className="pl-4">
-                      <MapComponent 
-                        coordinates={coordinates}
-                        boundary={boundary}
-                      />
-                    </div>
-                  )}
-                  {color.bioregion?.description && (
-                    <p>- Bioregion: {color.bioregion.description}</p>
-                  )}
-                  <p>- Particular element used: {color.materials[0]?.partUsed}</p>
-                </div>
-              </div>
-
-              {/* Color Data */}
-              <div>
-                <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 border-b border-[#2C3E50]/20 pb-2">
-                  COLOR DATA
-                </h2>
-                <div className="space-y-4 text-data">
-                  <p>- Type: {color.materials[0]?.name}</p>
-                  {color.processes.map(process => (
-                    <div key={process.id}>
-                      <p>- Application: {process.application}</p>
-                      <p>- Process/Recipe: {process.technique}</p>
-                      <p className="text-sm text-[#2C3E50]/80 pl-4 italic">{process.notes}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            {/* Right Column - Color Info and Images */}
-            <div className="space-y-6">
-              {/* Process Images */}
-              {processImages.length > 0 && (
-                <div className="grid grid-cols-2 gap-6">
-                  {processImages.map(media => (
-                    <div key={media.id} className="relative">
-                      <ImageGalleryWrapper
-                        media={{
-                          ...media,
-                          colorId: color.id
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          <ColorDetailsClient color={color} session={session} mediaUploads={color.mediaUploads} />
+          <ColorDetailsClient
+            color={color}
+            mediaUploads={color.mediaUploads}
+            session={session}
+          />
         </div>
       </main>
     );
