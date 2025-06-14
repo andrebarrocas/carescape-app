@@ -204,4 +204,78 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+// --- Storytelling Full Details Endpoint ---
+export async function GET_full(
+  request: Request,
+  context: { params: { id: string } }
+) {
+  try {
+    const { id } = context.params;
+    if (!id) {
+      return new NextResponse('Color ID is required', { status: 400 });
+    }
+    // Get the color with all relations
+    const color = await prisma.color.findUnique({
+      where: { id },
+      include: {
+        materials: true,
+        processes: true,
+        mediaUploads: true
+      }
+    });
+    if (!color) {
+      return new NextResponse('Color not found', { status: 404 });
+    }
+    // Get comments for each media upload
+    const mediaUploadsWithComments = await Promise.all(
+      color.mediaUploads.map(async (media) => {
+        const comments = await prisma.comment.findMany({
+          where: { mediaId: media.id },
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true
+              }
+            }
+          }
+        });
+        const { data, ...mediaWithoutData } = media;
+        return {
+          ...mediaWithoutData,
+          comments: comments.map(comment => ({
+            ...comment,
+            createdAt: comment.createdAt.toISOString(),
+          }))
+        };
+      })
+    );
+    // Parse bioregion data from string if present
+    const bioregion = color.bioregion ? JSON.parse(color.bioregion) : null;
+    // Format color object
+    const colorObj = {
+      ...color,
+      bioregion,
+      dateCollected: color.dateCollected?.toISOString?.() || null,
+      createdAt: color.createdAt?.toISOString?.() || null,
+      updatedAt: color.updatedAt?.toISOString?.() || null,
+      materials: color.materials.map(m => ({
+        ...m,
+        createdAt: m.createdAt?.toISOString?.() || null,
+        updatedAt: m.updatedAt?.toISOString?.() || null
+      })),
+      processes: color.processes.map(p => ({
+        ...p,
+        createdAt: p.createdAt?.toISOString?.() || null,
+        updatedAt: p.updatedAt?.toISOString?.() || null
+      })),
+      mediaUploads: mediaUploadsWithComments,
+    };
+    return NextResponse.json({ color: colorObj, mediaUploads: mediaUploadsWithComments, session: null });
+  } catch (error) {
+    console.error('Error fetching full color details:', error);
+    return new NextResponse('Error fetching full color details', { status: 500 });
+  }
 } 
