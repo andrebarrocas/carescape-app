@@ -22,29 +22,26 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#2C3E50]/10 text-xs font-mono text-[#2C3E50] hover:bg-[#2C3E50]/20 transition-colors border border-[#2C3E50]/20 shadow-sm"
+          style={{ lineHeight: 1.1 }}
         >
-          <Palette className="w-4 h-4 text-[#2C3E50]" />
-          <span className="font-handwritten text-[#2C3E50]">Sustainable Design</span>
+          <Palette className="w-3.5 h-3.5" />
+          <span className="font-handwritten">Generate Sustainable Design Ideas</span>
         </button>
       </Dialog.Trigger>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-          <Dialog.Content className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{ fontFamily: 'Caveat, cursive' }}>
-            
-            {/* Title with Icon */}
-            <div className="flex items-center space-x-2 text-black">
-              <Leaf className="w-6 h-6" />
-              <Dialog.Title>Sustainable Design Chat</Dialog.Title>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+        <Dialog.Content className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full md:w-[500px] max-w-full z-50 bg-white shadow-2xl rounded-t-2xl flex flex-col p-8 overflow-y-auto border-t-4 border-black" style={{fontFamily:'Caveat, cursive', maxHeight: '80vh'}}>
+          <Dialog.Title asChild>
+            <div className="flex items-center gap-2 mb-4">
+              <Palette className="w-5 h-5 text-[#2C3E50]" />
+              <span className="font-mono text-base text-[#2C3E50]/80">Sustainable Design Chat</span>
             </div>
-
-            <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setOpen(false)}>
-              <X className="w-5 h-5" strokeWidth={1.2} />
-            </button>
-            
-            <PigmentAnalysis {...props} />
-          </Dialog.Content>
-        </Dialog.Portal>
+          </Dialog.Title>
+          <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
+          <PigmentAnalysis {...props} />
+        </Dialog.Content>
+      </Dialog.Portal>
     </Dialog.Root>
   );
 } 

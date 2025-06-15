@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ColorDetailsClient } from "@/app/colors/[id]/ColorDetailsClient";
+import { SessionProvider } from 'next-auth/react';
 
 export default function StoryColorDetails({ colorId }: { colorId: string }) {
   const [color, setColor] = useState<any>(null);
@@ -50,6 +51,8 @@ export default function StoryColorDetails({ colorId }: { colorId: string }) {
     );
   }
   return (
-    <ColorDetailsClient color={color} mediaUploads={mediaUploads} session={session} />
+    <SessionProvider>
+      <ColorDetailsClient color={color} mediaUploads={mediaUploads} session={session} />
+    </SessionProvider>
   );
 } 

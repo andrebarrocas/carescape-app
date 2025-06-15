@@ -113,7 +113,7 @@ export default function Map({ colors, titleColor }: MapProps) {
           </div>
           <div className="flex flex-col md:flex-row gap-8">
             <button
-              onClick={() => { setShowColorsView(true); setHomeOverlay(false); setStoryMode(true); setCurrentColorIndex(0); }}
+              onClick={() => { setShowColorsView(true); setHomeOverlay(false); setStoryMode(false); setCurrentColorIndex(0); }}
               className="px-12 py-6 bg-white text-[#2C3E50] text-2xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-[#2C3E50]/10 hover:text-[#2C3E50] transition-colors"
             >
               Colors
@@ -218,11 +218,9 @@ export default function Map({ colors, titleColor }: MapProps) {
               anchor="bottom"
               onClick={e => {
                 e.originalEvent.stopPropagation();
-                if (storyMode) {
-                  setCurrentColorIndex(idx);
-                } else {
-                  setSelectedColor(color);
-                }
+                setStoryMode(true);
+                setCurrentColorIndex(idx);
+                setSelectedColor(null);
               }}
             >
               <div className={`w-10 h-10 rounded-full border-4 border-white shadow-lg flex items-center justify-center cursor-pointer bg-white/80 hover:scale-110 transition-transform ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}>

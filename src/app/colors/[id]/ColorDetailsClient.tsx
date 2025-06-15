@@ -178,21 +178,20 @@ export function ColorDetailsClient({ children, color, mediaUploads, session }: C
                 <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
                   by {session?.user?.name || 'Anonymous'}
                 </p>
+                <div className="my-2">
+                  <SustainableDesignButton
+                    color={color.name}
+                    hex={color.hex}
+                    location={color.location}
+                    materials={color.materials.map(m => m.name).join(', ')}
+                    date={color.dateCollected}
+                    season={color.season}
+                    bioregion={color.bioregion?.description || ''}
+                  />
+                </div>
                 <p className="font-handwritten text-lg text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                 </p>
-              </div>
-              <div className="flex gap-2">
-                <SustainableDesignButton
-                  color={color.name}
-                  hex={color.hex}
-                  location={color.location}
-                  materials={color.materials.map(m => m.name).join(', ')}
-                  date={color.dateCollected}
-                  season={color.season}
-                  bioregion={color.bioregion?.description || ''}
-                />
-                
               </div>
             </div>
           </div>
@@ -236,14 +235,7 @@ export function ColorDetailsClient({ children, color, mediaUploads, session }: C
 
           {/* Personal Description */}
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-7 h-7 rounded-full border-2 border-[#2C3E50] flex items-center justify-center">
-                <span className="text-[#2C3E50] font-serif">ℹ</span>
-              </div>
-              <h2 className="font-handwritten text-2xl text-[#2C3E50]">
-                Personal description of original landscape & source material
-              </h2>
-            </div>
+
             <p className="font-serif text-lg text-[#2C3E50] pl-10 leading-relaxed">
               {color.description}
             </p>
@@ -321,7 +313,7 @@ export function ColorDetailsClient({ children, color, mediaUploads, session }: C
       <Dialog.Root open={isPigmentModalOpen} onOpenChange={setPigmentModalOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-          <Dialog.Content className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{fontFamily:'Caveat, cursive'}}>
+          <Dialog.Content className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full md:w-[500px] max-w-full z-50 bg-white shadow-2xl rounded-t-2xl flex flex-col p-8 overflow-y-auto border-t-4 border-black" style={{fontFamily:'Caveat, cursive', maxHeight: '80vh'}}>
             <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setPigmentModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
             <PigmentAnalysis
               color={color.name}
