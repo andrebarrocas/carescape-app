@@ -66,7 +66,7 @@ export default function AboutPage() {
       shape: Triangle,
     },
   ];
-
+//1(13)-5
   const tumblrImages = [
     '/about-img-10.png',
     '/about-img-5.png',
@@ -100,10 +100,13 @@ export default function AboutPage() {
         {/* 1st image */}
         <Image src={tumblrImages[0]} alt="About visual 1" width={1920} height={800} className="w-full h-auto object-cover" priority />
 
+        {/* Interactive Color Map */}
+        <section className="w-full flex flex-col items-center py-10 px-4">
+          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Platform Features</h3>
+        </section>
 
         {/* 2nd image */}
         <Image src={tumblrImages[1]} alt="About visual 2" width={1920} height={800} className="w-full h-auto object-cover" />
-
         {/* Interactive Color Map */}
         <section className="w-full flex flex-col items-center py-10 px-4">
           <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Interactive Color Map</h3>
@@ -130,13 +133,8 @@ export default function AboutPage() {
 
         {/* 5th image */}
         <Image src={tumblrImages[4]} alt="About visual 5" width={1920} height={800} className="w-full h-auto object-cover" />
-
-
-
-        {/* 6th image */}
-        <Image src={tumblrImages[5]} alt="About visual 6" width={1920} height={800} className="w-full h-auto object-cover" />
-              {/* Join Our Color Community */}
-              <section className="w-full flex flex-col items-center py-10 px-4">
+               {/* Join Our Color Community */}
+        <section className="w-full flex flex-col items-center py-10 px-4">
           <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Join Our Color Community</h3>
           <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl mb-6">Be part of a global movement to document and highlight the potential of natural color</p>
           <Link
@@ -147,6 +145,9 @@ export default function AboutPage() {
           </Link>
         </section>
       
+        {/* 6th image */}
+        <Image src={tumblrImages[5]} alt="About visual 6" width={1920} height={800} className="w-full h-auto object-cover" />
+
       </main>
     </div>
   );

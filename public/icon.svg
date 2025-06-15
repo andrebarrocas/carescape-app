@@ -1,15 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Paint Palette -->
-  <path d="M256 64C150 64 64 150 64 256C64 362 150 448 256 448C266 448 276 447 285 445C275 425 270 402 270 378C270 317 319 268 380 268C404 268 427 273 447 283C449 274 450 265 450 256C450 150 362 64 256 64Z" fill="#4F46E5"/>
-  
-  <!-- Paint Blobs -->
-  <circle cx="180" cy="200" r="40" fill="#FF6B6B"/>
-  <circle cx="300" cy="160" r="40" fill="#4ECDC4"/>
-  <circle cx="220" cy="320" r="40" fill="#FFD93D"/>
-  <circle cx="380" cy="320" r="40" fill="#95E1D3"/>
-  
-  <!-- Paintbrush -->
-  <path d="M380 268C357 268 338 287 338 310C338 333 357 352 380 352C403 352 422 333 422 310C422 287 403 268 380 268Z" fill="#2D3748"/>
-  <path d="M395 295L450 240" stroke="#2D3748" stroke-width="24" stroke-linecap="round"/>
-</svg> 
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
