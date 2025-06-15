@@ -220,6 +220,10 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
                   by {session?.user?.name || 'Anonymous'}
                 </p>
+                
+                <p className="font-handwritten text-lg text-[#2C3E50]/60">
+                  {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
+                </p>
                 <div className="my-2">
                   <SustainableDesignButton
                     color={color.name}
@@ -231,9 +235,6 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                     bioregion={color.bioregion?.description || ''}
                   />
                 </div>
-                <p className="font-handwritten text-lg text-[#2C3E50]/60">
-                  {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
-                </p>
               </div>
             </div>
           </div>
@@ -278,8 +279,8 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Personal Description */}
           <div className="mb-10">
 
-            <p className="font-serif text-lg text-[#2C3E50] pl-10 leading-relaxed">
-              {color.description}
+            <p className="mt-2 font-handwritten text-base text-[#2C3E50]/80">
+              "{color.description}"
             </p>
           </div>
 
@@ -288,7 +289,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 border-b border-[#2C3E50]/20 pb-2">
               LANDSCAPE DETAILS
             </h2>
-            <div className="space-y-4 text-data">
+            <div className="space-y-4 text-black font-sans text-base">
               <p>- Specific Location: {color.location}</p>
               {color.coordinates && (
                 <div className="pl-4">
@@ -307,13 +308,13 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 border-b border-[#2C3E50]/20 pb-2">
               COLOR DATA
             </h2>
-            <div className="space-y-4 text-data">
+            <div className="space-y-4 text-black font-sans text-base">
               <p>- Type: {color.materials[0]?.name}</p>
               {color.processes.map(process => (
                 <div key={process.id}>
                   <p>- Application: {process.application}</p>
                   <p>- Process/Recipe: {process.technique}</p>
-                  <p className="text-sm text-[#2C3E50]/80 pl-4 italic">{process.notes}</p>
+                  <p className="text-sm text-black/80 pl-4 italic">{process.notes}</p>
                 </div>
               ))}
             </div>
