@@ -5,6 +5,10 @@ import { motion } from 'framer-motion';
 import { Globe, Palette, Heart, Leaf, Users, ArrowRight, Circle, Square, Triangle } from 'lucide-react';
 import Link from 'next/link';
 import MenuAndBreadcrumbs from '@/components/MenuAndBreadcrumbs';
+import Image from 'next/image';
+import { Caveat } from 'next/font/google';
+
+const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
 
 const DataPattern = () => (
   <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none">
@@ -63,6 +67,17 @@ export default function AboutPage() {
     },
   ];
 
+  const tumblrImages = [
+    '/about-img-10.png',
+    '/about-img-5.png',
+    '/about-img-6.png',
+    '/about-img-7.png',
+    '/about-img-8.png',
+    '/about-img-9.png',
+    '/about-img-11.png',
+    '/about-img-12.png',
+  ];
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -72,147 +87,67 @@ export default function AboutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFCF5] pt-24">
+    <div className="min-h-screen bg-[#FAFAFA] pt-24">
       <MenuAndBreadcrumbs />
-      {/* Hero Section */}
-      <section className="relative py-32 overflow-hidden">
-        <DataPattern />
-        <div className="relative max-w-7xl mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center max-w-4xl mx-auto"
+      <main className="w-full flex flex-col gap-12 items-center">
+        {/* Hero Title */}
+        <section className="w-full py-16 flex flex-col items-center justify-center">
+          <h1 className={`text-5xl md:text-7xl mb-6 text-[#2C3E50] ${caveat.className}`}>UNVEILING LANDSCAPE COLORS</h1>
+          <p className="text-xl font-mono text-[#2C3E50] max-w-2xl mx-auto text-center">Explore the connection between colors and their natural sources</p>
+        </section>
+
+        {/* Tumblr-style feed: alternate image and text blocks */}
+        {/* 1st image */}
+        <Image src={tumblrImages[0]} alt="About visual 1" width={1920} height={800} className="w-full h-auto object-cover" priority />
+
+
+        {/* 2nd image */}
+        <Image src={tumblrImages[1]} alt="About visual 2" width={1920} height={800} className="w-full h-auto object-cover" />
+
+        {/* Interactive Color Map */}
+        <section className="w-full flex flex-col items-center py-10 px-4">
+          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Interactive Color Map</h3>
+          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl">Explore natural colors geographically and discover their landscape origins.</p>
+        </section>
+
+        {/* 3rd image */}
+        <Image src={tumblrImages[2]} alt="About visual 3" width={1920} height={800} className="w-full h-auto object-cover" />
+
+        {/* Community Knowledge */}
+        <section className="w-full flex flex-col items-center py-10 px-4">
+          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Community Knowledge</h3>
+          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl">Share and learn from color makers and enthusiasts worldwide.</p>
+        </section>
+
+        {/* 4th image */}
+        <Image src={tumblrImages[3]} alt="About visual 4" width={1920} height={800} className="w-full h-auto object-cover" />
+
+        {/* Sustainable Practices */}
+        <section className="w-full flex flex-col items-center py-10 px-4">
+          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Sustainable Practices</h3>
+          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl">Learn eco-friendly methods for creating and using natural colors.</p>
+        </section>
+
+        {/* 5th image */}
+        <Image src={tumblrImages[4]} alt="About visual 5" width={1920} height={800} className="w-full h-auto object-cover" />
+
+
+
+        {/* 6th image */}
+        <Image src={tumblrImages[5]} alt="About visual 6" width={1920} height={800} className="w-full h-auto object-cover" />
+              {/* Join Our Color Community */}
+              <section className="w-full flex flex-col items-center py-10 px-4">
+          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Join Our Color Community</h3>
+          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl mb-6">Be part of a global movement to document and highlight the potential of natural color</p>
+          <Link
+            href="/colors"
+            className="inline-block px-8 py-4 bg-[#2C3E50] text-white text-xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors"
           >
-            <div className="mb-8">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-24 h-24 mx-auto border-2 border-[#2C3E50] relative mb-8"
-              >
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Globe className="w-12 h-12 text-[#2C3E50]" />
-                </div>
-                <div className="absolute -inset-1 border-2 border-[#2C3E50] opacity-50" />
-              </motion.div>
-              <h1 className="text-5xl md:text-7xl font-serif text-[#2C3E50] mb-6">
-                UNVEILING LANDSCAPE COLORS
-              </h1>
-            </div>
-            <p className="text-xl font-mono text-[#2C3E50] max-w-3xl mx-auto">
-              Explore the connection between colors and their natural sources
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Mission Section */}
-      <section className="py-24 bg-[#FFFCF5] border-t-2 border-[#2C3E50] relative">
-        <DataPattern />
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif text-[#2C3E50] mb-4">
-              Our Mission
-            </h2>
-            <div className="w-24 h-1 bg-[#2C3E50] mx-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {missions.map((mission, index) => {
-              const Icon = mission.icon;
-              const bgColors = ['#CCD5AE', '#E9EDC9', '#FEFAE0', '#D4A373'];
-              return (
-                <motion.div
-                  key={mission.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="border-2 border-[#2C3E50] relative group"
-                  style={{ backgroundColor: bgColors[index] }}
-                >
-                  <div className="p-8">
-                    <div className="w-16 h-16 border-2 border-[#2C3E50] flex items-center justify-center mb-6 bg-[#FFFCF5] group-hover:bg-[#2C3E50] transition-colors">
-                      <Icon className="w-8 h-8 text-[#2C3E50] group-hover:text-[#FFFCF5]" />
-                    </div>
-                    <h3 className="text-xl font-mono text-[#2C3E50] mb-4">{mission.title}</h3>
-                    <p className="font-mono text-sm text-[#2C3E50] leading-relaxed">{mission.description}</p>
-                  </div>
-                  <div className="absolute top-0 left-0 w-full h-full border-2 border-[#2C3E50] -m-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-24 bg-[#FFFCF5] border-t-2 border-[#2C3E50] relative">
-        <DataPattern />
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif text-[#2C3E50] mb-4">
-              Platform Features
-            </h2>
-            <div className="w-24 h-1 bg-[#2C3E50] mx-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {features.map((feature, index) => {
-              const Shape = feature.shape;
-              const bgColors = ['#E9EDC9', '#FEFAE0', '#CCD5AE'];
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="border-2 border-[#2C3E50] relative group overflow-hidden"
-                  style={{ backgroundColor: bgColors[index] }}
-                >
-                  <div className="p-8 relative z-10">
-                    <div className="w-16 h-16 border-2 border-[#2C3E50] flex items-center justify-center mb-6 bg-[#FFFCF5] group-hover:bg-[#2C3E50] transition-colors">
-                      <Shape className="w-8 h-8 text-[#2C3E50] group-hover:text-[#FFFCF5]" />
-                    </div>
-                    <h3 className="text-2xl font-mono text-[#2C3E50] mb-4">{feature.title}</h3>
-                    <p className="font-mono text-sm text-[#2C3E50] leading-relaxed">{feature.description}</p>
-                  </div>
-                  <div className="absolute top-0 left-0 w-full h-full border-2 border-[#2C3E50] -m-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Join Section */}
-      <section className="py-24 bg-[#D4A373] relative">
-        <DataPattern />
-        <div className="max-w-7xl mx-auto px-4 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="max-w-3xl mx-auto"
-          >
-            <h2 className="text-4xl font-serif text-[#2C3E50] mb-8">
-              Join Our Color Community
-            </h2>
-            <p className="text-xl font-mono text-[#2C3E50] opacity-90 mb-12">
-              Be part of a global movement to document and highlight the potential of natural color
-            </p>
-            <Link
-              href="/auth/signin"
-              className="inline-flex items-center px-12 py-6 border-2 border-[#2C3E50] text-[#2C3E50] hover:bg-[#2C3E50] hover:text-[#FFFCF5] transition-colors font-mono text-lg group relative"
-            >
-              <span>Get Started</span>
-              <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
-              <div className="absolute top-0 left-0 w-full h-full border-2 border-[#2C3E50] -m-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+            Get Started
+          </Link>
+        </section>
+      
+      </main>
     </div>
   );
 } 
