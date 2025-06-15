@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import EditColorForm from '@/components/EditColorForm';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import { ExtendedColor, MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { Pencil, Palette, X } from 'lucide-react';
+import { Pencil, Palette, X, Plus } from 'lucide-react';
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
 import SustainableDesignButton from './SustainableDesignButton';
 import { format } from 'date-fns';
+import Image from 'next/image';
 
 interface ColorDetailsClientProps {
   children?: React.ReactNode;
@@ -30,11 +31,16 @@ interface ImageContainerProps {
   key: string;
 }
 
-export function ColorDetailsClient({ children, color, mediaUploads, session }: ColorDetailsClientProps) {
+export function ColorDetailsClient({ children, color, mediaUploads: initialMediaUploads, session }: ColorDetailsClientProps) {
   const router = useRouter();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPigmentModalOpen, setPigmentModalOpen] = useState(false);
+  const [isAddMediaOpen, setAddMediaOpen] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [captions, setCaptions] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [mediaUploads, setMediaUploads] = useState(initialMediaUploads);
 
   const handleAddComment = async (mediaId: string, content: string) => {
     try {
@@ -94,6 +100,42 @@ export function ColorDetailsClient({ children, color, mediaUploads, session }: C
       alert('Failed to update color. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setMediaFiles(files);
+    setCaptions(files.map(() => ''));
+  };
+
+  const handleCaptionChange = (idx: number, value: string) => {
+    setCaptions(captions => captions.map((c, i) => (i === idx ? value : c)));
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      mediaFiles.forEach((file, idx) => {
+        formData.append('media', file);
+        formData.append('captions', captions[idx] || '');
+      });
+      const res = await fetch(`/api/colors/${color.id}/images`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const { uploads } = await res.json();
+        setMediaUploads(prev => [...uploads, ...prev]);
+        setAddMediaOpen(false);
+        setMediaFiles([]);
+        setCaptions([]);
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -324,6 +366,52 @@ export function ColorDetailsClient({ children, color, mediaUploads, session }: C
               season={color.season}
               bioregion={color.bioregion?.description || ''}
             />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Add Media Modal */}
+      <Dialog.Root open={isAddMediaOpen} onOpenChange={setAddMediaOpen}>
+        <Dialog.Trigger asChild>
+        <button className="mt-10 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 transition-colors border-2 border-transparent">
+          <Plus className="w-6 h-6 text-[#2C3E50]" />
+          <span className="font-handwritten text-xl text-[#2C3E50]">Add Media Photos</span>
+        </button>
+
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
+            <Dialog.Title className="font-handwritten text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
+            <form onSubmit={handleUpload} className="flex flex-col gap-6">
+              <input type="file" accept="image/*" multiple onChange={handleMediaChange} className="mb-4" />
+              {mediaFiles.length > 0 && (
+                <div className="flex flex-col gap-4">
+                  {mediaFiles.map((file, idx) => (
+                    <div key={idx} className="flex flex-col gap-2 border-b pb-4">
+                      <div className="flex items-center gap-4">
+                        <Image src={URL.createObjectURL(file)} alt="preview" width={80} height={80} className="rounded-lg object-cover" />
+                        <input
+                          type="text"
+                          placeholder="Caption for this image"
+                          value={captions[idx] || ''}
+                          onChange={e => handleCaptionChange(idx, e.target.value)}
+                          className="flex-1 border rounded-lg px-3 py-2 font-mono"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex justify-end gap-4 mt-4">
+                <Dialog.Close asChild>
+                  <button type="button" className="px-4 py-2 rounded-lg border border-[#2C3E50] text-[#2C3E50] bg-white hover:bg-[#2C3E50]/10 transition-colors">Cancel</button>
+                </Dialog.Close>
+                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="px-6 py-2 rounded-lg bg-[#2C3E50] text-white font-handwritten text-lg hover:bg-[#2C3E50]/90 transition-colors disabled:opacity-50">
+                  {isUploading ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
+            </form>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

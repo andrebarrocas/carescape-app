@@ -28,6 +28,7 @@
     "clsx": "^2.1.1",
     "color-thief-ts": "^1.1.1",
     "date-fns": "^4.1.0",
+    "formidable": "^3.5.4",
     "framer-motion": "^12.16.0",
     "lucide-react": "^0.511.0",
     "mapbox-gl": "^2.15.0",
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/date-fns": "^2.5.3",
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20.17.57",
     "@types/react": "^19",
     "@types/react-dom": "^19",

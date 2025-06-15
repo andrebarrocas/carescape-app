@@ -103,12 +103,11 @@ export default function Map({ colors, titleColor }: MapProps) {
       {homeOverlay && (
         <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="text-center mb-12">
-            <h1
-              className={`text-5xl md:text-7xl mb-6 drop-shadow-lg ${caveat.className}`}
-              style={titleColor ? { color: titleColor } : {}}
-            >
-              CAreScape
-            </h1>
+          <h1
+            className={`text-[#F5F5F5] text-5xl md:text-7xl mb-6 drop-shadow-lg ${caveat.className}`}
+          >
+            CAreScape
+          </h1>
             <p className="text-xl md:text-2xl font-mono text-white mb-8 drop-shadow">A visual journey through natural colors and their stories</p>
           </div>
           <div className="flex flex-col md:flex-row gap-8">

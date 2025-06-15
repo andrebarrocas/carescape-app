@@ -19,20 +19,6 @@ export async function GET(
         type: true,
         data: true,
         caption: true,
-        inspirationalText: true,
-        comments: {
-          select: {
-            id: true,
-            content: true,
-            createdAt: true,
-            user: {
-              select: {
-                name: true,
-                pseudonym: true,
-              },
-            },
-          },
-        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -45,13 +31,6 @@ export async function GET(
       url: `data:${image.mimetype};base64,${Buffer.from(image.data).toString('base64')}`,
       caption: image.caption,
       type: image.type,
-      inspirationalText: image.inspirationalText || '',
-      comments: image.comments.map((comment) => ({
-        id: comment.id,
-        text: comment.content,
-        author: comment.user?.pseudonym || comment.user?.name || 'Anonymous',
-        createdAt: comment.createdAt.toISOString(),
-      })),
     }));
 
     return NextResponse.json(transformedImages);
@@ -64,47 +43,44 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id: colorId } = await context.params;
   try {
-    const colorId = params.id;
-    const data = await request.json();
+    const formData = await request.formData();
+    const files = formData.getAll('media') as File[];
+    const captions = formData.getAll('captions') as string[];
 
-    const { comment, mediaId } = data;
+    const uploads = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!(file instanceof File)) continue;
+      const caption = captions[i] || '';
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
 
-    const newComment = await prisma.comment.create({
-      data: {
-        content: comment,
-        colorId: colorId,
-        mediaId: mediaId,
-        userId: 'system', // Replace with actual user ID from auth
-      },
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        user: {
-          select: {
-            name: true,
-            pseudonym: true,
-          },
+      const upload = await prisma.mediaUpload.create({
+        data: {
+          colorId,
+          filename: file.name,
+          mimetype: file.type,
+          data: buffer,
+          type: 'process',
+          caption,
         },
-      },
-    });
+        select: {
+          id: true,
+          filename: true,
+          mimetype: true,
+          type: true,
+          caption: true,
+        },
+      });
+      uploads.push(upload);
+    }
 
-    return NextResponse.json({
-      id: newComment.id,
-      text: newComment.content,
-      author: newComment.user?.pseudonym || newComment.user?.name || 'Anonymous',
-      createdAt: newComment.createdAt.toISOString(),
-    });
+    return NextResponse.json({ success: true, uploads });
   } catch (error) {
-    console.error('Error adding comment:', error);
-    return NextResponse.json(
-      { error: 'Failed to add comment' },
-      { status: 500 }
-    );
+    console.error('Error uploading images:', error);
+    return NextResponse.json({ error: 'Failed to upload images' }, { status: 500 });
   }
 } 
