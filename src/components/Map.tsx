@@ -106,7 +106,7 @@ export default function Map({ colors, titleColor }: MapProps) {
           <h1
             className={`text-[#F5F5F5] text-5xl md:text-7xl mb-6 drop-shadow-lg ${caveat.className}`}
           >
-            CAreScape
+            CareScape
           </h1>
             <p className="text-xl md:text-2xl font-mono text-white mb-8 drop-shadow">A visual journey through natural colors and their stories</p>
           </div>
@@ -252,43 +252,41 @@ export default function Map({ colors, titleColor }: MapProps) {
       )}
       {/* Storytelling Overlay */}
       {storyMode && storyColorId && (
-        <div className="fixed top-0 right-0 h-full w-full md:w-[600px] z-50 bg-white/95 shadow-2xl flex flex-col p-0 overflow-y-auto border-l-4 border-black transition-all duration-700" style={{ fontFamily: 'Caveat, cursive' }}>
-          <div className="flex items-center justify-between p-6 border-b border-black/10 bg-gradient-to-r from-[#FFFCF5] to-white">
-            <span className="font-handwritten text-2xl text-[#2C3E50]">{currentColorIndex + 1} / {colors.length}</span>
-            <div className="flex gap-2">
+        <>
+          <div 
+            className="fixed inset-0 z-40 bg-black/20"
+            onClick={() => setStoryMode(false)}
+          />
+          <div 
+            className="fixed top-0 right-0 h-full w-full md:w-[600px] z-50 bg-white/95 shadow-2xl flex flex-col p-0 overflow-y-auto border-l-1 border-black transition-all duration-700" 
+            style={{ fontFamily: 'Caveat, cursive' }}
+          >
+            <div className="flex-1 overflow-y-auto p-6">
+              <EmbeddedColorDetails colorId={storyColorId} />
+            </div>
+            <div className="flex items-center justify-between p-6 border-t border-black/10 bg-gradient-to-r from-white to-[#FFFCF5]">
               <button
-                onClick={() => setStoryMode(false)}
-                className="px-3 py-1 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors"
+                onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
+                disabled={currentColorIndex === 0 || isAnimating}
+                className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors disabled:opacity-40"
               >
-                Exit Story
+                Previous
+              </button>
+              <div className="flex gap-1 items-center">
+                {colors.map((_, idx) => (
+                  <span key={idx} className={`inline-block w-2 h-2 rounded-full ${idx === currentColorIndex ? 'bg-[#2C3E50]' : 'bg-[#2C3E50]/20'}`}></span>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
+                disabled={currentColorIndex === colors.length - 1 || isAnimating}
+                className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors disabled:opacity-40"
+              >
+                Next
               </button>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-6">
-            <EmbeddedColorDetails colorId={storyColorId} />
-          </div>
-          <div className="flex items-center justify-between p-6 border-t border-black/10 bg-gradient-to-r from-white to-[#FFFCF5]">
-            <button
-              onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
-              disabled={currentColorIndex === 0 || isAnimating}
-              className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <div className="flex gap-1 items-center">
-              {colors.map((_, idx) => (
-                <span key={idx} className={`inline-block w-2 h-2 rounded-full ${idx === currentColorIndex ? 'bg-[#2C3E50]' : 'bg-[#2C3E50]/20'}`}></span>
-              ))}
-            </div>
-            <button
-              onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
-              disabled={currentColorIndex === colors.length - 1 || isAnimating}
-              className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        </>
       )}
       {!storyMode && selectedColor && (
         <div className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{fontFamily:'Caveat, cursive'}}>

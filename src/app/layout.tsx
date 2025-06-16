@@ -12,7 +12,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "CAreScape",
+  title: "CareScape",
   description: "A platform for collecting and sharing natural colors and pigments.",
   icons: {
     icon: "/icon.svg",

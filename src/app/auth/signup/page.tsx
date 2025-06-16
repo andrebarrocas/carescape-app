@@ -84,7 +84,7 @@ export default function SignUpPage() {
               transition={{ duration: 0.5 }}
               className="font-serif text-3xl text-[#2C3E50] tracking-wide"
             >
-              Join CAreScape
+              Join CareScape
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}

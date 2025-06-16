@@ -19,6 +19,14 @@ interface PigmentAnalysisProps {
   bioregion: string;
 }
 
+// Utility to remove markdown-style formatting
+function stripMarkdownFormatting(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // remove **bold**
+    .replace(/\*(.*?)\*/g, '$1')     // remove *italic*
+    .replace(/`(.*?)`/g, '$1');      // remove `code`
+}
+
 export default function PigmentAnalysis({
   color,
   hex,
@@ -33,7 +41,7 @@ export default function PigmentAnalysis({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasGeneratedInitial = useRef(false); // prevents multiple runs
+  const hasGeneratedInitial = useRef(false);
 
   const pigmentContext = `Pigment/Color: ${color} (${hex})\nSource Material: ${materials}\nLocation: ${location}\nDate Collected: ${date}\nSeason: ${season}\nBioregion: ${bioregion}`;
 
@@ -92,18 +100,18 @@ Respond in under 4 sentences.`;
 
       const result = await model.generateContent(fullPrompt);
       const response = await result.response;
-      const text = response.text().trim();
+      const rawText = response.text().trim();
+      const cleanText = stripMarkdownFormatting(rawText);
 
       const newMessages: Message[] = isInitial
-        ? [{ role: 'assistant', content: text, styled: isStyledInitial }]
+        ? [{ role: 'assistant', content: cleanText, styled: isStyledInitial }]
         : [
             { role: 'user', content: prompt },
-            { role: 'assistant', content: text, styled: false },
+            { role: 'assistant', content: cleanText, styled: false },
           ];
 
       setMessages(prev => {
-        // avoid duplicate assistant messages
-        if (isInitial && prev.some(m => m.role === 'assistant' && m.content === text)) return prev;
+        if (isInitial && prev.some(m => m.role === 'assistant' && m.content === cleanText)) return prev;
         return [...prev, ...newMessages];
       });
     } catch (err: any) {
@@ -130,13 +138,13 @@ Respond in under 4 sentences.`;
           {messages.map((message, index) => (
             <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[80%] whitespace-pre-line rounded-xl p-4 leading-relaxed shadow ${
+                className={`max-w-[80%] whitespace-pre-line rounded-xl p-4 shadow ${
                   message.role === 'user'
                     ? 'bg-[#2C3E50] text-white self-end'
-                    : 'bg-[#F9FAFB] text-gray-800 border border-gray-200'
+                    : 'bg-white text-[#2C3E50] border border-[#2C3E50]/20'
                 } ${message.styled ? 'italic' : ''}`}
               >
-                <p>{message.content}</p>
+                <p className="text-base md:text-[1.05rem] leading-relaxed font-sans">{message.content}</p>
               </div>
             </div>
           ))}

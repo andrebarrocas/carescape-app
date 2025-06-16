@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import EditColorForm from '@/components/EditColorForm';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import { ExtendedColor, MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { Pencil, Palette, X, Plus } from 'lucide-react';
+import { Pencil, Palette, X, Plus, Leaf } from 'lucide-react';
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
 import SustainableDesignButton from './SustainableDesignButton';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
 
 interface ColorDetailsClientProps {
   children?: React.ReactNode;
@@ -36,6 +37,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPigmentModalOpen, setPigmentModalOpen] = useState(false);
+  const [isSustainabilityModalOpen, setSustainabilityModalOpen] = useState(false);
   const [isAddMediaOpen, setAddMediaOpen] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [captions, setCaptions] = useState<string[]>([]);
@@ -150,6 +152,13 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           <div className="flex items-center justify-between">
             <div className="flex-1">{childElement.props.children}</div>
             <div className="flex gap-2">
+              <button
+                onClick={() => setSustainabilityModalOpen(true)}
+                className="bg-[#2C3E50] p-2 rounded-lg hover:bg-[#2C3E50]/90 transition-colors group flex items-center gap-2 text-white"
+              >
+                <Leaf className="w-5 h-5" />
+                <span className="text-sm">Sustainability Analysis</span>
+              </button>
               <SustainableDesignButton
                 color={color.name}
                 hex={color.hex}
@@ -224,7 +233,15 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <p className="font-handwritten text-lg text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                 </p>
-                <div className="my-2">
+                <div className="my-2 flex flex-col gap-2">
+                  <button
+                    onClick={() => setSustainabilityModalOpen(true)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#2C3E50]/10 text-xs font-mono text-[#2C3E50] hover:bg-[#2C3E50]/20 transition-colors border border-[#2C3E50]/20 shadow-sm"
+                    style={{ lineHeight: 1.1 }}
+                  >
+                    <Leaf className="w-3.5 h-3.5" />
+                    <span className="font-handwritten">Sustainability Analysis</span>
+                  </button>
                   <SustainableDesignButton
                     color={color.name}
                     hex={color.hex}
@@ -351,6 +368,33 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           onSubmit={handleEditSubmit}
         />
       )}
+
+      {/* Sustainability Analysis Modal */}
+      <Dialog.Root open={isSustainabilityModalOpen} onOpenChange={setSustainabilityModalOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+          <Dialog.Content
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full md:w-[800px] max-w-full z-50 bg-white shadow-2xl rounded-2xl flex flex-col p-8 overflow-y-auto border-2 border-[#2C3E50]"
+        style={{ fontFamily: 'Caveat, cursive', maxHeight: '90vh' }}
+      >
+  <Dialog.Title className="sr-only">Sustainability Analysis</Dialog.Title>
+            <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setSustainabilityModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
+            <SustainabilityAnalysis
+              color={color.name}
+              hex={color.hex}
+              location={color.location}
+              materials={color.materials.map(m => m.name).join(', ')}
+              date={color.dateCollected}
+              season={color.season}
+              bioregion={color.bioregion?.description || ''}
+              onOpenChat={() => {
+                setSustainabilityModalOpen(false);
+                setPigmentModalOpen(true);
+              }}
+            />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       {/* Pigment Analysis Modal */}
       <Dialog.Root open={isPigmentModalOpen} onOpenChange={setPigmentModalOpen}>

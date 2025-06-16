@@ -57,12 +57,12 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
 
           {/* Pure left-side panel, no box artifacts */}
           <div
-            className="relative z-50 w-60 h-full bg-black text-white pl-6 pt-16"
+            className="relative z-50 w-60 h-full bg-white text-black pl-6 pt-16"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
             <button
-              className="absolute top-4 left-4 text-white hover:opacity-70 transition-opacity"
+              className="absolute top-4 left-4 text-black hover:opacity-70 transition-opacity"
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"
             >
@@ -80,7 +80,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
                   <Link
                     href={href}
                     className={`
-                      font-handwritten text-white
+                      font-handwritten text-black
                       text-3xl md:text-4xl
                       relative group transition-all
                     `}

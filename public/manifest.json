@@ -1,6 +1,6 @@
 {
-  "name": "CAreScape",
-  "short_name": "CAreScape",
+  "name": "CareScape",
+  "short_name": "CareScape",
   "description": "A platform for collecting and sharing natural colors and pigments",
   "start_url": "/",
   "display": "standalone",
