@@ -83,13 +83,13 @@ export default function AboutPage() {
       <div className="fixed top-6 left-6 z-20 flex gap-4">
         <Link 
           href="/" 
-          className="bg-black text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-gray-900 transition-colors"
+          className="bg-black text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-gray-900 transition-colors"
         >
           BoS Manifesto
         </Link>
         <Link 
           href="/About" 
-          className="bg-red-600 text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-red-700 transition-colors"
+          className="bg-red-600 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-red-700 transition-colors"
         >
           About
         </Link>

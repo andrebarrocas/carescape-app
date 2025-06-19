@@ -13,6 +13,7 @@ import MapFilterButtons from './MapFilterButtons';
 import Link from "next/link";
 import dynamic from 'next/dynamic';
 import { animals } from '@/data/animals';
+import AnimalSubmissionForm from './AnimalSubmissionForm';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
@@ -54,13 +55,14 @@ function parseCoordinates(coords: any): { lat: number; lng: number } | null {
 export default function Map({ colors, titleColor }: MapProps) {
   const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
   const [showColorForm, setShowColorForm] = useState(false);
+  const [showAnimalForm, setShowAnimalForm] = useState(false);
   const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
   const router = useRouter();
   const [storyMode, setStoryMode] = useState(false);
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [storyColorId, setStoryColorId] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentMapStyle, setCurrentMapStyle] = useState('colors');
+  const [currentMapStyle, setCurrentMapStyle] = useState('all');
   const [currentView, setCurrentView] = useState('all');
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
@@ -409,6 +411,49 @@ export default function Map({ colors, titleColor }: MapProps) {
           <span className="ml-2">Add Color</span>
         </button>
       )}
+
+      {/* Add Animal Button */}
+      {!storyMode && currentView === 'animals' && (
+        <button
+          className="bos-button text-lg px-6 py-2 fixed bottom-8 z-50 rounded-full shadow border border-black flex items-center justify-center transition-opacity"
+          style={{ right: "5%" }}
+          onClick={() => setShowAnimalForm(true)}
+          aria-label="Add new animal"
+        >
+          <Plus className="w-6 h-6" strokeWidth={1.2} />
+          <span className="ml-2">Add Animal</span>
+        </button>
+      )}
+
+      {/* Animal Form Modal */}
+      <AnimalSubmissionForm
+        isOpen={showAnimalForm}
+        onClose={() => setShowAnimalForm(false)}
+        onSubmit={async (data) => {
+          try {
+            const response = await fetch('/api/animals', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to submit animal');
+            }
+
+            setShowAnimalForm(false);
+            // Refresh animals list
+            const animalsResponse = await fetch('/api/animals');
+            const newAnimals = await animalsResponse.json();
+            setAnimals(newAnimals);
+          } catch (error) {
+            console.error('Error submitting animal:', error);
+            alert('Failed to submit animal. Please try again.');
+          }
+        }}
+      />
     </div>
   );
 }

@@ -400,8 +400,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
+        <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" />
+        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto z-[110]">
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="flex justify-between items-start">
               <Dialog.Title className="text-2xl font-serif text-[#2C3E50]">
