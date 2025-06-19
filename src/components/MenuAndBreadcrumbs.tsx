@@ -32,32 +32,27 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
       <div className="fixed top-0 left-0 z-50 w-full flex items-start pointer-events-none">
         <div className="flex items-center gap-4 m-6 pointer-events-auto">
           <button
-            className="bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 rounded-lg p-3 shadow transition-colors flex items-center"
+            className="bg-[#DCDCDC] hover:opacity-80 rounded-lg p-3 shadow transition-opacity flex items-center"
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
           >
-            <Menu className="w-5 h-5 text-[#2C3E50]" strokeWidth={1.2} />
+            <Menu className="w-5 h-5" strokeWidth={1.2} />
           </button>
-
-          
-
-
-
         </div>
       </div>
 
-      {/* ─── Left-side Menu Modal ─────────────────────────────── */}
+      {/* Menu Modal */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-50 flex"
+          className="fixed inset-0 z-[60] flex"
           onClick={() => setMenuOpen(false)}
         >
-          {/* Dim background (blurred slightly) */}
+          {/* Backdrop */}
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
-          {/* Pure left-side panel, no box artifacts */}
+          {/* Menu Panel */}
           <div
-            className="relative z-50 w-60 h-full bg-white text-black pl-6 pt-16"
+            className="relative z-[70] w-60 h-full bg-white pl-6 pt-16"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -69,31 +64,20 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
               <X className="w-6 h-6" strokeWidth={1.2} />
             </button>
 
-            {/* Floating links (no box) */}
+            {/* Menu links */}
             <ul className="flex flex-col gap-6 mt-12">
               {[
-                { href: "/", label: "Home", underline: "w-14" },
-                { href: "/colors", label: "Colors", underline: "w-20" },
-                { href: "/about", label: "About", underline: "w-16" },
-              ].map(({ href, label, underline }) => (
+                { href: "/", label: "Home" },
+                { href: "/colors", label: "Colors" },
+                { href: "/about", label: "About" },
+              ].map(({ href, label }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className={`
-                      font-handwritten text-black
-                      text-3xl md:text-4xl
-                      relative group transition-all
-                    `}
+                    className="text-2xl relative hover:opacity-70 transition-opacity block"
+                    onClick={() => setMenuOpen(false)}
                   >
                     {label}
-                    <span
-                      className={`
-                        block h-0.5
-                        w-0 group-hover:${underline}
-                        transition-all duration-300
-                        bg-white absolute left-0 -bottom-1
-                      `}
-                    />
                   </Link>
                 </li>
               ))}

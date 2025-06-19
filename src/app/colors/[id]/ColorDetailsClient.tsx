@@ -154,10 +154,10 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             <div className="flex gap-2">
               <button
                 onClick={() => setSustainabilityModalOpen(true)}
-                className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow flex items-center gap-2"
+                className="bos-button flex items-center gap-2"
               >
                 <Leaf className="w-5 h-5" />
-                <span className="text-sm">Sustainability Analysis</span>
+                <span>Sustainability Analysis</span>
               </button>
               <SustainableDesignButton
                 color={color.name}
@@ -170,10 +170,10 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               />
               <button
                 onClick={() => setIsEditModalOpen(true)}
-                className="bg-[#2C3E50] p-2 rounded-lg hover:bg-[#2C3E50]/90 transition-colors group flex items-center gap-2 text-white"
+                className="bos-button flex items-center gap-2"
               >
                 <Pencil className="w-5 h-5" />
-                <span className="text-sm">Edit Color</span>
+                <span>Edit Color</span>
               </button>
             </div>
           </div>
@@ -236,7 +236,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <div className="my-2 flex flex-col gap-2">
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
-                    className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow flex items-center gap-2"
+                    className="bos-button flex items-center gap-2"
                   >
                     <Leaf className="w-3.5 h-3.5" />
                     <span className="font-handwritten">Sustainability Analysis</span>
@@ -449,9 +449,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               )}
               <div className="flex justify-end gap-4 mt-4">
                 <Dialog.Close asChild>
-                  <button type="button" className="px-4 py-2 rounded-lg border border-[#2C3E50] text-[#2C3E50] bg-white hover:bg-[#2C3E50]/10 transition-colors">Cancel</button>
+                  <button type="button" className="bos-button">Cancel</button>
                 </Dialog.Close>
-                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="px-6 py-2 rounded-lg bg-[#2C3E50] text-white font-handwritten text-lg hover:bg-[#2C3E50]/90 transition-colors disabled:opacity-50">
+                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button disabled:opacity-50">
                   {isUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>

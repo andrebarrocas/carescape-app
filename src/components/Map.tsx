@@ -44,9 +44,7 @@ export default function Map({ colors, titleColor }: MapProps) {
   const mapRef = useRef<any>(null);
   const [showColorForm, setShowColorForm] = useState(false);
   const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
-  const [showFullDetails, setShowFullDetails] = useState(false);
   const router = useRouter();
-  const [showColorsView, setShowColorsView] = useState(false);
   const [storyMode, setStoryMode] = useState(false);
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [storyColorId, setStoryColorId] = useState<string | null>(null);
@@ -99,36 +97,29 @@ export default function Map({ colors, titleColor }: MapProps) {
     <div className="relative w-full h-full">
       {/* Unified Menu and Breadcrumbs */}
       <MenuAndBreadcrumbs />
+      
       {/* Home Overlay */}
       {homeOverlay && (
         <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="text-center mb-12">
-          <h1
-            className={`text-[#F5F5F5] text-5xl md:text-7xl mb-6 drop-shadow-lg ${caveat.className}`}
-          >
-            CareScape
-          </h1>
-            <p className="text-xl md:text-2xl font-mono text-white mb-8 drop-shadow">A visual journey through natural colors and their stories</p>
+            <h1 className="text-5xl md:text-7xl mb-6 text-white">CareScape</h1>
+            <p className="text-xl md:text-2xl text-white mb-8">
+              A visual journey through natural colors and their stories
+            </p>
           </div>
           <div className="flex flex-col md:flex-row gap-8">
-          <button
-  onClick={() => { setShowColorsView(true); setHomeOverlay(false); setStoryMode(false); setCurrentColorIndex(0); }}
-  className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow"
->
-  Colors
-</button>
-
-<Link
-  href="/about"
-  className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/40 font-handwritten text-[#2C3E50] text-lg transition-colors text-center inline-block shadow"
->
-  About
-</Link>
-
+            <button
+              onClick={() => setHomeOverlay(false)}
+              className="bos-button"
+            >
+              Colors
+            </button>
+            <Link href="/about" className="bos-button">About</Link>
           </div>
         </div>
       )}
 
+      {/* Map */}
       <MapGL
         ref={mapRef}
         initialViewState={viewport}
@@ -231,24 +222,27 @@ export default function Map({ colors, titleColor }: MapProps) {
           );
         })}
       </MapGL>
-      {/* Color submission modal */}
+
+      {/* Add Color Button */}
+      {!homeOverlay && (
+        <button
+          className="fixed bottom-8 z-50 bg-[#DCDCDC] hover:opacity-80 rounded-full p-4 shadow border border-black flex items-center justify-center transition-opacity"
+          style={{ right: "5%" }}
+          onClick={() => setShowColorForm(true)}
+          aria-label="Add new color"
+        >
+          <Plus className="w-6 h-6" strokeWidth={1.2} />
+        </button>
+      )}
+
+      {/* Color Form Modal */}
       <ColorSubmissionForm
         isOpen={showColorForm}
         onClose={() => setShowColorForm(false)}
         onSubmit={async () => { setShowColorForm(false); }}
       />
-      {showColorsView && (
-        <button
-          className="fixed bottom-8 z-50 bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 rounded-full p-4 shadow border border-[#2C3E50] flex items-center justify-center transition-colors"
-          style={{ right: "5%" }}
-          onClick={() => setShowColorForm(true)}
-          aria-label="Add new color"
-        >
-          <Plus className="w-6 h-6 text-[#2C3E50]" strokeWidth={1.2} />
-        </button>
 
-      )}
-      {/* Storytelling Overlay */}
+      {/* Story Mode Overlay */}
       {storyMode && storyColorId && (
         <>
           <div 
@@ -257,7 +251,7 @@ export default function Map({ colors, titleColor }: MapProps) {
           />
           <div 
             className="fixed top-0 right-0 h-full w-full md:w-[600px] z-50 bg-white/95 shadow-2xl flex flex-col p-0 overflow-y-auto border-l-1 border-black transition-all duration-700" 
-            style={{ fontFamily: 'Caveat, cursive' }}
+            style={{ fontFamily: 'Futura Magazine, monospace' }}
           >
             <div className="flex-1 overflow-y-auto p-6">
               <EmbeddedColorDetails colorId={storyColorId} />
@@ -266,47 +260,25 @@ export default function Map({ colors, titleColor }: MapProps) {
               <button
                 onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
                 disabled={currentColorIndex === 0 || isAnimating}
-                className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors disabled:opacity-40"
+                className="bos-button disabled:opacity-40"
               >
                 Previous
               </button>
               <div className="flex gap-1 items-center">
                 {colors.map((_, idx) => (
-                  <span key={idx} className={`inline-block w-2 h-2 rounded-full ${idx === currentColorIndex ? 'bg-[#2C3E50]' : 'bg-[#2C3E50]/20'}`}></span>
+                  <span key={idx} className={`inline-block w-2 h-2 rounded-full ${idx === currentColorIndex ? 'bg-black' : 'bg-black/20'}`}></span>
                 ))}
               </div>
               <button
                 onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
                 disabled={currentColorIndex === colors.length - 1 || isAnimating}
-                className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors disabled:opacity-40"
+                className="bos-button disabled:opacity-40"
               >
                 Next
               </button>
             </div>
           </div>
         </>
-      )}
-      {!storyMode && selectedColor && (
-        <div className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 bg-white shadow-2xl flex flex-col p-8 overflow-y-auto border-l-4 border-black" style={{fontFamily:'Caveat, cursive'}}>
-          <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setSelectedColor(null)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
-          <div className="mb-6">
-            <h2 className="text-4xl font-handwritten text-black mb-2">{selectedColor.name}</h2>
-            <p className="text-sm text-black/70 italic mb-2">{selectedColor.location}</p>
-          </div>
-          {getColorImage(selectedColor) && (
-            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-6 border-2 border-black">
-              <img src={getColorImage(selectedColor)!} alt={selectedColor.name} className="object-cover w-full h-full" />
-            </div>
-          )}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full border-2 border-black" style={{backgroundColor: selectedColor.hex}} />
-            <span className="font-mono text-lg text-black">{selectedColor.hex}</span>
-          </div>
-          <blockquote className="text-xl font-handwritten text-black mb-6">{selectedColor.description}</blockquote>
-          <button className="mt-4 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-lg transition-colors" onClick={() => router.push(`/colors/${selectedColor.id}`)}>
-            View Full Details
-          </button>
-        </div>
       )}
     </div>
   );

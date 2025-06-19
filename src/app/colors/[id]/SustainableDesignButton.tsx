@@ -22,7 +22,7 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow flex items-center gap-2"
+          className="bos-button flex items-center gap-2"
           style={{ lineHeight: 1.1 }}
         >
           <Palette className="w-3.5 h-3.5" />

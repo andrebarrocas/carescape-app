@@ -130,7 +130,7 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                 <button
                   type="submit"
                   disabled={isSubmitting || !newComment.trim()}
-                  className="self-end flex items-center gap-2 px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bos-button disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Posting...' : 'Post'}
                 </button>

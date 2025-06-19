@@ -1,5 +1,6 @@
 import Map from '@/components/Map';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 
 async function fetchColors() {
   let host = '';
@@ -21,7 +22,7 @@ export default async function HomePage() {
   const colors = await fetchColors();
   return (
     <div className="w-screen h-screen overflow-hidden">
-      <Map colors={colors} titleColor="whitesmoke" />
+      <Map colors={colors} titleColor="black" />
     </div>
   );
 }

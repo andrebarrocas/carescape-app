@@ -178,7 +178,7 @@ Respond in under 4 sentences.`;
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow disabled:opacity-50"
+            className="bos-button disabled:opacity-50"
           >
             Send
           </button>

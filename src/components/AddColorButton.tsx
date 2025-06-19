@@ -31,10 +31,10 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
     <>
       <button
         onClick={openModal}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 transition-colors"
+        className="bos-button flex items-center gap-2"
       >
         <Plus className="w-4 h-4 text-[#2C3E50]" strokeWidth={1.2} />
-        <span className="font-handwritten text-[#2C3E50]">Add Color</span>
+        <span>Add Color</span>
       </button>
 
       <ColorSubmissionForm

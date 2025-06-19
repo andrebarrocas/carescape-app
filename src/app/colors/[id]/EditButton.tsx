@@ -10,11 +10,11 @@ export function EditButton() {
 
   return (
     <button
-      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 transition-colors"
+      className="bos-button flex items-center gap-2"
       onClick={handleEdit}
     >
-      <Pencil className="w-4 h-4 text-[#2C3E50]" />
-      <span className="font-handwritten text-[#2C3E50]">Edit</span>
+      <Pencil className="w-4 h-4" />
+      <span>Edit</span>
     </button>
   );
 } 
