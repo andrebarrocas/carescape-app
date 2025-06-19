@@ -154,7 +154,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             <div className="flex gap-2">
               <button
                 onClick={() => setSustainabilityModalOpen(true)}
-                className="bg-[#2C3E50] p-2 rounded-lg hover:bg-[#2C3E50]/90 transition-colors group flex items-center gap-2 text-white"
+                className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow flex items-center gap-2"
               >
                 <Leaf className="w-5 h-5" />
                 <span className="text-sm">Sustainability Analysis</span>
@@ -236,8 +236,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <div className="my-2 flex flex-col gap-2">
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#2C3E50]/10 text-xs font-mono text-[#2C3E50] hover:bg-[#2C3E50]/20 transition-colors border border-[#2C3E50]/20 shadow-sm"
-                    style={{ lineHeight: 1.1 }}
+                    className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow flex items-center gap-2"
                   >
                     <Leaf className="w-3.5 h-3.5" />
                     <span className="font-handwritten">Sustainability Analysis</span>
@@ -303,7 +302,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
 
           {/* Landscape Details */}
           <div className="mb-10">
-            <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 border-b border-[#2C3E50]/20 pb-2">
+            <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 pb-2">
               LANDSCAPE DETAILS
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
@@ -322,7 +321,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
 
           {/* Color Data */}
           <div>
-            <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 border-b border-[#2C3E50]/20 pb-2">
+            <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 pb-2">
               COLOR DATA
             </h2>
             <div className="space-y-4 text-black font-sans text-base">

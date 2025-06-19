@@ -111,18 +111,20 @@ export default function Map({ colors, titleColor }: MapProps) {
             <p className="text-xl md:text-2xl font-mono text-white mb-8 drop-shadow">A visual journey through natural colors and their stories</p>
           </div>
           <div className="flex flex-col md:flex-row gap-8">
-            <button
-              onClick={() => { setShowColorsView(true); setHomeOverlay(false); setStoryMode(false); setCurrentColorIndex(0); }}
-              className="px-12 py-6 bg-white text-[#2C3E50] text-2xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-[#2C3E50]/10 hover:text-[#2C3E50] transition-colors"
-            >
-              Colors
-            </button>
-            <Link
-              href="/about"
-              className="px-12 py-6 bg-[#2C3E50] text-white text-2xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors text-center inline-block"
-            >
-              About
-            </Link>
+          <button
+  onClick={() => { setShowColorsView(true); setHomeOverlay(false); setStoryMode(false); setCurrentColorIndex(0); }}
+  className="px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow"
+>
+  Colors
+</button>
+
+<Link
+  href="/about"
+  className="px-6 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/40 font-handwritten text-[#2C3E50] text-lg transition-colors text-center inline-block shadow"
+>
+  About
+</Link>
+
           </div>
         </div>
       )}
@@ -208,7 +210,6 @@ export default function Map({ colors, titleColor }: MapProps) {
         {colors.map((color, idx) => {
           const coords = parseCoordinates(color.coordinates);
           if (!coords) return null;
-          const img = getColorImage(color);
           return (
             <Marker
               key={color.id}
@@ -222,13 +223,10 @@ export default function Map({ colors, titleColor }: MapProps) {
                 setSelectedColor(null);
               }}
             >
-              <div className={`w-10 h-10 rounded-full border-4 border-white shadow-lg flex items-center justify-center cursor-pointer bg-white/80 hover:scale-110 transition-transform ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}>
-                {img ? (
-                  <img src={img} alt={color.name} className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div style={{backgroundColor: color.hex}} className="w-8 h-8 rounded-full" />
-                )}
-              </div>
+              <div
+                className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}
+                style={{ backgroundColor: color.hex }}
+              />
             </Marker>
           );
         })}

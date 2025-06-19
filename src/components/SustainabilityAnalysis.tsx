@@ -140,7 +140,7 @@ Respond with ONLY valid JSON in this format:
               </p>
               <button
                 onClick={onOpenChat}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#2C3E50] text-white rounded-lg hover:bg-[#1A252F] transition"
+                className="inline-flex items-center px-6 py-2 rounded-lg bg-white hover:bg-[#2C3E50]/10 font-handwritten text-[#2C3E50] text-lg border border-[#2C3E50] transition-colors shadow flex items-center gap-2"
               >
                 <Leaf className="w-4 h-4" />
                 <span>Generate Sustainable Design Ideas</span>
