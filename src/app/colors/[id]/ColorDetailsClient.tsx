@@ -223,23 +223,23 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           <div className="mb-12">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="font-handwritten text-6xl text-[#2C3E50] mb-3 leading-tight">
+                <h1 className="text-6xl text-[#2C3E50] mb-3 leading-tight">
                   {color.name}
                 </h1>
-                <p className="font-handwritten text-xl text-[#2C3E50]/80 italic">
+                <p className="text-xl text-[#2C3E50]/80 italic">
                   by {session?.user?.name || 'Anonymous'}
                 </p>
                 
-                <p className="font-handwritten text-lg text-[#2C3E50]/60">
+                <p className="text-lg text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                 </p>
                 <div className="my-2 flex flex-col gap-2">
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
-                    className="bos-button flex items-center gap-2"
+                    className="bos-button text-lg px-6 py-2 flex items-center gap-2"
                   >
                     <Leaf className="w-3.5 h-3.5" />
-                    <span className="font-handwritten">Sustainability Analysis</span>
+                    <span>Sustainability Analysis</span>
                   </button>
                   <SustainableDesignButton
                     color={color.name}
@@ -274,7 +274,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 />
               </div>
               {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption && (
-                <p className="mt-2 font-handwritten text-base text-[#2C3E50]/80">
+                <p className="mt-2 text-base text-[#2C3E50]/80">
                   {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption}
                 </p>
               )}
@@ -295,14 +295,14 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Personal Description */}
           <div className="mb-10">
 
-            <p className="mt-2 font-handwritten text-base text-[#2C3E50]/80">
+            <p className="mt-2 text-base text-[#2C3E50]/80">
               "{color.description}"
             </p>
           </div>
 
           {/* Landscape Details */}
           <div className="mb-10">
-            <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 pb-2">
+            <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
               LANDSCAPE DETAILS
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
@@ -321,7 +321,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
 
           {/* Color Data */}
           <div>
-            <h2 className="font-handwritten text-2xl text-[#2C3E50] mb-4 pb-2">
+            <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
               COLOR DATA
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
@@ -419,14 +419,14 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         <Dialog.Trigger asChild>
         <button className="mt-10 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 transition-colors border-2 border-transparent">
           <Plus className="w-6 h-6 text-[#2C3E50]" />
-          <span className="font-handwritten text-xl text-[#2C3E50]">Add Media Photos</span>
+          <span className="text-xl text-[#2C3E50]">Add Media Photos</span>
         </button>
 
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
-            <Dialog.Title className="font-handwritten text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
+            <Dialog.Title className="text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
             <form onSubmit={handleUpload} className="flex flex-col gap-6">
               <input type="file" accept="image/*" multiple onChange={handleMediaChange} className="mb-4" />
               {mediaFiles.length > 0 && (
@@ -449,9 +449,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               )}
               <div className="flex justify-end gap-4 mt-4">
                 <Dialog.Close asChild>
-                  <button type="button" className="bos-button">Cancel</button>
+                  <button type="button" className="bos-button text-lg px-6 py-2">Cancel</button>
                 </Dialog.Close>
-                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button disabled:opacity-50">
+                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-lg px-6 py-2 disabled:opacity-50">
                   {isUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>

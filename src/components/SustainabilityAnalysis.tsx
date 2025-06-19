@@ -94,7 +94,7 @@ Respond with ONLY valid JSON in this format:
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-2 mb-6">
           <Leaf className="w-6 h-6 text-green-600" />
-          <h2 className="text-2xl font-handwritten text-[#2C3E50]">Sustainability Analysis</h2>
+          <h2 className="text-2xl text-[#2C3E50]">Sustainability Analysis</h2>
         </div>
 
         {isLoading && (
@@ -116,7 +116,7 @@ Respond with ONLY valid JSON in this format:
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-red-50 border border-red-200 rounded-xl p-5">
-                <h3 className="font-handwritten text-xl text-red-700 mb-4">⚠️ Environmental Concerns</h3>
+                <h3 className="text-xl text-red-700 mb-4">⚠️ Environmental Concerns</h3>
                 <ul className="list-disc list-inside space-y-2 text-sm md:text-base font-sans leading-relaxed">
                   {analysis.disadvantages.map((item, i) => (
                     <li key={i}>{item}</li>
@@ -125,7 +125,7 @@ Respond with ONLY valid JSON in this format:
               </div>
 
               <div className="bg-green-50 border border-green-200 rounded-xl p-5">
-                <h3 className="font-handwritten text-xl text-green-800 mb-4">🌿 Environmental Advantages</h3>
+                <h3 className="text-xl text-green-800 mb-4">🌿 Environmental Advantages</h3>
                 <ul className="list-disc list-inside space-y-2 text-sm md:text-base font-sans leading-relaxed">
                   {analysis.advantages.map((item, i) => (
                     <li key={i}>{item}</li>
@@ -140,7 +140,7 @@ Respond with ONLY valid JSON in this format:
               </p>
               <button
                 onClick={onOpenChat}
-                className="bos-button flex items-center gap-2"
+                className="bos-button text-lg px-6 py-2 flex items-center gap-2"
               >
                 <Leaf className="w-4 h-4" />
                 <span>Generate Sustainable Design Ideas</span>

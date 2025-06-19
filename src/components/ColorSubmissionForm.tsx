@@ -697,19 +697,35 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               {/* Media Images Upload */}
               <div className="space-y-4">
                 <span className="font-mono text-sm text-[#2C3E50] block">Media Images</span>
-                <label className="block cursor-pointer group">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => handleFileUpload(e, 'process')}
-                    className="hidden"
-                  />
-                  <div className="flex items-center gap-2 px-6 py-3 border-2 border-[#2C3E50] font-mono text-sm hover:bg-[#2C3E50] hover:text-white transition-colors">
-                    <Upload className="w-5 h-5" />
-                    <span>Add Images</span>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex flex-col space-y-2">
+                    <label htmlFor="mediaUploads" className="text-lg">Add Media Photos</label>
+                    <button
+                      onClick={() => document.getElementById('mediaUploads')?.click()}
+                      className="bos-button text-lg px-6 py-2 flex items-center gap-2"
+                    >
+                      <Upload className="w-5 h-5" />
+                      Add Media Photos
+                    </button>
+                    <input
+                      type="file"
+                      id="mediaUploads"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e, 'process')}
+                    />
                   </div>
-                </label>
+                  
+                  {/* Submit button */}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="bos-button text-lg px-6 py-2 mt-4"
+                  >
+                    Submit Color
+                  </button>
+                </div>
 
                 {mediaFiles.filter(m => m.type === 'process').length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -748,17 +764,6 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="flex justify-end pt-6">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 font-handwritten text-[#2C3E50] transition-colors disabled:opacity-50"
-              >
-                {submitting ? 'Submitting...' : 'Submit Color'}
-              </button>
             </div>
           </form>
         </Dialog.Content>

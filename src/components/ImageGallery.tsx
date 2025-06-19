@@ -29,7 +29,7 @@ export function ImageGallery({ media, onCommentsClick }: ImageGalleryProps) {
       
       {/* Caption */}
       {media.caption && (
-        <p className="mt-2 text-sm text-[#2C3E50]/80 font-handwritten">
+        <p className="mt-2 text-sm text-[#2C3E50]/80">
           {media.caption}
         </p>
       )}

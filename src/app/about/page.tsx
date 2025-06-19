@@ -139,7 +139,7 @@ export default function AboutPage() {
           <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl mb-6">Be part of a global movement to document and highlight the potential of natural color</p>
           <Link
             href="/colors"
-            className="inline-block px-8 py-4 bg-[#2C3E50] text-white text-xl font-handwritten rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors"
+            className="inline-block px-8 py-4 bg-[#2C3E50] text-white text-xl rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors"
           >
             Get Started
           </Link>

@@ -110,11 +110,11 @@ export default function Map({ colors, titleColor }: MapProps) {
           <div className="flex flex-col md:flex-row gap-8">
             <button
               onClick={() => setHomeOverlay(false)}
-              className="bos-button"
+              className="bos-button text-xl px-8 py-2"
             >
               Colors
             </button>
-            <Link href="/about" className="bos-button">About</Link>
+            <Link href="/about" className="bos-button text-xl px-8 py-2">About</Link>
           </div>
         </div>
       )}
@@ -226,12 +226,13 @@ export default function Map({ colors, titleColor }: MapProps) {
       {/* Add Color Button */}
       {!homeOverlay && (
         <button
-          className="fixed bottom-8 z-50 bg-[#DCDCDC] hover:opacity-80 rounded-full p-4 shadow border border-black flex items-center justify-center transition-opacity"
+          className="bos-button text-lg px-6 py-2 fixed bottom-8 z-50 rounded-full shadow border border-black flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
           onClick={() => setShowColorForm(true)}
           aria-label="Add new color"
         >
           <Plus className="w-6 h-6" strokeWidth={1.2} />
+          <span className="ml-2">Add Color</span>
         </button>
       )}
 
@@ -260,7 +261,7 @@ export default function Map({ colors, titleColor }: MapProps) {
               <button
                 onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
                 disabled={currentColorIndex === 0 || isAnimating}
-                className="bos-button disabled:opacity-40"
+                className="bos-button text-lg px-6 py-2 disabled:opacity-40"
               >
                 Previous
               </button>
@@ -272,7 +273,7 @@ export default function Map({ colors, titleColor }: MapProps) {
               <button
                 onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
                 disabled={currentColorIndex === colors.length - 1 || isAnimating}
-                className="bos-button disabled:opacity-40"
+                className="bos-button text-lg px-6 py-2 disabled:opacity-40"
               >
                 Next
               </button>

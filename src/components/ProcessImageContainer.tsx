@@ -17,7 +17,7 @@ export function ProcessImageContainer({ media, onImageClick }: ProcessImageConta
         onClick={() => onImageClick(media)}
       >
         <Image
-          src={media.url || `/api/images/${media.id}`}
+          src={`/api/images/${media.id}`}
           alt={media.caption || 'Process image'}
           fill
           className="object-cover"
@@ -27,7 +27,7 @@ export function ProcessImageContainer({ media, onImageClick }: ProcessImageConta
         />
       </div>
       {media.caption && (
-        <p className="mt-2 font-handwritten text-sm text-[#2C3E50]/80">
+        <p className="mt-2 text-sm text-[#2C3E50]/80">
           {media.caption}
         </p>
       )}

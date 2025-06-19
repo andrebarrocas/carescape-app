@@ -193,9 +193,9 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-3 bg-[#2C3E50] text-white font-mono text-sm hover:bg-opacity-90 transition-colors disabled:opacity-50"
+                className="bos-button text-lg px-6 py-2 mt-4"
               >
-                {submitting ? 'Updating...' : 'Update Color'}
+                Update Color
               </button>
             </div>
           </form>
