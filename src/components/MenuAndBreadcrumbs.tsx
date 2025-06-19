@@ -36,7 +36,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
           >
-            <Menu className="w-5 h-5" strokeWidth={1.2} />
+            <Menu className="w-5 h-5 text-black" strokeWidth={1.2} />
           </button>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"
             >
-              <X className="w-6 h-6" strokeWidth={1.2} />
+              <X className="w-6 h-6 text-black" strokeWidth={1.2} />
             </button>
 
             {/* Menu links */}
@@ -74,7 +74,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-2xl relative hover:opacity-70 transition-opacity block"
+                    className="text-2xl text-black relative hover:opacity-70 transition-opacity block"
                     onClick={() => setMenuOpen(false)}
                   >
                     {label}
