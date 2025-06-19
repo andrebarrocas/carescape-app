@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 const breadcrumbMap: Record<string, string> = {
-  About: "About",
+  about: "About",
   colors: "Colors",
   animals: "Animals",
 };
@@ -71,7 +71,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
                 { href: "/", label: "Home" },
                 { href: "/colors", label: "Colors" },
                 { href: "/animals", label: "Animals" },
-                { href: "/About", label: "About" },
+                { href: "/about", label: "About" },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link

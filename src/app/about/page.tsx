@@ -88,7 +88,7 @@ export default function AboutPage() {
           BoS Manifesto
         </Link>
         <Link 
-          href="/About" 
+          href="/about" 
           className="bg-red-600 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-red-700 transition-colors"
         >
           About
@@ -97,6 +97,7 @@ export default function AboutPage() {
 
       <div className="flex flex-col items-center justify-center px-4 py-24">
         <div className="max-w-3xl w-full mx-auto text-center">
+          <br></br>
           <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight text-black">UNVEILING LANDSCAPE NATURAL COLORS</h1>
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-12">
             <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-black flex-shrink-0">

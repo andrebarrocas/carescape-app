@@ -24,7 +24,7 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
           BoS Manifesto
         </Link>
         <Link 
-          href="/About" 
+          href="/about" 
           className="bg-red-600 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-red-700 transition-colors"
         >
           About
