@@ -149,18 +149,23 @@ model Comment {
 }
 
 model Animal {
-  id          String   @id @default(cuid())
-  name        String
-  type        String
-  description String   @db.Text
-  location    String
-  coordinates String   // JSON string with lat/lng
-  image       String
-  date        DateTime
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  type           String
+  description    String   @db.Text
+  location       String
+  coordinates    String   // JSON string with lat/lng
+  image          String
+  date           DateTime
+  scientificName String?
+  habitat        String?  @db.Text
+  diet           String?  @db.Text
+  behavior       String?  @db.Text
+  conservation   String?  @db.Text
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@map("animals")
   @@index([userId])

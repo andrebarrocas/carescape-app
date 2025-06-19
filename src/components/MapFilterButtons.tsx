@@ -21,13 +21,13 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
           href="/" 
           className="bg-black text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-gray-900 transition-colors"
         >
-          BOS MANIFESTO
+          BoS Manifesto
         </Link>
         <Link 
-          href="/about" 
+          href="/About" 
           className="bg-red-600 text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-red-700 transition-colors"
         >
-          ABOUT
+          About
         </Link>
       </div>
 

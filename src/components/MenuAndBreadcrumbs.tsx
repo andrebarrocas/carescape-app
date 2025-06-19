@@ -6,8 +6,9 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 const breadcrumbMap: Record<string, string> = {
-  about: "About",
+  About: "About",
   colors: "Colors",
+  animals: "Animals",
 };
 
 export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: string }) {
@@ -29,7 +30,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
   return (
     <>
       {/* ─── Menu icon and breadcrumbs ───────────────────────── */}
-      <div className="fixed top-0 left-0 z-50 w-full flex items-start pointer-events-none">
+      <div className="fixed top-0 left-0 z-20 w-full flex items-start pointer-events-none">
         <div className="flex items-center gap-4 m-6 pointer-events-auto">
           <button
             className="bg-[#DCDCDC] hover:opacity-80 rounded-lg p-3 shadow transition-opacity flex items-center"
@@ -44,7 +45,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
       {/* Menu Modal */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-[60] flex"
+          className="fixed inset-0 z-[110] flex"
           onClick={() => setMenuOpen(false)}
         >
           {/* Backdrop */}
@@ -52,7 +53,7 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
 
           {/* Menu Panel */}
           <div
-            className="relative z-[70] w-60 h-full bg-white pl-6 pt-16"
+            className="relative z-[120] w-60 h-full bg-white pl-6 pt-16"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -69,7 +70,8 @@ export default function MenuAndBreadcrumbs({ colorName = "" }: { colorName?: str
               {[
                 { href: "/", label: "Home" },
                 { href: "/colors", label: "Colors" },
-                { href: "/about", label: "About" },
+                { href: "/animals", label: "Animals" },
+                { href: "/About", label: "About" },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link

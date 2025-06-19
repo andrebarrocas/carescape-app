@@ -1,54 +1,57 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-
-interface MediaUploadResult {
-  id: string;
-  filename: string;
-  mimetype: string;
-  type: string;
-  caption?: string;
-}
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const type = formData.get('type') as string;
-    const caption = formData.get('caption') as string | null;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     }
 
-    // Read the file as ArrayBuffer
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    if (!file) {
+      return new NextResponse(JSON.stringify({ error: 'No file uploaded' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create media upload using Prisma
-    const mediaUpload = await prisma.mediaUpload.create({
-      data: {
-        filename: file.name,
-        mimetype: file.type,
-        type,
-        data: buffer,
-        caption: caption || undefined,
-      },
-      select: {
-        id: true,
-        filename: true,
-        mimetype: true,
-        type: true,
-        caption: true,
+    // Create a unique filename
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const filename = `${file.name.split('.')[0]}-${uniqueSuffix}.${file.name.split('.').pop()}`;
+    const path = `/images/animals/${filename}`;
+    const fullPath = join(process.cwd(), 'public', path);
+
+    // Ensure the directory exists
+    await writeFile(fullPath, buffer);
+
+    return new NextResponse(JSON.stringify({ url: path }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
       },
     });
-
-    // Return the media upload info
-    return NextResponse.json(mediaUpload);
   } catch (error) {
     console.error('Error uploading file:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: 'Error uploading file' }, { status: 500 });
+    return new NextResponse(JSON.stringify({ error: 'Failed to upload file' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 } 

@@ -52,7 +52,7 @@ export default function SustainabilityAnalysis({
 
         const prompt = `You are a sustainability analyst.
 
-Given the following information about a natural pigment, write a very short summary (1 sentence) on the sustainability of the materials used. Then list 3–4 environmental *advantages* and *disadvantages*.
+Given the following information About a natural pigment, write a very short summary (1 sentence) on the sustainability of the materials used. Then list 3–4 environmental *advantages* and *disadvantages*.
 
 Details:
 - Color: ${color} (${hex})

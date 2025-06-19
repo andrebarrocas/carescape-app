@@ -80,18 +80,18 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <div className="fixed top-6 left-6 z-50 flex gap-4">
+      <div className="fixed top-6 left-6 z-20 flex gap-4">
         <Link 
           href="/" 
           className="bg-black text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-gray-900 transition-colors"
         >
-          BOS MANIFESTO
+          BoS Manifesto
         </Link>
         <Link 
-          href="/about" 
+          href="/About" 
           className="bg-red-600 text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-red-700 transition-colors"
         >
-          ABOUT
+          About
         </Link>
       </div>
 

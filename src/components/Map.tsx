@@ -398,7 +398,7 @@ export default function Map({ colors, titleColor }: MapProps) {
       )}
 
       {/* Add Color Button */}
-      {!storyMode && (
+      {!storyMode && currentView === 'colors' && (
         <button
           className="bos-button text-lg px-6 py-2 fixed bottom-8 z-50 rounded-full shadow border border-black flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}

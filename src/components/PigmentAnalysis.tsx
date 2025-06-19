@@ -172,7 +172,7 @@ Respond in under 4 sentences.`;
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about sustainable design ideas..."
+            placeholder="Ask About sustainable design ideas..."
             className="flex-1 p-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
             disabled={isLoading}
           />
