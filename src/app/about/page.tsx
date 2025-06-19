@@ -67,16 +67,7 @@ export default function AboutPage() {
     },
   ];
 //1(13)-5
-  const tumblrImages = [
-    '/about-img-10.png',
-    '/about-img-5.png',
-    '/about-img-6.png',
-    '/about-img-7.png',
-    '/about-img-8.png',
-    '/about-img-9.png',
-    '/about-img-11.png',
-    '/about-img-12.png',
-  ];
+
 
   useEffect(() => {
     setMounted(true);
@@ -87,68 +78,77 @@ export default function AboutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] pt-24">
+    <div className="min-h-screen bg-white">
       <MenuAndBreadcrumbs />
-      <main className="w-full flex flex-col gap-12 items-center">
-        {/* Hero Title */}
-        <section className="w-full py-16 flex flex-col items-center justify-center">
-          <h1 className={`text-5xl md:text-7xl mb-6 text-[#2C3E50] ${caveat.className}`}>UNVEILING LANDSCAPE COLORS</h1>
-          <p className="text-xl font-mono text-[#2C3E50] max-w-2xl mx-auto text-center">Explore the connection between colors and their natural sources</p>
-        </section>
-
-        {/* Tumblr-style feed: alternate image and text blocks */}
-        {/* 1st image */}
-        <Image src={tumblrImages[0]} alt="About visual 1" width={1920} height={800} className="w-full h-auto object-cover" priority />
-
-        {/* Interactive Color Map */}
-        <section className="w-full flex flex-col items-center py-10 px-4">
-          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Platform Features</h3>
-        </section>
-
-        {/* 2nd image */}
-        <Image src={tumblrImages[1]} alt="About visual 2" width={1920} height={800} className="w-full h-auto object-cover" />
-        {/* Interactive Color Map */}
-        <section className="w-full flex flex-col items-center py-10 px-4">
-          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Interactive Color Map</h3>
-          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl">Explore natural colors geographically and discover their landscape origins.</p>
-        </section>
-
-        {/* 3rd image */}
-        <Image src={tumblrImages[2]} alt="About visual 3" width={1920} height={800} className="w-full h-auto object-cover" />
-
-        {/* Community Knowledge */}
-        <section className="w-full flex flex-col items-center py-10 px-4">
-          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Community Knowledge</h3>
-          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl">Share and learn from color makers and enthusiasts worldwide.</p>
-        </section>
-
-        {/* 4th image */}
-        <Image src={tumblrImages[3]} alt="About visual 4" width={1920} height={800} className="w-full h-auto object-cover" />
-
-        {/* Sustainable Practices */}
-        <section className="w-full flex flex-col items-center py-10 px-4">
-          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Sustainable Practices</h3>
-          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl">Learn eco-friendly methods for creating and using natural colors.</p>
-        </section>
-
-        {/* 5th image */}
-        <Image src={tumblrImages[4]} alt="About visual 5" width={1920} height={800} className="w-full h-auto object-cover" />
-               {/* Join Our Color Community */}
-        <section className="w-full flex flex-col items-center py-10 px-4">
-          <h3 className={`text-3xl mb-2 text-[#2C3E50] ${caveat.className}`}>Join Our Color Community</h3>
-          <p className="font-mono text-lg text-[#2C3E50] text-center max-w-2xl mb-6">Be part of a global movement to document and highlight the potential of natural color</p>
-          <Link
-            href="/colors"
-            className="inline-block px-8 py-4 bg-[#2C3E50] text-white text-xl rounded-xl shadow-lg border-2 border-[#2C3E50] hover:bg-white hover:text-[#2C3E50] transition-colors"
-          >
-            Get Started
-          </Link>
-        </section>
-      
-        {/* 6th image */}
-        <Image src={tumblrImages[5]} alt="About visual 6" width={1920} height={800} className="w-full h-auto object-cover" />
-
-      </main>
+      <div className="flex flex-col items-center justify-center px-4 py-24">
+        <div className="max-w-3xl w-full mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight text-black">UNVEILING LANDSCAPE NATURAL COLORS</h1>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-12">
+            <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-black flex-shrink-0">
+              <Image 
+                src="/desenho-1.jpg" 
+                alt="About visual 1" 
+                width={256} 
+                height={256} 
+                className="object-cover w-full h-full scale-125" 
+              />
+            </div>
+            <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-black flex-shrink-0">
+              <Image 
+                src="/desenho-2.jpg" 
+                alt="About visual 2" 
+                width={256} 
+                height={256} 
+                className="object-cover w-full h-full scale-125" 
+              />
+            </div>
+            <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-black flex-shrink-0">
+              <Image 
+                src="/desenho-3.jpg" 
+                alt="About visual 3" 
+                width={256} 
+                height={256} 
+                className="object-cover w-full h-full scale-125" 
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-left">
+            <div>
+              <h2 className="text-2xl font-bold mb-2 text-black">community knowledge</h2>
+              <p className="text-lg mb-2 text-black">Share knowledge of making colors from elements of the surrounding landscapes worldwide, unveiling their natural, cultural and social contexts.</p>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold mb-2 text-black">sustainable practices</h2>
+              <p className="text-lg mb-2 text-black">Highlight natural local materials and promote their use and application, disseminating situated knowledge for positive global impact.</p>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold mb-2 text-black">Networks of care</h2>
+              <p className="text-lg mb-2 text-black">Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.</p>
+            </div>
+          </div>
+          <div className="bg-[#F5F5F0] rounded-2xl p-8 mb-12 shadow-lg border border-black/10">
+            <h2 className="text-3xl font-bold mb-6 text-center text-black">JOIN OUR COMMUNITY</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+              <div>
+                <h3 className="text-xl font-bold mb-2 text-black">sign in</h3>
+                <p className="mb-4 text-black">Create your personal account.<br/>Your private information is safe and treated with the utmost care.</p>
+                <h3 className="text-xl font-bold mb-2 text-black">upload content</h3>
+                <p className="mb-4 text-black">Share your making experiences, creative processes, and personal reflections through text and images.<br/>Your content remains yours — copyright is fully protected.</p>
+                <h3 className="text-xl font-bold mb-2 text-black">review & share</h3>
+                <p className="mb-4 text-black">Easily review and edit your content whenever you like.<br/>Add insights, fresh details, and share your creative process through first-person stories.</p>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2 text-black">browse & interact</h3>
+                <p className="mb-4 text-black">Explore the knowledge of making colors and networks of ecosystems relationships through an interactive map and by engaging with both the community stories and AI generated insights.</p>
+                <div className="flex flex-col items-center mt-8">
+                  <Link href="/auth/signin" className="bos-button text-xl px-10 py-4 mb-4 hover:bg-red-500 hover:text-white transition-colors">Sign In</Link>
+                  <Link href="/colors" className="bos-button text-xl px-10 py-4 hover:bg-red-500 hover:text-white transition-colors">Get Started</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 } 
