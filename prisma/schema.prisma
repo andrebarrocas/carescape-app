@@ -24,6 +24,7 @@ model User {
   sessions      Session[] // Relation to sessions
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  animals       Animal[]
 
   @@map("users")
 }
@@ -145,4 +146,22 @@ model Comment {
   @@index([colorId])
   @@index([userId])
   @@index([mediaId])
+}
+
+model Animal {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  description String   @db.Text
+  location    String
+  coordinates String   // JSON string with lat/lng
+  image       String
+  date        DateTime
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("animals")
+  @@index([userId])
 } 

@@ -9,18 +9,31 @@ import { Menu, X, Plus } from 'lucide-react';
 import ColorSubmissionForm from '@/components/ColorSubmissionForm';
 import { Caveat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import MenuAndBreadcrumbs from './MenuAndBreadcrumbs';
+import MapFilterButtons from './MapFilterButtons';
 import Link from "next/link";
 import dynamic from 'next/dynamic';
+import { animals } from '@/data/animals';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
 
 const EmbeddedColorDetails = dynamic(() => import('@/components/StoryColorDetails'), { ssr: false });
+const EmbeddedAnimalDetails = dynamic(() => import('@/components/AnimalDetails'), { ssr: false });
 
 interface MapProps {
   colors: ColorSubmission[];
   titleColor?: string;
+}
+
+interface Animal {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  location: string;
+  coordinates: string | { lat: number; lng: number };
+  image: string;
+  date: string;
 }
 
 function parseCoordinates(coords: any): { lat: number; lng: number } | null {
@@ -40,8 +53,6 @@ function parseCoordinates(coords: any): { lat: number; lng: number } | null {
 
 export default function Map({ colors, titleColor }: MapProps) {
   const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
-  const [homeOverlay, setHomeOverlay] = useState(true);
-  const mapRef = useRef<any>(null);
   const [showColorForm, setShowColorForm] = useState(false);
   const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
   const router = useRouter();
@@ -49,35 +60,57 @@ export default function Map({ colors, titleColor }: MapProps) {
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [storyColorId, setStoryColorId] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  const getColorImage = (color: ColorSubmission) => {
-    if (!color.mediaUploads?.length) return null;
-    const landscapeImage = color.mediaUploads.find(media => (media.type === 'landscape') && 'url' in media);
-    if (landscapeImage && 'url' in landscapeImage) return (landscapeImage as any).url;
-    const firstWithUrl = color.mediaUploads.find(media => 'url' in media);
-    return firstWithUrl ? (firstWithUrl as any).url : null;
-  };
+  const [currentMapStyle, setCurrentMapStyle] = useState('colors');
+  const [currentView, setCurrentView] = useState('all');
+  const [animals, setAnimals] = useState<Animal[]>([]);
+  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
 
   const colorCoords = colors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
   const defaultCenter = colorCoords.length ? {
     latitude: colorCoords.reduce((sum, c) => sum + c!.lat, 0) / colorCoords.length,
     longitude: colorCoords.reduce((sum, c) => sum + c!.lng, 0) / colorCoords.length,
-    zoom: colorCoords.length === 1 ? 6 : 2
-  } : { latitude: 40, longitude: -74.5, zoom: 1 };
+    zoom: 3
+  } : { latitude: 20, longitude: 0, zoom: 2 };
   const [viewport, setViewport] = useState(defaultCenter);
 
-  // Animate map to current color in story mode
+  const mapRef = useRef<any>(null);
+
+  // Map styles using Mapbox's predefined styles
+  const mapStyles = {
+    animals: 'mapbox://styles/mapbox/navigation-night-v1'  // Blue and orange vintage style
+  };
+
+  // Fetch animals
   useEffect(() => {
-    if (storyMode && colors[currentColorIndex]) {
-      const coords = parseCoordinates(colors[currentColorIndex].coordinates);
-      if (coords && mapRef.current) {
-        setIsAnimating(true);
-        mapRef.current.flyTo({ center: [coords.lng, coords.lat], zoom: 6, speed: 1.2, curve: 1.5 });
-        setTimeout(() => setIsAnimating(false), 1200);
+    const fetchAnimals = async () => {
+      try {
+        const response = await fetch('/api/animals', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setAnimals(data);
+      } catch (error) {
+        console.error('Error fetching animals:', error);
+        // Fallback to static data if API fails
+        setAnimals(animals);
       }
-      setStoryColorId(colors[currentColorIndex].id);
-    }
-  }, [storyMode, currentColorIndex, colors]);
+    };
+
+    fetchAnimals();
+  }, []);
+
+  const handleFilterChange = (filter: string) => {
+    setCurrentMapStyle(filter);
+    setCurrentView(filter);
+  };
 
   // Keyboard navigation for story mode
   useEffect(() => {
@@ -93,37 +126,29 @@ export default function Map({ colors, titleColor }: MapProps) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [storyMode, colors.length]);
 
+  // Update story color ID when index changes
+  useEffect(() => {
+    if (storyMode && colors[currentColorIndex]) {
+      setStoryColorId(colors[currentColorIndex].id);
+    }
+  }, [storyMode, currentColorIndex, colors]);
+
   return (
     <div className="relative w-full h-full">
-      {/* Unified Menu and Breadcrumbs */}
-      <MenuAndBreadcrumbs />
-      
-      {/* Home Overlay */}
-      {homeOverlay && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-7xl mb-6 text-white">CareScape</h1>
-            <p className="text-xl md:text-2xl text-white mb-8">
-              A visual journey through natural colors and their stories
-            </p>
-          </div>
-          <div className="flex flex-col md:flex-row gap-8">
-            <button
-              onClick={() => setHomeOverlay(false)}
-              className="bos-button text-xl px-8 py-2"
-            >
-              Colors
-            </button>
-            <Link href="/about" className="bos-button text-xl px-8 py-2">About</Link>
-          </div>
-        </div>
-      )}
+      {/* Map Filter Buttons */}
+      <MapFilterButtons onFilterChange={handleFilterChange} />
 
       {/* Map */}
       <MapGL
         ref={mapRef}
-        initialViewState={viewport}
-        mapStyle={{
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        style={{ width: '100%', height: '100%' }}
+        initialViewState={{
+          ...viewport,
+          pitch: 0,
+          bearing: 0
+        }}
+        mapStyle={currentView === 'animals' ? mapStyles.animals : {
           version: 8,
           name: 'Giorgia Lupi Inspired',
           sources: {
@@ -193,12 +218,12 @@ export default function Map({ colors, titleColor }: MapProps) {
             }
           ]
         }}
-        mapboxAccessToken={MAPBOX_TOKEN}
-        style={{ width: '100%', height: '100%' }}
         onMove={evt => setViewport(evt.viewState)}
       >
         <NavigationControl position="bottom-right" />
-        {colors.map((color, idx) => {
+
+        {/* Render Color Markers */}
+        {(currentView === 'all' || currentView === 'colors') && colors.map((color, idx) => {
           const coords = parseCoordinates(color.coordinates);
           if (!coords) return null;
           return (
@@ -221,26 +246,91 @@ export default function Map({ colors, titleColor }: MapProps) {
             </Marker>
           );
         })}
-      </MapGL>
 
-      {/* Add Color Button */}
-      {!homeOverlay && (
-        <button
-          className="bos-button text-lg px-6 py-2 fixed bottom-8 z-50 rounded-full shadow border border-black flex items-center justify-center transition-opacity"
-          style={{ right: "5%" }}
-          onClick={() => setShowColorForm(true)}
-          aria-label="Add new color"
-        >
-          <Plus className="w-6 h-6" strokeWidth={1.2} />
-          <span className="ml-2">Add Color</span>
-        </button>
-      )}
+        {/* Render Animal Markers */}
+        {(currentView === 'all' || currentView === 'animals') && animals.map((animal) => {
+          let coords;
+          try {
+            if (typeof animal.coordinates === 'string') {
+              coords = JSON.parse(animal.coordinates);
+            } else {
+              coords = animal.coordinates;
+            }
+          } catch (error) {
+            console.error('Error parsing animal coordinates:', error);
+            return null;
+          }
+          
+          if (!coords || !coords.lat || !coords.lng) {
+            return null;
+          }
+          
+          return (
+            <Marker
+              key={animal.id}
+              longitude={coords.lng}
+              latitude={coords.lat}
+              anchor="bottom"
+              onClick={e => {
+                e.originalEvent.stopPropagation();
+                setSelectedAnimal(animal);
+                setStoryMode(false);
+                setSelectedColor(null);
+              }}
+            >
+              <div 
+                className="w-12 h-12 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform bg-white p-1 overflow-hidden"
+                style={{ border: '2px solid #2C3E50' }}
+              >
+                <div className="relative w-full h-full">
+                  <Image
+                    src={animal.image}
+                    alt={animal.name}
+                    fill
+                    className="object-cover rounded-full"
+                    sizes="48px"
+                    onError={(e) => {
+                      // Fallback to a colored background if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.style.backgroundColor = '#FF6B6B';
+                        parent.innerHTML = `<div class="flex items-center justify-center w-full h-full text-white text-xs font-bold">${animal.name.charAt(0)}</div>`;
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </Marker>
+          );
+        })}
+      </MapGL>
 
       {/* Color Form Modal */}
       <ColorSubmissionForm
         isOpen={showColorForm}
         onClose={() => setShowColorForm(false)}
-        onSubmit={async () => { setShowColorForm(false); }}
+        onSubmit={async (data) => {
+          try {
+            const response = await fetch('/api/colors', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to submit color');
+            }
+
+            setShowColorForm(false);
+            router.refresh();
+          } catch (error) {
+            console.error('Error submitting color:', error);
+          }
+        }}
       />
 
       {/* Story Mode Overlay */}
@@ -251,13 +341,13 @@ export default function Map({ colors, titleColor }: MapProps) {
             onClick={() => setStoryMode(false)}
           />
           <div 
-            className="fixed top-0 right-0 h-full w-full md:w-[600px] z-50 bg-white/95 shadow-2xl flex flex-col p-0 overflow-y-auto border-l-1 border-black transition-all duration-700" 
+            className="fixed top-0 right-0 h-full w-full md:w-[600px] z-50 bg-white shadow-2xl flex flex-col p-0 overflow-y-auto border-l border-black" 
             style={{ fontFamily: 'Futura Magazine, monospace' }}
           >
             <div className="flex-1 overflow-y-auto p-6">
               <EmbeddedColorDetails colorId={storyColorId} />
             </div>
-            <div className="flex items-center justify-between p-6 border-t border-black/10 bg-gradient-to-r from-white to-[#FFFCF5]">
+            <div className="flex items-center justify-between p-6 border-t border-black">
               <button
                 onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
                 disabled={currentColorIndex === 0 || isAnimating}
@@ -280,6 +370,44 @@ export default function Map({ colors, titleColor }: MapProps) {
             </div>
           </div>
         </>
+      )}
+
+      {/* Animal Details Modal */}
+      {selectedAnimal && (
+        <>
+          <div 
+            className="fixed inset-0 z-40 bg-black/20"
+            onClick={() => setSelectedAnimal(null)}
+          />
+          <div 
+            className="fixed top-0 right-0 h-full w-full md:w-[600px] z-50 bg-white/95 shadow-2xl flex flex-col p-0 overflow-y-auto border-l border-black transition-all duration-700" 
+            style={{ fontFamily: 'Futura Magazine, monospace' }}
+          >
+            <button
+              onClick={() => setSelectedAnimal(null)}
+              className="absolute top-4 right-4 p-2 hover:bg-black/5 rounded-full transition-colors"
+              aria-label="Close animal details"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <div className="flex-1 overflow-y-auto p-6">
+              <EmbeddedAnimalDetails animalId={selectedAnimal.id} />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Add Color Button */}
+      {!storyMode && (
+        <button
+          className="bos-button text-lg px-6 py-2 fixed bottom-8 z-50 rounded-full shadow border border-black flex items-center justify-center transition-opacity"
+          style={{ right: "5%" }}
+          onClick={() => setShowColorForm(true)}
+          aria-label="Add new color"
+        >
+          <Plus className="w-6 h-6" strokeWidth={1.2} />
+          <span className="ml-2">Add Color</span>
+        </button>
       )}
     </div>
   );

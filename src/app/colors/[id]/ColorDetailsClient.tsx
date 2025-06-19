@@ -417,9 +417,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
       {/* Add Media Modal */}
       <Dialog.Root open={isAddMediaOpen} onOpenChange={setAddMediaOpen}>
         <Dialog.Trigger asChild>
-        <button className="mt-10 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#2C3E50]/10 hover:bg-[#2C3E50]/20 transition-colors border-2 border-transparent">
-          <Plus className="w-6 h-6 text-[#2C3E50]" />
-          <span className="text-xl text-[#2C3E50]">Add Media Photos</span>
+        <button className="mt-10 w-full bos-button text-xl px-6 py-3 flex items-center justify-center gap-2">
+          <Plus className="w-6 h-6" />
+          <span>Add Media Photos</span>
         </button>
 
         </Dialog.Trigger>

@@ -79,7 +79,22 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <MenuAndBreadcrumbs />
+      {/* Navigation */}
+      <div className="fixed top-6 left-6 z-50 flex gap-4">
+        <Link 
+          href="/" 
+          className="bg-black text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-gray-900 transition-colors"
+        >
+          BOS MANIFESTO
+        </Link>
+        <Link 
+          href="/about" 
+          className="bg-red-600 text-white text-2xl px-8 py-3 font-bold uppercase tracking-wider hover:bg-red-700 transition-colors"
+        >
+          ABOUT
+        </Link>
+      </div>
+
       <div className="flex flex-col items-center justify-center px-4 py-24">
         <div className="max-w-3xl w-full mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight text-black">UNVEILING LANDSCAPE NATURAL COLORS</h1>
