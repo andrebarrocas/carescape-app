@@ -14,7 +14,7 @@ export default function AuthErrorPage() {
       case 'Configuration':
         return 'There is a problem with the server configuration.';
       case 'AccessDenied':
-        return 'Access denied. You do not have permission to sign in.';
+        return 'Access denied. You do not have permission to Sign In.';
       case 'Verification':
         return 'The verification link may have expired or has already been used.';
       default:
