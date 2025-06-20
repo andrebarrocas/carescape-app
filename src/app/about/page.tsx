@@ -66,8 +66,6 @@ export default function AboutPage() {
       shape: Triangle,
     },
   ];
-//1(13)-5
-
 
   useEffect(() => {
     setMounted(true);
@@ -97,7 +95,7 @@ export default function AboutPage() {
 
       <div className="flex flex-col items-center justify-center px-4 py-24">
         <div className="max-w-5xl w-full mx-auto text-center">
-          <br></br>
+          <br />
           <h1 className="text-3xl font-bold mb-12 leading-tight text-black">UNVEILING LANDSCAPE NATURAL COLORS</h1>
           <div className="flex flex-col md:flex-row items-start justify-center gap-8 mb-12">
             <div className="flex flex-col items-center text-center max-w-xs">
@@ -140,10 +138,10 @@ export default function AboutPage() {
               <p className="text-lg mb-2 text-black">Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.</p>
             </div>
           </div>
-          <br></br>
+          <br />
           <div>
             <h2 className="text-3xl font-bold mb-6 text-center text-black">JOIN OUR COMMUNITY</h2>
-            <div className="space-y-4 text-center max-w-2xl mx-auto">
+            <div className="space-y-6 text-center max-w-2xl mx-auto leading-relaxed">
               <div>
                 <h3 className="text-xl font-bold mb-2 text-black">Sign In</h3>
                 <p className="mb-4 text-black">Create your personal account.<br/>Your private information is safe and treated with the utmost care.</p>
@@ -160,14 +158,28 @@ export default function AboutPage() {
                 <h3 className="text-xl font-bold mb-2 text-black">Browse & Interact</h3>
                 <p className="mb-4 text-black">Explore the knowledge of making colors and networks of ecosystems relationships through an interactive map and by engaging with both the community stories and AI generated insights.</p>
               </div>
-              <div className="flex flex-col items-center mt-8">
-                <Link href="/auth/signin" className="bos-button text-2xl px-8 py-3 mb-4 hover:bg-red-500 hover:text-white transition-colors">Sign In</Link>
-                <Link href="/colors" className="bos-button text-2xl px-8 py-3 hover:bg-red-500 hover:text-white transition-colors">Get Started</Link>
-              </div>
+           
+  
+              <div className="flex flex-col items-center mt-8 gap-4">
+
+              <Link 
+                href="/colors" 
+                className="bos-button text-xl px-8 py-4 tracking-wider"
+                style={{
+                  fontSize: '1rem',
+                  padding: '0.75rem 2rem',
+                  lineHeight: '1.5',
+                  letterSpacing: '1px'
+                }}
+              >
+                Get Started
+              </Link>
+            </div>
+
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

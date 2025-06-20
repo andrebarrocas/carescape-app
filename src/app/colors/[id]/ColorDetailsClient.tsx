@@ -236,7 +236,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <div className="my-2 flex flex-col gap-2">
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
-                    className="bos-button text-lg px-6 py-2"
+                    className="bos-button text-2xl px-8 py-3"
                   >
                     <span>Sustainability Analysis</span>
                   </button>

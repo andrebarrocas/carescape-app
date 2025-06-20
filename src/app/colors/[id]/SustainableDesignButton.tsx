@@ -22,7 +22,7 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="bos-button text-lg px-6 py-2"
+          className="bos-button text-2xl px-8 py-3"
           style={{ lineHeight: 1.1 }}
         >
           <span>Generate Sustainable Design Ideas</span>

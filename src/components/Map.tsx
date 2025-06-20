@@ -350,26 +350,49 @@ export default function Map({ colors, titleColor }: MapProps) {
               <EmbeddedColorDetails colorId={storyColorId} />
             </div>
             <div className="flex items-center justify-between p-6 border-t border-black">
-              <button
-                onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
-                disabled={currentColorIndex === 0 || isAnimating}
-                className="bos-button text-2xl px-8 py-3 disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <div className="flex gap-1 items-center">
-                {colors.map((_, idx) => (
-                  <span key={idx} className={`inline-block w-2 h-2 rounded-full ${idx === currentColorIndex ? 'bg-black' : 'bg-black/20'}`}></span>
-                ))}
-              </div>
-              <button
-                onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
-                disabled={currentColorIndex === colors.length - 1 || isAnimating}
-                className="bos-button text-2xl px-8 py-3 disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
+  {/* Previous */}
+  <button
+    onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
+    disabled={currentColorIndex === 0 || isAnimating}
+    className="bos-button tracking-wider disabled:opacity-40"
+    style={{
+      fontSize: '1rem',        // ≈ text-xl
+      padding: '0.75rem 2rem', // ≈ px-8 py-4
+      lineHeight: '1.5'
+    }}
+  >
+    Previous
+  </button>
+
+  {/* dots */}
+  <div className="flex gap-1 items-center">
+    {colors.map((_, idx) => (
+      <span
+        key={idx}
+        className={`inline-block w-2 h-2 rounded-full ${
+          idx === currentColorIndex ? 'bg-black' : 'bg-black/20'
+        }`}
+      />
+    ))}
+  </div>
+
+  {/* Next */}
+  <button
+    onClick={() =>
+      setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))
+    }
+    disabled={currentColorIndex === colors.length - 1 || isAnimating}
+    className="bos-button tracking-wider disabled:opacity-40"
+    style={{
+      fontSize: '1rem',
+      padding: '0.75rem 2rem',
+      lineHeight: '1.5'
+    }}
+  >
+    Next
+  </button>
+</div>
+
           </div>
         </>
       )}
