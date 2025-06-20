@@ -85,7 +85,7 @@ export default function AboutPage() {
           href="/" 
           className="bg-black text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-gray-900 transition-colors"
         >
-          BoS Manifesto
+          CareScape
         </Link>
         <Link 
           href="/about" 

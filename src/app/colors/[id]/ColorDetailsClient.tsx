@@ -303,7 +303,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Landscape Details */}
           <div className="mb-10">
             <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
-              LANDSCAPE DETAILS
+              Landscape Details
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
               <p>- Specific Location: {color.location}</p>
@@ -322,7 +322,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Color Data */}
           <div>
             <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
-              COLOR DATA
+              Color Data
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
               <p>- Type: {color.materials[0]?.name}</p>
