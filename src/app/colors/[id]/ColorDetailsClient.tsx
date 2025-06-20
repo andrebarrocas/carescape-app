@@ -236,9 +236,8 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <div className="my-2 flex flex-col gap-2">
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
-                    className="bos-button text-lg px-6 py-2 flex items-center gap-2"
+                    className="bos-button text-lg px-6 py-2"
                   >
-                    <Leaf className="w-3.5 h-3.5" />
                     <span>Sustainability Analysis</span>
                   </button>
                   <SustainableDesignButton
@@ -258,7 +257,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Main Landscape Image */}
           {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome') && (
             <div className="mb-8">
-              <div className="relative w-full aspect-[4/3] bg-white rounded-lg overflow-hidden">
+              <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
                 <ImageGalleryWrapper
                   media={{
                     ...mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome'),
@@ -275,7 +274,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               </div>
               {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption && (
                 <p className="mt-2 text-base text-[#2C3E50]/80">
-                  {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption}
+                  
                 </p>
               )}
             </div>
@@ -284,7 +283,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Color Swatch and Hex */}
           <div className="flex items-start gap-4 mb-8">
             <div 
-              className="w-16 h-16 rounded-lg shadow-lg"
+              className="w-16 h-16 rounded-full shadow-lg"
               style={{ backgroundColor: color.hex }}
             />
             <p className="font-mono text-base text-[#2C3E50]">
@@ -434,7 +433,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   {mediaFiles.map((file, idx) => (
                     <div key={idx} className="flex flex-col gap-2 border-b pb-4">
                       <div className="flex items-center gap-4">
-                        <Image src={URL.createObjectURL(file)} alt="preview" width={80} height={80} className="rounded-lg object-cover" />
+                        <Image src={URL.createObjectURL(file)} alt="preview" width={80} height={80} className="object-cover" />
                         <input
                           type="text"
                           placeholder="Caption for this image"

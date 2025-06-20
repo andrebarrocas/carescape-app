@@ -16,11 +16,11 @@ export function ImageGallery({ media, onCommentsClick }: ImageGalleryProps) {
           src={`/api/images/${media.id}`}
           alt={media.caption || 'Image'}
           fill
-          className="object-cover rounded-lg transition-transform duration-200 group-hover:scale-[1.02]"
+          className="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
         />
         
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <div className="text-white text-sm bg-black/50 px-3 py-1.5 rounded-full">
             {media.comments.length} {media.comments.length === 1 ? 'comment' : 'comments'}
           </div>

@@ -401,17 +401,18 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" />
-        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto z-[110]">
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-            <div className="flex justify-between items-start">
-              <Dialog.Title className="text-2xl font-serif text-[#2C3E50]">
-                Add New Color
-              </Dialog.Title>
-              <Dialog.Close className="text-[#2C3E50] hover:text-[#2C3E50]/80">
-                <X className="w-6 h-6" />
-              </Dialog.Close>
-            </div>
-
+        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto border-2 border-black z-[110]">
+          <div className="flex items-center justify-between mb-6">
+            <Dialog.Title className="text-2xl font-bold text-[#2C3E50]" style={{ fontFamily: '"Futura Magazine", monospace' }}>
+              Add New Color
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button className="rounded-full p-1.5 hover:bg-black/5">
+                <X className="h-5 w-5 text-[#2C3E50]" />
+              </button>
+            </Dialog.Close>
+          </div>
+          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
             {/* Basic Information */}
             <div className="space-y-4">
               <div>

@@ -96,70 +96,73 @@ export default function AboutPage() {
       </div>
 
       <div className="flex flex-col items-center justify-center px-4 py-24">
-        <div className="max-w-3xl w-full mx-auto text-center">
+        <div className="max-w-5xl w-full mx-auto text-center">
           <br></br>
-          <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight text-black">UNVEILING LANDSCAPE NATURAL COLORS</h1>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-12">
-            <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-black flex-shrink-0">
-              <Image 
-                src="/desenho-1.jpg" 
-                alt="About visual 1" 
-                width={256} 
-                height={256} 
-                className="object-cover w-full h-full scale-125" 
-              />
-            </div>
-            <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-black flex-shrink-0">
-              <Image 
-                src="/desenho-2.jpg" 
-                alt="About visual 2" 
-                width={256} 
-                height={256} 
-                className="object-cover w-full h-full scale-125" 
-              />
-            </div>
-            <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-black flex-shrink-0">
-              <Image 
-                src="/desenho-3.jpg" 
-                alt="About visual 3" 
-                width={256} 
-                height={256} 
-                className="object-cover w-full h-full scale-125" 
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-left">
-            <div>
+          <h1 className="text-3xl font-bold mb-12 leading-tight text-black">UNVEILING LANDSCAPE NATURAL COLORS</h1>
+          <div className="flex flex-col md:flex-row items-start justify-center gap-8 mb-12">
+            <div className="flex flex-col items-center text-center max-w-xs">
+              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
+                <Image 
+                  src="/desenho-1.jpg" 
+                  alt="About visual 1" 
+                  width={256} 
+                  height={256} 
+                  className="object-cover w-full h-full scale-125" 
+                />
+              </div>
               <h2 className="text-2xl font-bold mb-2 text-black">Community Knowledge</h2>
               <p className="text-lg mb-2 text-black">Share knowledge of making colors from elements of the surrounding landscapes worldwide, unveiling their natural, cultural and social contexts.</p>
             </div>
-            <div>
+            <div className="flex flex-col items-center text-center max-w-xs">
+              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
+                <Image 
+                  src="/desenho-2.jpg" 
+                  alt="About visual 2" 
+                  width={256} 
+                  height={256} 
+                  className="object-cover w-full h-full scale-125" 
+                />
+              </div>
               <h2 className="text-2xl font-bold mb-2 text-black">Sustainable Practices</h2>
               <p className="text-lg mb-2 text-black">Highlight natural local materials and promote their use and application, disseminating situated knowledge for positive global impact.</p>
             </div>
-            <div>
+            <div className="flex flex-col items-center text-center max-w-xs">
+              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
+                <Image 
+                  src="/desenho-3.jpg" 
+                  alt="About visual 3" 
+                  width={256} 
+                  height={256} 
+                  className="object-cover w-full h-full scale-125" 
+                />
+              </div>
               <h2 className="text-2xl font-bold mb-2 text-black">Networks of Care</h2>
               <p className="text-lg mb-2 text-black">Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.</p>
             </div>
           </div>
-          <div className="bg-[#F5F5F0] rounded-2xl p-8 mb-12 shadow-lg border border-black/10">
+          <br></br>
+          <div>
             <h2 className="text-3xl font-bold mb-6 text-center text-black">JOIN OUR COMMUNITY</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            <div className="space-y-4 text-center max-w-2xl mx-auto">
               <div>
                 <h3 className="text-xl font-bold mb-2 text-black">Sign In</h3>
                 <p className="mb-4 text-black">Create your personal account.<br/>Your private information is safe and treated with the utmost care.</p>
+              </div>
+              <div>
                 <h3 className="text-xl font-bold mb-2 text-black">Upload Content</h3>
                 <p className="mb-4 text-black">Share your making experiences, creative processes, and personal reflections through text and images.<br/>Your content remains yours — copyright is fully protected.</p>
+              </div>
+              <div>
                 <h3 className="text-xl font-bold mb-2 text-black">Review & Share</h3>
                 <p className="mb-4 text-black">Easily review and edit your content whenever you like.<br/>Add insights, fresh details, and share your creative process through first-person stories.</p>
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-2 text-black">Browse & Interact</h3>
                 <p className="mb-4 text-black">Explore the knowledge of making colors and networks of ecosystems relationships through an interactive map and by engaging with both the community stories and AI generated insights.</p>
-                <div className="flex flex-col items-center mt-8">
-                  <Link href="/auth/signin" className="bos-button text-xl px-10 py-4 mb-4 hover:bg-red-500 hover:text-white transition-colors">Sign In</Link>
-                  <Link href="/colors" className="bos-button text-xl px-10 py-4 hover:bg-red-500 hover:text-white transition-colors">Get Started</Link>
-                </div>
+              </div>
+              <div className="flex flex-col items-center mt-8">
+                <Link href="/auth/signin" className="bos-button text-2xl px-8 py-3 mb-4 hover:bg-red-500 hover:text-white transition-colors">Sign In</Link>
+                <Link href="/colors" className="bos-button text-2xl px-8 py-3 hover:bg-red-500 hover:text-white transition-colors">Get Started</Link>
               </div>
             </div>
           </div>

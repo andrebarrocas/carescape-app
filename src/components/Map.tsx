@@ -353,7 +353,7 @@ export default function Map({ colors, titleColor }: MapProps) {
               <button
                 onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
                 disabled={currentColorIndex === 0 || isAnimating}
-                className="bos-button text-lg px-6 py-2 disabled:opacity-40"
+                className="bos-button text-2xl px-8 py-3 disabled:opacity-40"
               >
                 Previous
               </button>
@@ -365,7 +365,7 @@ export default function Map({ colors, titleColor }: MapProps) {
               <button
                 onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
                 disabled={currentColorIndex === colors.length - 1 || isAnimating}
-                className="bos-button text-lg px-6 py-2 disabled:opacity-40"
+                className="bos-button text-2xl px-8 py-3 disabled:opacity-40"
               >
                 Next
               </button>
@@ -402,7 +402,7 @@ export default function Map({ colors, titleColor }: MapProps) {
       {/* Add Color Button */}
       {!storyMode && currentView === 'colors' && (
         <button
-          className="bos-button text-lg px-6 py-2 fixed bottom-8 z-50 rounded-full shadow border border-black flex items-center justify-center transition-opacity"
+          className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 rounded-full shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
           onClick={() => setShowColorForm(true)}
           aria-label="Add new color"
@@ -415,7 +415,7 @@ export default function Map({ colors, titleColor }: MapProps) {
       {/* Add Animal Button */}
       {!storyMode && currentView === 'animals' && (
         <button
-          className="bos-button text-lg px-6 py-2 fixed bottom-8 z-50 rounded-full shadow border border-black flex items-center justify-center transition-opacity"
+          className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 rounded-full shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
           onClick={() => setShowAnimalForm(true)}
           aria-label="Add new animal"
