@@ -17,6 +17,9 @@ export const animals: Animal[] = [
     habitat: 'Salt marshes, lagoons, and shallow coastal waters with specific requirements for nesting and feeding areas. They thrive in the intertidal zones where land meets water, particularly in the salt pans that provide both food and protection.',
     diet: 'Small aquatic invertebrates, algae, and small crustaceans. Their specialized beaks are adapted for filter-feeding, allowing them to extract nutrients from the brackish waters of the salt marsh.',
     behavior: 'Known for their distinctive standing on one leg and filter-feeding behavior. They form large colonies during breeding season and engage in synchronized courtship displays. Their presence in the salt marsh is deeply connected to the tidal rhythms, moving between feeding areas based on water levels.',
-    conservation: 'While listed as Least Concern globally, local populations face challenges from habitat loss and human disturbance. The Salinas Foundation actively works to protect their breeding and feeding grounds through careful water management and nest protection measures.'
+    conservation: 'While listed as Least Concern globally, local populations face challenges from habitat loss and human disturbance. The Salinas Foundation actively works to protect their breeding and feeding grounds through careful water management and nest protection measures.',
+    userId: 'static-user',
+    createdAt: new Date('2024-03-15'),
+    updatedAt: new Date('2024-03-15')
   }
 ]; 

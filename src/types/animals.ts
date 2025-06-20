@@ -7,12 +7,12 @@ export interface Animal {
   coordinates: string | { lat: number; lng: number };
   image: string;
   date: string | Date;
-  scientificName?: string;
-  habitat?: string;
-  diet?: string;
-  behavior?: string;
-  conservation?: string;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  scientificName?: string | null;
+  habitat?: string | null;
+  diet?: string | null;
+  behavior?: string | null;
+  conservation?: string | null;
+  userId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 } 

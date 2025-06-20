@@ -78,8 +78,99 @@ export default function Map({ colors, titleColor }: MapProps) {
   const mapRef = useRef<any>(null);
 
   // Map styles using Mapbox's predefined styles
-  const mapStyles = {
-    animals: 'mapbox://styles/mapbox/navigation-night-v1'  // Blue and orange vintage style
+  const mapStyles: Record<string, any> = {
+    animals: {
+      version: 8,
+      name: 'Artistic Wildlife Style',
+      sources: {
+        'mapbox-streets': {
+          type: 'vector',
+          url: 'mapbox://mapbox.mapbox-streets-v8'
+        }
+      },
+      sprite: 'mapbox://sprites/mapbox/light-v11',
+      glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: {
+            'background-color': '#F7F3E9'  // Warm cream background
+          }
+        },
+        {
+          id: 'land',
+          type: 'background',
+          paint: {
+            'background-color': '#E8D5B7',  // Earthy beige
+            'background-pattern': 'pattern-dots'
+          }
+        },
+        {
+          id: 'water',
+          type: 'fill',
+          source: 'mapbox-streets',
+          'source-layer': 'water',
+          paint: {
+            'fill-color': '#B8D4E3',  // Soft blue-green
+            'fill-opacity': 0.7
+          }
+        },
+        {
+          id: 'landuse',
+          type: 'fill',
+          source: 'mapbox-streets',
+          'source-layer': 'landuse',
+          paint: {
+            'fill-color': '#D4C4A8',  // Warm tan
+            'fill-opacity': 0.5
+          }
+        },
+        {
+          id: 'parks',
+          type: 'fill',
+          source: 'mapbox-streets',
+          'source-layer': 'landuse',
+          filter: ['==', ['get', 'class'], 'park'],
+          paint: {
+            'fill-color': '#A8C4A8',  // Soft green for parks
+            'fill-opacity': 0.6
+          }
+        },
+        {
+          id: 'roads',
+          type: 'line',
+          source: 'mapbox-streets',
+          'source-layer': 'road',
+          paint: {
+            'line-color': '#8B7355',  // Warm brown
+            'line-width': 1,
+            'line-opacity': 0.3
+          }
+        },
+        {
+          id: 'buildings',
+          type: 'fill',
+          source: 'mapbox-streets',
+          'source-layer': 'building',
+          paint: {
+            'fill-color': '#6B5B47',  // Darker brown
+            'fill-opacity': 0.15
+          }
+        },
+        {
+          id: 'labels',
+          type: 'symbol',
+          source: 'mapbox-streets',
+          'source-layer': 'place_label',
+          paint: {
+            'text-color': '#5D4E37',  // Warm dark brown
+            'text-halo-color': '#F7F3E9',
+            'text-halo-width': 1
+          }
+        }
+      ]
+    }
   };
 
   // Fetch animals
@@ -425,7 +516,7 @@ export default function Map({ colors, titleColor }: MapProps) {
       {/* Add Color Button */}
       {!storyMode && currentView === 'colors' && (
         <button
-          className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 rounded-full shadow-lg flex items-center justify-center transition-opacity"
+          className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
           onClick={() => setShowColorForm(true)}
           aria-label="Add new color"
@@ -438,7 +529,7 @@ export default function Map({ colors, titleColor }: MapProps) {
       {/* Add Animal Button */}
       {!storyMode && currentView === 'animals' && (
         <button
-          className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 rounded-full shadow-lg flex items-center justify-center transition-opacity"
+          className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
           onClick={() => setShowAnimalForm(true)}
           aria-label="Add new animal"
