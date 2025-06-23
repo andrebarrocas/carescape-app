@@ -66,7 +66,7 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
                     : 'bg-[#A0A0A0] hover:bg-[#8A8A8A]'
                 }`}
               >
-                Animals
+                Biodiversity
               </button>
             </div>
           )}

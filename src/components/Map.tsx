@@ -64,7 +64,7 @@ export default function Map({ colors, titleColor }: MapProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMapStyle, setCurrentMapStyle] = useState('all');
   const [currentView, setCurrentView] = useState('all');
-  const [animals, setAnimals] = useState<Animal[]>([]);
+  const [animals, setBiodiversity] = useState<Animal[]>([]);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
 
   const colorCoords = colors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
@@ -175,7 +175,7 @@ export default function Map({ colors, titleColor }: MapProps) {
 
   // Fetch animals
   useEffect(() => {
-    const fetchAnimals = async () => {
+    const fetchBiodiversity = async () => {
       try {
         const response = await fetch('/api/animals', {
           method: 'GET',
@@ -189,15 +189,15 @@ export default function Map({ colors, titleColor }: MapProps) {
         }
         
         const data = await response.json();
-        setAnimals(data);
+        setBiodiversity(data);
       } catch (error) {
         console.error('Error fetching animals:', error);
         // Fallback to static data if API fails
-        setAnimals(animals);
+        setBiodiversity(animals);
       }
     };
 
-    fetchAnimals();
+    fetchBiodiversity();
   }, []);
 
   const handleFilterChange = (filter: string) => {
@@ -560,8 +560,8 @@ export default function Map({ colors, titleColor }: MapProps) {
             setShowAnimalForm(false);
             // Refresh animals list
             const animalsResponse = await fetch('/api/animals');
-            const newAnimals = await animalsResponse.json();
-            setAnimals(newAnimals);
+            const newBiodiversity = await animalsResponse.json();
+            setBiodiversity(newBiodiversity);
           } catch (error) {
             console.error('Error submitting animal:', error);
             alert('Failed to submit animal. Please try again.');

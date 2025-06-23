@@ -57,8 +57,8 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
         </button>
         {/* Header */}
         <div className="w-full text-center mb-8">
-          <h2 className="text-3xl text-[#2C3E50] mb-2">{media.caption || 'Image Details'}</h2>
-          <div className="mx-auto w-16 h-1 bg-[#D4A373] rounded-full" />
+          <h2 className="text-1xl text-[#2C3E50] mb-2">{media.caption || 'Image Details'}</h2>
+         
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 w-full gap-2 md:gap-4">

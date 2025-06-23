@@ -7,12 +7,12 @@ import { useRouter } from 'next/navigation';
 import type { Animal } from '@/types/animals';
 import AnimalSubmissionForm from '@/components/AnimalSubmissionForm';
 
-interface AnimalsClientProps {
+interface BiodiversityClientProps {
   animals: Animal[];
   session: any;
 }
 
-export function AnimalsClient({ animals, session }: AnimalsClientProps) {
+export function BiodiversityClient({ animals, session }: BiodiversityClientProps) {
   const [isAddAnimalOpen, setIsAddAnimalOpen] = useState(false);
   const router = useRouter();
 
@@ -41,7 +41,7 @@ export function AnimalsClient({ animals, session }: AnimalsClientProps) {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-serif text-[#2C3E50]">Animals</h1>
+        <h1 className="text-4xl font-serif text-[#2C3E50]">Biodiversity</h1>
         <button
           onClick={() => setIsAddAnimalOpen(true)}
           className="bos-button flex items-center gap-2"
