@@ -33,7 +33,7 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
         <Dialog.Content className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full md:w-[500px] max-w-full z-50 bg-white shadow-2xl rounded-t-2xl flex flex-col p-8 overflow-y-auto border-t-4 border-black" style={{fontFamily:'Caveat, cursive', maxHeight: '80vh'}}>
           <Dialog.Title asChild>
             <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-5 h-5 text-[#2C3E50]" />
+              
               <span className="font-mono text-base text-[#2C3E50]/80">Sustainable Design Chat</span>
             </div>
           </Dialog.Title>

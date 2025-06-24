@@ -93,7 +93,7 @@ Respond with ONLY valid JSON in this format:
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-2 mb-6">
-          <Leaf className="w-6 h-6 text-green-600" />
+          
           <h2 className="text-2xl text-[#2C3E50]">Sustainability Analysis</h2>
         </div>
 
@@ -142,7 +142,7 @@ Respond with ONLY valid JSON in this format:
                 onClick={onOpenChat}
                 className="bos-button text-lg px-6 py-2 flex items-center gap-2"
               >
-                <Leaf className="w-4 h-4" />
+                
                 <span>Generate Sustainable Design Ideas</span>
               </button>
             </div>
