@@ -49,12 +49,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const formData = await request.formData();
     const files = formData.getAll('media') as File[];
     const captions = formData.getAll('captions') as string[];
+    const types = formData.getAll('types') as string[];
 
     const uploads = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!(file instanceof File)) continue;
       const caption = captions[i] || '';
+      const type = types[i] || 'process'; // Default to process if no type specified
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
@@ -64,7 +66,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           filename: file.name,
           mimetype: file.type,
           data: buffer,
-          type: 'process',
+          type: type,
           caption,
         },
         select: {

@@ -323,71 +323,54 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
         data.hex = '#000000';
       }
 
-      // Define the type for media uploads
-      type MediaUpload = {
-        id: string;
-        filename: string;
-        mimetype: string;
-        type: 'outcome' | 'landscape' | 'process';
-        caption?: string;
-      };
-
-      // If there are media files, try to upload them
-      let mediaUploads: MediaUpload[] = [];
-      if (mediaFiles.length > 0) {
-        try {
-          const mediaUploadPromises = mediaFiles.map(async (media) => {
-            const formData = new FormData();
-            formData.append('file', media.file);
-            formData.append('type', media.type);
-            if (media.caption) {
-              formData.append('caption', media.caption);
-            }
-            
-            try {
-              const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-              });
-              
-              if (!response.ok) {
-                throw new Error('Failed to upload media');
-              }
-              
-              const uploadedFile = await response.json();
-              
-              return {
-                id: uploadedFile.id,
-                filename: media.file.name,
-                mimetype: media.file.type,
-                type: media.type,
-                caption: media.caption,
-              } as MediaUpload;
-            } catch (error) {
-              console.error('Error uploading media:', error);
-              return null;
-            }
-          });
-
-          mediaUploads = (await Promise.all(mediaUploadPromises))
-            .filter((upload): upload is MediaUpload => upload !== null);
-        } catch (error) {
-          console.error('Error handling media uploads:', error);
-          // Continue with form submission even if media upload fails
-        }
-      }
-      
       // Format the date properly
       const formattedDate = new Date(data.dateCollected).toISOString();
       
-      // Add uploaded media to form data if any were successfully uploaded
-      const formData = {
+      // First, create the color without media uploads
+      const colorData = {
         ...data,
         dateCollected: formattedDate,
-        mediaUploads: mediaUploads.length > 0 ? mediaUploads : undefined,
       };
 
-      await onSubmit(formData);
+      const colorResponse = await fetch('/api/colors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(colorData),
+      });
+
+      if (!colorResponse.ok) {
+        throw new Error('Failed to create color');
+      }
+
+      const color = await colorResponse.json();
+
+      // Then, upload media files if any
+      if (mediaFiles.length > 0) {
+        try {
+          const formData = new FormData();
+          mediaFiles.forEach((media, index) => {
+            formData.append('media', media.file);
+            formData.append('captions', media.caption || '');
+            formData.append('types', media.type);
+          });
+
+          const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!mediaResponse.ok) {
+            console.error('Failed to upload media files');
+          }
+        } catch (error) {
+          console.error('Error uploading media files:', error);
+          // Continue even if media upload fails
+        }
+      }
+
+      await onSubmit(colorData);
       onClose();
     } catch (error) {
       console.error('Error submitting form:', error);

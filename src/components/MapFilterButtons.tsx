@@ -24,7 +24,7 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
       <div className="fixed top-6 left-6 z-50 flex gap-4">
         <button 
           onClick={handleCareScapeClick}
-          className="bg-black text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-gray-900 transition-colors"
+          className="bg-gradient-to-r from-red-500 via-blue-500 via-green-500 to-yellow-500 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:opacity-90 transition-opacity"
         >
           CareScape
         </button>
@@ -34,8 +34,8 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
         >
           About
         </Link>
-        
-        {/* Explore dropdown button */}
+        {/* Explore dropdown button hidden */}
+        {/*
         <div 
           className="relative"
           onMouseEnter={() => setIsExploreHovered(true)}
@@ -45,7 +45,6 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
             Explore
           </button>
           
-          {/* Dropdown menu */}
           {isExploreHovered && (
             <div className="absolute top-full left-0 flex flex-row gap-2 pt-2">
               <button
@@ -71,6 +70,7 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
             </div>
           )}
         </div>
+        */}
       </div>
     </>
   );

@@ -63,7 +63,7 @@ export default function Map({ colors, titleColor }: MapProps) {
   const [storyColorId, setStoryColorId] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMapStyle, setCurrentMapStyle] = useState('all');
-  const [currentView, setCurrentView] = useState('all');
+  const [currentView, setCurrentView] = useState('colors');
   const [animals, setBiodiversity] = useState<Animal[]>([]);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
 

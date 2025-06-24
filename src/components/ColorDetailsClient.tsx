@@ -9,7 +9,7 @@ import { Pencil, Palette, X, Plus, Leaf } from 'lucide-react';
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
-import SustainableDesignButton from './SustainableDesignButton';
+import SustainableDesignButton from '@/app/colors/[id]/SustainableDesignButton';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
@@ -226,11 +226,11 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <h1 className="text-6xl text-[#2C3E50] mb-3 leading-tight">
                   {color.name}
                 </h1>
-                <p className="text-base text-[#2C3E50]/80 italic">
+                <p className="text-xl text-[#2C3E50]/80 italic">
                   by {session?.user?.name || 'Anonymous'}
                 </p>
                 
-                <p className="text-base text-[#2C3E50]/60">
+                <p className="text-lg text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                 </p>
                 <div className="my-2 flex flex-col gap-2">
@@ -274,7 +274,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               </div>
               {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption && (
                 <p className="mt-2 text-base text-[#2C3E50]/80">
-                  
+                  {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption}
                 </p>
               )}
             </div>
@@ -293,7 +293,6 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
 
           {/* Personal Description */}
           <div className="mb-10">
-
             <p className="mt-2 text-base text-[#2C3E50]/80">
               "{color.description}"
             </p>

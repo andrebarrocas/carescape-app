@@ -9,14 +9,21 @@ interface ColorWithMedia {
   id: string;
   name: string;
   hex: string;
-  description: string;
+  description: string | null;
+  aiDescription: string | null;
   location: string;
   coordinates: string | null;
+  bioregion: string | null;
+  bioregionMap: string | null;
   season: string;
   dateCollected: Date;
   userId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    pseudonym: string | null;
+  };
   materials: {
     id: string;
     name: string;
@@ -41,6 +48,9 @@ interface ColorWithMedia {
     mimetype: string;
     type: string;
   }[];
+  createdAt: Date;
+  updatedAt: Date;
+  bioregionId: string | null;
 }
 
 interface TransformedColor extends Omit<ColorWithMedia, 'coordinates'> {
@@ -52,6 +62,14 @@ export async function GET() {
   try {
     const colors = await prisma.color.findMany({
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            pseudonym: true,
+          },
+        },
         materials: true,
         processes: true,
         mediaUploads: {
@@ -127,16 +145,43 @@ export async function POST(req: Request) {
       userId,
     } = data;
 
+    // Get or create anonymous user if no userId provided
+    let finalUserId = userId;
+    if (!finalUserId) {
+      const session = await getServerSession(authOptions);
+      if (session?.user?.id) {
+        finalUserId = session.user.id;
+      } else {
+        // Create or find anonymous user
+        const anonymousUser = await prisma.user.findFirst({
+          where: { email: 'anonymous@carespace.app' }
+        });
+
+        if (!anonymousUser) {
+          const newAnonymousUser = await prisma.user.create({
+            data: {
+              email: 'anonymous@carespace.app',
+              name: 'Anonymous User',
+            }
+          });
+          finalUserId = newAnonymousUser.id;
+        } else {
+          finalUserId = anonymousUser.id;
+        }
+      }
+    }
+
     const color = await prisma.color.create({
       data: {
         name,
-        description,
+        description: description || '',
         aiDescription,
         location,
         coordinates: coordinates ? JSON.stringify(coordinates) : null,
         hex,
         dateCollected: new Date(dateCollected),
-        userId,
+        season,
+        userId: finalUserId,
         materials: {
           create: {
             name: sourceMaterial,
