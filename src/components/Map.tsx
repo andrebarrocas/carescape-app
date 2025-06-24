@@ -226,6 +226,27 @@ export default function Map({ colors, titleColor }: MapProps) {
     }
   }, [storyMode, currentColorIndex, colors]);
 
+  // Handle viewport animation for story mode
+  useEffect(() => {
+    if (storyMode && colors[currentColorIndex]) {
+      const coords = parseCoordinates(colors[currentColorIndex].coordinates);
+      if (coords && mapRef.current) {
+        setIsAnimating(true);
+        mapRef.current.flyTo({
+          center: [coords.lng, coords.lat],
+          zoom: 8,
+          duration: 2000,
+          essential: true
+        });
+        
+        // Reset animation state after animation completes
+        setTimeout(() => {
+          setIsAnimating(false);
+        }, 2000);
+      }
+    }
+  }, [storyMode, currentColorIndex, colors]);
+
   return (
     <div className="relative w-full h-full">
       {/* Map Filter Buttons */}

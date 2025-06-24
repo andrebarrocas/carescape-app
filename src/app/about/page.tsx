@@ -87,7 +87,7 @@ export default function AboutPage() {
         </Link>
         <Link 
           href="/about" 
-          className="bg-red-600 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-red-700 transition-colors"
+          className="bg-[#A0A0A0] text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-[#8A8A8A] transition-colors"
         >
           About
         </Link>
