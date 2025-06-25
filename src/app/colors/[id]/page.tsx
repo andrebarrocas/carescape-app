@@ -23,7 +23,15 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
     include: {
       materials: true,
       processes: true,
-      mediaUploads: true
+      mediaUploads: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          pseudonym: true,
+        }
+      }
     }
   });
 
@@ -90,7 +98,8 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
     updatedAt: color.updatedAt.toISOString(),
     userId: color.userId,
     sourceMaterial: color.materials[0]?.name || '',
-    type: color.processes[0]?.technique as 'pigment' | 'dye' | 'ink'
+    type: color.processes[0]?.technique as 'pigment' | 'dye' | 'ink',
+    user: color.user
   };
 }
 

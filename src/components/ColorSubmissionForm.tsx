@@ -27,7 +27,7 @@ const colorSubmissionSchema = z.object({
     const d = new Date(date);
     return !isNaN(d.getTime());
   }, "Please enter a valid date"),
-  pseudonym: z.string().optional(),
+  authorName: z.string().optional(),
   email: z.string().email('Valid email is required'),
   agreeToTerms: z.boolean().optional(),
   hex: z.string().min(1, 'Hex color is required'),
@@ -40,7 +40,9 @@ const colorSubmissionSchema = z.object({
   })).optional(),
 });
 
-export type ColorSubmissionForm = z.infer<typeof colorSubmissionSchema>;
+export type ColorSubmissionForm = z.infer<typeof colorSubmissionSchema> & {
+  mediaFiles?: MediaFile[];
+};
 export { colorSubmissionSchema };
 
 interface ColorSubmissionFormProps {
@@ -98,6 +100,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<ColorSubmissionForm>({
     resolver: zodResolver(colorSubmissionSchema),
     defaultValues: {
@@ -105,6 +108,17 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       season: 'Spring',
     }
   });
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      reset();
+      setMediaFiles([]);
+      setSelectedLocation(null);
+      setMapCenter([40, -74.5]);
+      setMapZoom(3);
+    }
+  }, [isOpen, reset]);
 
   const handleMapClick = useCallback((coords: { lat: number; lng: number }) => {
     const newLocation: [number, number] = [coords.lat, coords.lng];
@@ -326,51 +340,23 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       // Format the date properly
       const formattedDate = new Date(data.dateCollected).toISOString();
       
-      // First, create the color without media uploads
+      // Prepare the color data with media files
       const colorData = {
         ...data,
         dateCollected: formattedDate,
+        mediaFiles: mediaFiles, // Include media files for parent to handle
       };
 
-      const colorResponse = await fetch('/api/colors', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(colorData),
-      });
-
-      if (!colorResponse.ok) {
-        throw new Error('Failed to create color');
-      }
-
-      const color = await colorResponse.json();
-
-      // Then, upload media files if any
-      if (mediaFiles.length > 0) {
-        try {
-          const formData = new FormData();
-          mediaFiles.forEach((media, index) => {
-            formData.append('media', media.file);
-            formData.append('captions', media.caption || '');
-            formData.append('types', media.type);
-          });
-
-          const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (!mediaResponse.ok) {
-            console.error('Failed to upload media files');
-          }
-        } catch (error) {
-          console.error('Error uploading media files:', error);
-          // Continue even if media upload fails
-        }
-      }
-
+      // Call the parent's onSubmit handler
       await onSubmit(colorData);
+      
+      // Reset form state
+      reset();
+      setMediaFiles([]);
+      setSelectedLocation(null);
+      setMapCenter([40, -74.5]);
+      setMapZoom(3);
+      
       onClose();
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -580,11 +566,11 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block font-mono text-sm text-[#2C3E50]">Pseudonym (optional)</label>
+                  <label className="block font-mono text-sm text-[#2C3E50]">Name (optional)</label>
                   <input
-                    {...register('pseudonym')}
+                    {...register('authorName')}
                     className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                    placeholder="Enter a pseudonym"
+                    placeholder="Enter your name"
                   />
                 </div>
               </div>
@@ -685,6 +671,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   <div className="flex flex-col space-y-2">
                     <label htmlFor="mediaUploads" className="text-lg">Add Media Photos</label>
                     <button
+                      type="button"
                       onClick={() => document.getElementById('mediaUploads')?.click()}
                       className="bos-button text-lg px-6 py-2 flex items-center gap-2"
                     >
@@ -700,15 +687,6 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                       onChange={(e) => handleFileUpload(e, 'process')}
                     />
                   </div>
-                  
-                  {/* Submit button */}
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="bos-button text-lg px-6 py-2 mt-4"
-                  >
-                    Submit Color
-                  </button>
                 </div>
 
                 {mediaFiles.filter(m => m.type === 'process').length > 0 && (
@@ -748,6 +726,17 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Submit button */}
+            <div className="flex justify-center pt-6">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bos-button text-lg px-6 py-2"
+              >
+                {submitting ? 'Submitting...' : 'Submit Color'}
+              </button>
             </div>
           </form>
         </Dialog.Content>

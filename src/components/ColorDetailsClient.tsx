@@ -227,7 +227,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   {color.name}
                 </h1>
                 <p className="text-xl text-[#2C3E50]/80 italic">
-                  by {session?.user?.name || 'Anonymous'}
+                  by {color.user?.name || color.user?.pseudonym || 'Anonymous'}
                 </p>
                 
                 <p className="text-lg text-[#2C3E50]/60">

@@ -143,6 +143,7 @@ export async function POST(req: Request) {
       dateCollected,
       mediaUploads,
       userId,
+      authorName,
     } = data;
 
     // Get or create anonymous user if no userId provided
@@ -151,6 +152,13 @@ export async function POST(req: Request) {
       const session = await getServerSession(authOptions);
       if (session?.user?.id) {
         finalUserId = session.user.id;
+        // Update user's name if authorName is provided
+        if (authorName) {
+          await prisma.user.update({
+            where: { id: finalUserId },
+            data: { name: authorName }
+          });
+        }
       } else {
         // Create or find anonymous user
         const anonymousUser = await prisma.user.findFirst({
@@ -161,14 +169,27 @@ export async function POST(req: Request) {
           const newAnonymousUser = await prisma.user.create({
             data: {
               email: 'anonymous@carespace.app',
-              name: 'Anonymous User',
+              name: authorName || 'Anonymous',
             }
           });
           finalUserId = newAnonymousUser.id;
         } else {
           finalUserId = anonymousUser.id;
+          // Update anonymous user's name if authorName is provided
+          if (authorName) {
+            await prisma.user.update({
+              where: { id: finalUserId },
+              data: { name: authorName }
+            });
+          }
         }
       }
+    } else if (authorName) {
+      // Update existing user's name if authorName is provided
+      await prisma.user.update({
+        where: { id: finalUserId },
+        data: { name: authorName }
+      });
     }
 
     const color = await prisma.color.create({

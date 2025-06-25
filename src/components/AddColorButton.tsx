@@ -13,6 +13,48 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
 
   const handleSubmit = async (data: ColorSubmissionFormType) => {
     try {
+      // Extract media files from the data
+      const { mediaFiles, ...colorData } = data;
+      
+      // First, create the color
+      const response = await fetch('/api/colors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(colorData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit color');
+      }
+
+      const color = await response.json();
+
+      // Then, upload media files if any
+      if (mediaFiles && mediaFiles.length > 0) {
+        try {
+          const formData = new FormData();
+          mediaFiles.forEach((media: any) => {
+            formData.append('media', media.file);
+            formData.append('captions', media.caption || '');
+            formData.append('types', media.type);
+          });
+
+          const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!mediaResponse.ok) {
+            console.error('Failed to upload media files');
+          }
+        } catch (error) {
+          console.error('Error uploading media files:', error);
+          // Continue even if media upload fails
+        }
+      }
+
       await onSubmit(data);
       setIsOpen(false);
     } catch (error) {

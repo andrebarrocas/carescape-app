@@ -211,7 +211,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   {color.name}
                 </h1>
                 <p className="text-base text-[#2C3E50]/80 italic">
-                  by {session?.user?.name || 'Anonymous'}
+                  by {color.user?.name || color.user?.pseudonym || 'Anonymous'}
                 </p>
                 
                 <p className="text-base text-[#2C3E50]/60">
@@ -222,30 +222,36 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           </div>
 
           {/* Main Landscape Image */}
-          {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome') && (
-            <div className="mb-8">
-              <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
-                <ImageGalleryWrapper
-                  media={{
-                    ...mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome'),
-                    colorId: color.id,
-                    id: mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.id ?? '',
-                    filename: mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.filename ?? '',
-                    mimetype: mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.mimetype ?? '',
-                    comments: mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.comments ?? [],
-                    createdAt: mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.createdAt || '',
-                    type: mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.type || 'outcome',
-                    caption: mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption ?? ''
-                  }}
-                />
+          {(() => {
+            const landscapeImage = mediaUploads.find(media => media.type === 'landscape');
+            const outcomeImage = mediaUploads.find(media => media.type === 'outcome');
+            const mainImage = landscapeImage || outcomeImage;
+            
+            return mainImage ? (
+              <div className="mb-8">
+                <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
+                  <ImageGalleryWrapper
+                    media={{
+                      ...mainImage,
+                      colorId: color.id,
+                      id: mainImage.id,
+                      filename: mainImage.filename,
+                      mimetype: mainImage.mimetype,
+                      comments: mainImage.comments,
+                      createdAt: mainImage.createdAt,
+                      type: mainImage.type,
+                      caption: mainImage.caption
+                    }}
+                  />
+                </div>
+                {mainImage.caption && (
+                  <p className="mt-2 text-base text-[#2C3E50]/80">
+                    {mainImage.caption}
+                  </p>
+                )}
               </div>
-              {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption && (
-                <p className="mt-2 text-base text-[#2C3E50]/80">
-                  
-                </p>
-              )}
-            </div>
-          )}
+            ) : null;
+          })()}
 
           {/* Color Swatch and Hex */}
           <div className="flex items-start gap-4 mb-8">

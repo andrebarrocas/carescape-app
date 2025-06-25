@@ -57,4 +57,10 @@ export interface ExtendedColor {
   userId: string;
   sourceMaterial: string;
   type: 'pigment' | 'dye' | 'ink';
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    pseudonym: string | null;
+  };
 } 

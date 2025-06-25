@@ -209,10 +209,10 @@ export async function PATCH(
 // --- Storytelling Full Details Endpoint ---
 export async function GET_full(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     if (!id) {
       return new NextResponse('Color ID is required', { status: 400 });
     }
@@ -222,7 +222,15 @@ export async function GET_full(
       include: {
         materials: true,
         processes: true,
-        mediaUploads: true
+        mediaUploads: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            pseudonym: true,
+          }
+        }
       }
     });
     if (!color) {
