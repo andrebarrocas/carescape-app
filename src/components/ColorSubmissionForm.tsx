@@ -31,13 +31,7 @@ const colorSubmissionSchema = z.object({
   email: z.string().email('Valid email is required'),
   agreeToTerms: z.boolean().optional(),
   hex: z.string().min(1, 'Hex color is required'),
-  mediaUploads: z.array(z.object({
-    id: z.string(),
-    filename: z.string(),
-    mimetype: z.string(),
-    type: z.enum(['outcome', 'landscape', 'process']),
-    caption: z.string().optional(),
-  })).optional(),
+  mediaUploads: z.array(z.any()).optional(),
 });
 
 export type ColorSubmissionForm = z.infer<typeof colorSubmissionSchema> & {
@@ -201,11 +195,38 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'outcome' | 'landscape' | 'process') => {
     const files = e.target.files;
+    console.log('File upload triggered for type:', type);
+    console.log('Files selected:', files?.length);
+    
     if (!files) return;
 
     // Handle multiple files for process type
     if (type === 'process') {
-      Array.from(files).forEach(async (file) => {
+      console.log('Processing multiple files for process type');
+      
+      // Check if we're adding too many files
+      const currentProcessFiles = mediaFiles.filter(m => m.type === 'process').length;
+      const newFilesCount = files.length;
+      const totalFiles = currentProcessFiles + newFilesCount;
+      
+      console.log('Current process files:', currentProcessFiles);
+      console.log('New files to add:', newFilesCount);
+      console.log('Total files after addition:', totalFiles);
+      
+      if (totalFiles > 20) {
+        alert('You can only upload up to 20 media photos. Please remove some files first.');
+        return;
+      }
+      
+      Array.from(files).forEach(async (file, index) => {
+        console.log(`Processing file ${index + 1}:`, file.name, file.size);
+        
+        // Check file size (limit to 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`File ${file.name} is too large. Please use files smaller than 10MB.`);
+          return;
+        }
+        
         const preview = URL.createObjectURL(file);
         const newMedia: MediaFile = {
           file,
@@ -213,11 +234,23 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
           preview,
           caption: '',
         };
-        setMediaFiles(prev => [...prev, newMedia]);
+        setMediaFiles(prev => {
+          const newFiles = [...prev, newMedia];
+          console.log('Updated media files count:', newFiles.length);
+          return newFiles;
+        });
       });
     } else {
       // For outcome and landscape, only handle one file
       const file = files[0];
+      console.log('Processing single file:', file.name, file.size);
+      
+      // Check file size (limit to 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File ${file.name} is too large. Please use files smaller than 10MB.`);
+        return;
+      }
+      
       const preview = URL.createObjectURL(file);
 
       // If it's an outcome image, generate hex code
@@ -325,6 +358,33 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   };
 
   const handleFormSubmit = async (data: ColorSubmissionForm) => {
+    console.log('Form submission started with data:', data);
+    console.log('Media files count:', mediaFiles.length);
+    console.log('Form errors:', errors);
+    console.log('Form is valid:', Object.keys(errors).length === 0);
+    
+    // Check if form has validation errors
+    if (Object.keys(errors).length > 0) {
+      console.error('Form has validation errors:', errors);
+      alert('Please fix the form errors before submitting.');
+      return;
+    }
+    
+    // Check if all required fields are present
+    const requiredFields = ['name', 'description', 'location', 'sourceMaterial', 'process', 'season', 'dateCollected', 'email', 'hex'];
+    const missingFields = requiredFields.filter(field => !data[field as keyof ColorSubmissionForm]);
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      return;
+    }
+    
+    // Check if coordinates are set
+    if (!data.coordinates || (data.coordinates.lat === 0 && data.coordinates.lng === 0)) {
+      console.warn('No coordinates selected, using default');
+    }
+    
     setSubmitting(true);
     try {
       // Set default coordinates if not selected
@@ -346,6 +406,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
         dateCollected: formattedDate,
         mediaFiles: mediaFiles, // Include media files for parent to handle
       };
+
+      console.log('Prepared color data:', colorData);
 
       // Call the parent's onSubmit handler
       await onSubmit(colorData);
@@ -381,7 +443,11 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               </button>
             </Dialog.Close>
           </div>
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
+          <form 
+            onSubmit={handleSubmit(handleFormSubmit)} 
+            className="space-y-8"
+            onChange={() => console.log('Form changed, errors:', errors)}
+          >
             {/* Basic Information */}
             <div className="space-y-4">
               <div>
@@ -734,6 +800,11 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 type="submit"
                 disabled={submitting}
                 className="bos-button text-lg px-6 py-2"
+                onClick={() => {
+                  console.log('Submit button clicked');
+                  console.log('Submitting state:', submitting);
+                  console.log('Media files count:', mediaFiles.length);
+                }}
               >
                 {submitting ? 'Submitting...' : 'Submit Color'}
               </button>

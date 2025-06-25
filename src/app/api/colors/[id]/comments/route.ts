@@ -5,11 +5,12 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const comments = await prisma.comment.findMany({
-      where: { colorId: params.id },
+      where: { colorId: id },
       include: {
         user: {
           select: {
@@ -35,11 +36,11 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const { id: colorId } = context.params;
+    const { id: colorId } = await context.params;
     const { content, mediaId } = await request.json();
 
     // Get or create anonymous user if no session

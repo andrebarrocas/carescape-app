@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import EditColorForm from '@/components/EditColorForm';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import { ExtendedColor, MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { Pencil, Palette, X, Plus, Leaf } from 'lucide-react';
+import { Pencil, Palette, X, Plus, Leaf, Upload } from 'lucide-react';
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
@@ -415,16 +415,19 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
       {/* Add Media Modal */}
       <Dialog.Root open={isAddMediaOpen} onOpenChange={setAddMediaOpen}>
         <Dialog.Trigger asChild>
-        <button className="mt-10 w-full bos-button text-xl px-6 py-3 flex items-center justify-center gap-2">
-          <Plus className="w-6 h-6" />
-          <span>Add Media Photos</span>
-        </button>
-
+          <button className="bos-button flex items-center gap-2">
+            <Upload className="w-6 h-6" />
+            <span>Add Media Photos</span>
+          </button>
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
             <Dialog.Title className="text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
+            
+            {/* Black line separator */}
+            <div className="w-full h-0.5 bg-black"></div>
+            
             <form onSubmit={handleUpload} className="flex flex-col gap-6">
               <input type="file" accept="image/*" multiple onChange={handleMediaChange} className="mb-4" />
               {mediaFiles.length > 0 && (
@@ -447,9 +450,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               )}
               <div className="flex justify-center gap-4 mt-4">
                 <Dialog.Close asChild>
-                  <button type="button" className="bos-button text-lg px-6 py-2">Cancel</button>
+                  <button type="button" className="bos-button text-base font-mono font-bold tracking-wider px-6 py-4">Cancel</button>
                 </Dialog.Close>
-                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-lg px-6 py-2 disabled:opacity-50">
+                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-base font-mono font-bold tracking-wider px-6 py-4 disabled:opacity-50">
                   {isUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>

@@ -81,7 +81,7 @@ export default function AboutPage() {
       <div className="fixed top-6 left-6 z-20 flex gap-4">
         <Link 
           href="/" 
-          className="bg-gradient-to-r from-red-500 via-blue-500 via-green-500 to-yellow-500 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:opacity-90 transition-opacity"
+          className="bg-gradient-to-r from-red-500 via-blue-600 via-cyan-500 via-green-500 to-yellow-500 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:opacity-90 transition-opacity"
         >
           CareScape
         </Link>
@@ -96,7 +96,7 @@ export default function AboutPage() {
       <div className="flex flex-col items-center justify-center px-4 py-24">
         <div className="max-w-5xl w-full mx-auto text-left">
           <br />
-          <h1 className="text-3xl font-bold mb-12 leading-tight text-black text-left">UNVEILING LANDSCAPE NATURAL COLORS</h1>
+          <h1 className="text-3xl font-bold mb-12 leading-tight text-black text-center">CARING ARCHIVE OF LANDSCAPE COLORS</h1>
           <div className="flex flex-col md:flex-row items-start justify-center gap-8 mb-12">
             <div className="flex flex-col items-start text-left max-w-xs">
               <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
@@ -153,7 +153,7 @@ export default function AboutPage() {
           </div>
           <br />
           <div>
-            <h2 className="text-3xl font-bold mb-6 text-left text-black">JOIN OUR COMMUNITY</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center text-black">JOIN OUR COMMUNITY</h2>
             <div className="space-y-6 max-w-5xl mx-auto leading-relaxed text-left">
               <div>
                 <h3 className="text-xl font-bold mb-2 text-black text-left">Sign In</h3>

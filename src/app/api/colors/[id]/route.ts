@@ -63,23 +63,24 @@ type ExtendedColor = Color & {
 
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
+    
+    if (!id) {
+      return new NextResponse('Color ID is required', { status: 400 });
+    }
 
-    // Delete the color and all related records (cascade delete is set up in schema)
+    // Delete the color and all related data
     await prisma.color.delete({
       where: { id },
     });
 
-    return new NextResponse(null, { status: 204 });
+    return new NextResponse('Color deleted successfully', { status: 200 });
   } catch (error) {
     console.error('Error deleting color:', error);
-    return new NextResponse(
-      error instanceof Error ? error.message : 'Error deleting color',
-      { status: 500 }
-    );
+    return new NextResponse('Error deleting color', { status: 500 });
   }
 }
 
@@ -146,10 +147,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const data = await request.json();
 
     // Update the color

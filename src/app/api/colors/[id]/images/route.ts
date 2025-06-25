@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const colorId = params.id;
+    const { id: colorId } = await params;
 
     const images = await prisma.mediaUpload.findMany({
       where: {

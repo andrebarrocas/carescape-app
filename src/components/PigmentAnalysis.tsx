@@ -179,8 +179,7 @@ Respond in under 4 sentences.`;
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bos-button flex items-center gap-2"
-            style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px' }}
+            className="bg-cyan-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 h-14 w-full rounded-none"
           >
             Send
           </button>

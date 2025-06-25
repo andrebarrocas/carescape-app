@@ -12,9 +12,14 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = async (data: ColorSubmissionFormType) => {
+    console.log('AddColorButton handleSubmit called with data:', data);
+    console.log('Media files:', data.mediaFiles);
+    
     try {
       // Extract media files from the data
       const { mediaFiles, ...colorData } = data;
+      
+      console.log('Color data to submit:', colorData);
       
       // First, create the color
       const response = await fetch('/api/colors', {
@@ -25,14 +30,20 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
         body: JSON.stringify(colorData),
       });
       
+      console.log('Color creation response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Color creation failed:', errorText);
         throw new Error('Failed to submit color');
       }
 
       const color = await response.json();
+      console.log('Color created successfully:', color);
 
       // Then, upload media files if any
       if (mediaFiles && mediaFiles.length > 0) {
+        console.log('Uploading media files:', mediaFiles.length);
         try {
           const formData = new FormData();
           mediaFiles.forEach((media: any) => {
@@ -46,8 +57,13 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
             body: formData,
           });
 
+          console.log('Media upload response status:', mediaResponse.status);
+
           if (!mediaResponse.ok) {
-            console.error('Failed to upload media files');
+            const errorText = await mediaResponse.text();
+            console.error('Media upload failed:', errorText);
+          } else {
+            console.log('Media files uploaded successfully');
           }
         } catch (error) {
           console.error('Error uploading media files:', error);

@@ -639,6 +639,8 @@ export default function Map({ colors, titleColor }: MapProps) {
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
                   <Dialog.Title className="text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
+                  {/* Matching left-side line */}
+                  <hr className="border-t border-gray-300 rounded-full w-full mb-4" />
                   <form onSubmit={handleUpload} className="flex flex-col gap-6">
                     <input type="file" accept="image/*" multiple onChange={handleMediaChange} className="mb-4" />
                     {mediaFiles.length > 0 && (
@@ -661,9 +663,9 @@ export default function Map({ colors, titleColor }: MapProps) {
                     )}
                     <div className="flex justify-center gap-4 mt-4">
                       <Dialog.Close asChild>
-                        <button type="button" className="bos-button" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px', background: 'black', color: 'white', borderRadius: 0 }}>Cancel</button>
+                        <button type="button" className="bg-[#5C5954] text-white text-base font-mono font-bold tracking-wider px-6 py-4 h-14 w-full rounded-none">Cancel</button>
                       </Dialog.Close>
-                      <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button disabled:opacity-50" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px', background: 'black', color: 'white', borderRadius: 0 }}>
+                      <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bg-green-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 h-14 w-full rounded-none disabled:opacity-50">
                         {isUploading ? 'Uploading...' : 'Upload'}
                       </button>
                     </div>
