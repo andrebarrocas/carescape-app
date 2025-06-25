@@ -181,7 +181,6 @@ Respond in under 4 sentences.`;
             disabled={isLoading || !input.trim()}
             className="bos-button text-lg px-6 py-2 flex items-center gap-2"
           >
-          
             Send
           </button>
         </form>

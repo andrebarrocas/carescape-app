@@ -14,6 +14,9 @@ import Link from "next/link";
 import dynamic from 'next/dynamic';
 import { animals } from '@/data/animals';
 import AnimalSubmissionForm from './AnimalSubmissionForm';
+import PigmentAnalysis from '@/components/PigmentAnalysis';
+import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
+import * as Dialog from '@radix-ui/react-dialog';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
@@ -66,6 +69,12 @@ export default function Map({ colors, titleColor }: MapProps) {
   const [currentView, setCurrentView] = useState('colors');
   const [animals, setBiodiversity] = useState<Animal[]>([]);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
+  const [isPigmentModalOpen, setPigmentModalOpen] = useState(false);
+  const [isSustainabilityModalOpen, setSustainabilityModalOpen] = useState(false);
+  const [isAddMediaOpen, setAddMediaOpen] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [captions, setCaptions] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const colorCoords = colors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
   const defaultCenter = colorCoords.length ? {
@@ -246,6 +255,41 @@ export default function Map({ colors, titleColor }: MapProps) {
       }
     }
   }, [storyMode, currentColorIndex, colors]);
+
+  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setMediaFiles(files);
+    setCaptions(files.map(() => ''));
+  };
+
+  const handleCaptionChange = (idx: number, value: string) => {
+    setCaptions(captions => captions.map((c, i) => (i === idx ? value : c)));
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      mediaFiles.forEach((file, idx) => {
+        formData.append('media', file);
+        formData.append('captions', captions[idx] || '');
+      });
+      if (!storyColorId) return;
+      const res = await fetch(`/api/colors/${storyColorId}/images`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        setAddMediaOpen(false);
+        setMediaFiles([]);
+        setCaptions([]);
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="relative w-full h-full">
@@ -461,50 +505,138 @@ export default function Map({ colors, titleColor }: MapProps) {
             <div className="flex-1 overflow-y-auto p-6">
               <EmbeddedColorDetails colorId={storyColorId} />
             </div>
-            <div className="flex items-center justify-between p-6 border-t border-black">
-  {/* Previous */}
-  <button
-    onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
-    disabled={currentColorIndex === 0 || isAnimating}
-    className="bos-button tracking-wider disabled:opacity-40"
-    style={{
-      fontSize: '1rem',        // ≈ text-xl
-      padding: '0.75rem 2rem', // ≈ px-8 py-4
-      lineHeight: '1.5'
-    }}
-  >
-    Previous
-  </button>
-
-  {/* dots */}
-  <div className="flex gap-1 items-center">
-    {colors.map((_, idx) => (
-      <span
-        key={idx}
-        className={`inline-block w-2 h-2 rounded-full ${
-          idx === currentColorIndex ? 'bg-black' : 'bg-black/20'
-        }`}
-      />
-    ))}
-  </div>
-
-  {/* Next */}
-  <button
-    onClick={() =>
-      setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))
-    }
-    disabled={currentColorIndex === colors.length - 1 || isAnimating}
-    className="bos-button tracking-wider disabled:opacity-40"
-    style={{
-      fontSize: '1rem',
-      padding: '0.75rem 2rem',
-      lineHeight: '1.5'
-    }}
-  >
-    Next
-  </button>
-</div>
-
+            {/* Bottom Action Bar */}
+            <div className="w-full px-6 pb-6 flex flex-col items-center gap-4">
+              <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
+                {/* Left column: AI analysis and AI design ideas */}
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => setSustainabilityModalOpen(true)}
+                    className="bg-green-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full"
+                  >
+                    AI analysis
+                  </button>
+                  <button
+                    onClick={() => setPigmentModalOpen(true)}
+                    className="bg-cyan-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full"
+                  >
+                    AI design ideas
+                  </button>
+                </div>
+                {/* Right column: Add content and navigation arrows */}
+                <div className="flex flex-col gap-2 h-full justify-between items-center">
+                  <button
+                    onClick={() => setAddMediaOpen(true)}
+                    className="bg-[#5C5954] text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full"
+                  >
+                    + Add content
+                  </button>
+                  <div className="flex gap-4 w-full mt-2">
+                    <button
+                      onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
+                      disabled={currentColorIndex === 0 || isAnimating}
+                      className="bg-[#A7A39E] text-white text-2xl font-mono font-bold px-6 py-4 rounded-none transition-opacity disabled:opacity-40 h-14 w-1/2"
+                    >
+                      {'<'}
+                    </button>
+                    <button
+                      onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
+                      disabled={currentColorIndex === colors.length - 1 || isAnimating}
+                      className="bg-[#A7A39E] text-white text-2xl font-mono font-bold px-6 py-4 rounded-none transition-opacity disabled:opacity-40 h-14 w-1/2"
+                    >
+                      {'>'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Modals for story mode */}
+            {/* Sustainability Analysis Modal */}
+            <Dialog.Root open={isSustainabilityModalOpen} onOpenChange={setSustainabilityModalOpen}>
+              <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+                <Dialog.Content
+                  className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full md:w-[800px] max-w-full z-50 bg-white shadow-2xl rounded-2xl flex flex-col p-8 overflow-y-auto border-2 border-[#2C3E50]"
+                  style={{ fontFamily: 'Caveat, cursive', maxHeight: '90vh' }}
+                >
+                  <Dialog.Title className="sr-only">Sustainability Analysis</Dialog.Title>
+                  <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setSustainabilityModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
+                  {storyColorId && (
+                    <SustainabilityAnalysis
+                      color={colors[currentColorIndex]?.name}
+                      hex={colors[currentColorIndex]?.hex}
+                      location={colors[currentColorIndex]?.location}
+                      materials={colors[currentColorIndex]?.materials?.map(m => m.name).join(', ')}
+                      date={colors[currentColorIndex]?.dateCollected}
+                      season={colors[currentColorIndex]?.season}
+                      bioregion={colors[currentColorIndex]?.bioregion?.description || ''}
+                      onOpenChat={() => {
+                        setSustainabilityModalOpen(false);
+                        setPigmentModalOpen(true);
+                      }}
+                    />
+                  )}
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
+            {/* Pigment Analysis Modal */}
+            <Dialog.Root open={isPigmentModalOpen} onOpenChange={setPigmentModalOpen}>
+              <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+                <Dialog.Content className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full md:w-[500px] max-w-full z-50 bg-white shadow-2xl rounded-t-2xl flex flex-col p-8 overflow-y-auto border-t-4 border-black" style={{fontFamily:'Caveat, cursive', maxHeight: '80vh'}}>
+                  <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setPigmentModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
+                  {storyColorId && (
+                    <PigmentAnalysis
+                      color={colors[currentColorIndex]?.name}
+                      hex={colors[currentColorIndex]?.hex}
+                      location={colors[currentColorIndex]?.location}
+                      materials={colors[currentColorIndex]?.materials?.map(m => m.name).join(', ')}
+                      date={colors[currentColorIndex]?.dateCollected}
+                      season={colors[currentColorIndex]?.season}
+                      bioregion={colors[currentColorIndex]?.bioregion?.description || ''}
+                    />
+                  )}
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
+            {/* Add Media Modal */}
+            <Dialog.Root open={isAddMediaOpen} onOpenChange={setAddMediaOpen}>
+              <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
+                  <Dialog.Title className="text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
+                  <form onSubmit={handleUpload} className="flex flex-col gap-6">
+                    <input type="file" accept="image/*" multiple onChange={handleMediaChange} className="mb-4" />
+                    {mediaFiles.length > 0 && (
+                      <div className="flex flex-col gap-4">
+                        {mediaFiles.map((file, idx) => (
+                          <div key={idx} className="flex flex-col gap-2 border-b pb-4">
+                            <div className="flex items-center gap-4">
+                              <Image src={URL.createObjectURL(file)} alt="preview" width={80} height={80} className="object-cover" />
+                              <input
+                                type="text"
+                                placeholder="Caption for this image"
+                                value={captions[idx] || ''}
+                                onChange={e => handleCaptionChange(idx, e.target.value)}
+                                className="flex-1 border rounded-lg px-3 py-2 font-mono"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex justify-end gap-4 mt-4">
+                      <Dialog.Close asChild>
+                        <button type="button" className="bos-button text-lg px-6 py-2">Cancel</button>
+                      </Dialog.Close>
+                      <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-lg px-6 py-2 disabled:opacity-50">
+                        {isUploading ? 'Uploading...' : 'Upload'}
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
           </div>
         </>
       )}

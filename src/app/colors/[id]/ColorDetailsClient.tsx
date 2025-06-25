@@ -153,22 +153,6 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             <div className="flex-1">{childElement.props.children}</div>
             <div className="flex gap-2">
               <button
-                onClick={() => setSustainabilityModalOpen(true)}
-                className="bos-button flex items-center gap-2"
-              >
-                <Leaf className="w-5 h-5" />
-                <span>Sustainability Analysis</span>
-              </button>
-              <SustainableDesignButton
-                color={color.name}
-                hex={color.hex}
-                location={color.location}
-                materials={color.materials.map(m => m.name).join(', ')}
-                date={color.dateCollected}
-                season={color.season}
-                bioregion={color.bioregion?.description || ''}
-              />
-              <button
                 onClick={() => setIsEditModalOpen(true)}
                 className="bos-button flex items-center gap-2"
               >
@@ -233,23 +217,6 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <p className="text-base text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                 </p>
-                <div className="my-2 flex flex-col gap-2">
-                  <button
-                    onClick={() => setSustainabilityModalOpen(true)}
-                    className="bos-button text-2xl px-8 py-3"
-                  >
-                    <span>Sustainability Analysis</span>
-                  </button>
-                  <SustainableDesignButton
-                    color={color.name}
-                    hex={color.hex}
-                    location={color.location}
-                    materials={color.materials.map(m => m.name).join(', ')}
-                    date={color.dateCollected}
-                    season={color.season}
-                    bioregion={color.bioregion?.description || ''}
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -415,13 +382,6 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
 
       {/* Add Media Modal */}
       <Dialog.Root open={isAddMediaOpen} onOpenChange={setAddMediaOpen}>
-        <Dialog.Trigger asChild>
-        <button className="mt-10 w-full bos-button text-xl px-6 py-3 flex items-center justify-center gap-2">
-          <Plus className="w-6 h-6" />
-          <span>Add Media Photos</span>
-        </button>
-
-        </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
