@@ -505,33 +505,36 @@ export default function Map({ colors, titleColor }: MapProps) {
             <div className="flex-1 overflow-y-auto p-6">
               <EmbeddedColorDetails colorId={storyColorId} />
             </div>
-            {/* Bottom Action Bar */}
-            <div className="w-full px-6 pb-6 flex flex-col items-center gap-4">
-              <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
-                {/* Left column: AI analysis and AI design ideas */}
-                <div className="flex flex-col gap-2">
+            {/* Separator line and action bar */}
+            <div className="w-full flex flex-col items-center">
+              <div className="w-full max-w-lg mx-auto my-3">
+                <hr className="border-t border-gray-300 rounded-full" />
+              </div>
+              <div className="w-full px-6 pb-6 flex flex-col items-center">
+                <div className="grid grid-cols-2 grid-rows-2 gap-4 w-full max-w-lg">
+                  {/* Row 1, Col 1: AI Analysis */}
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
-                    className="bg-green-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full"
+                    className="bg-green-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full row-start-1 col-start-1"
                   >
-                    AI analysis
+                    AI Analysis
                   </button>
-                  <button
-                    onClick={() => setPigmentModalOpen(true)}
-                    className="bg-cyan-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full"
-                  >
-                    AI design ideas
-                  </button>
-                </div>
-                {/* Right column: Add content and navigation arrows */}
-                <div className="flex flex-col gap-2 h-full justify-between items-center">
+                  {/* Row 1, Col 2: Add Content */}
                   <button
                     onClick={() => setAddMediaOpen(true)}
-                    className="bg-[#5C5954] text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full"
+                    className="bg-[#5C5954] text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full row-start-1 col-start-2"
                   >
-                    + Add content
+                    + Add Content
                   </button>
-                  <div className="flex gap-4 w-full mt-2">
+                  {/* Row 2, Col 1: AI Design Ideas */}
+                  <button
+                    onClick={() => setPigmentModalOpen(true)}
+                    className="bg-cyan-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full row-start-2 col-start-1"
+                  >
+                    AI Design Ideas
+                  </button>
+                  {/* Row 2, Col 2: Navigation arrows */}
+                  <div className="flex gap-4 w-full h-14 row-start-2 col-start-2">
                     <button
                       onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
                       disabled={currentColorIndex === 0 || isAnimating}
@@ -584,6 +587,7 @@ export default function Map({ colors, titleColor }: MapProps) {
               <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
                 <Dialog.Content className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full md:w-[500px] max-w-full z-50 bg-white shadow-2xl rounded-t-2xl flex flex-col p-8 overflow-y-auto border-t-4 border-black" style={{fontFamily:'Caveat, cursive', maxHeight: '80vh'}}>
+                  <Dialog.Title className="sr-only">AI Design Ideas</Dialog.Title>
                   <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setPigmentModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
                   {storyColorId && (
                     <PigmentAnalysis
