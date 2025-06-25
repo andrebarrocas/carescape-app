@@ -629,11 +629,11 @@ export default function Map({ colors, titleColor }: MapProps) {
                         ))}
                       </div>
                     )}
-                    <div className="flex justify-end gap-4 mt-4">
+                    <div className="flex justify-center gap-4 mt-4">
                       <Dialog.Close asChild>
-                        <button type="button" className="bos-button text-lg px-6 py-2">Cancel</button>
+                        <button type="button" className="bos-button" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px', background: 'black', color: 'white', borderRadius: 0 }}>Cancel</button>
                       </Dialog.Close>
-                      <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-lg px-6 py-2 disabled:opacity-50">
+                      <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button disabled:opacity-50" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px', background: 'black', color: 'white', borderRadius: 0 }}>
                         {isUploading ? 'Uploading...' : 'Upload'}
                       </button>
                     </div>
@@ -673,7 +673,7 @@ export default function Map({ colors, titleColor }: MapProps) {
       {/* Add Color Button */}
       {!storyMode && currentView === 'colors' && (
         <button
-          className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 shadow-lg flex items-center justify-center transition-opacity"
+          className="bg-black text-white text-2xl px-8 py-3 font-bold tracking-wider rounded-none fixed bottom-8 z-50 shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
           onClick={() => setShowColorForm(true)}
           aria-label="Add new color"

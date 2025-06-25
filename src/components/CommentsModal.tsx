@@ -131,6 +131,7 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                   type="submit"
                   disabled={isSubmitting || !newComment.trim()}
                   className="bos-button disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px', width: '100%', marginTop: '0.5rem' }}
                 >
                   {isSubmitting ? 'Posting...' : 'Post'}
                 </button>

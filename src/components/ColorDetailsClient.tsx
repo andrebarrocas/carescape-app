@@ -445,7 +445,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   ))}
                 </div>
               )}
-              <div className="flex justify-end gap-4 mt-4">
+              <div className="flex justify-center gap-4 mt-4">
                 <Dialog.Close asChild>
                   <button type="button" className="bos-button text-lg px-6 py-2">Cancel</button>
                 </Dialog.Close>

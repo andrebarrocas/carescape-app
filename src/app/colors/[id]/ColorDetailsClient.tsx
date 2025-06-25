@@ -406,11 +406,11 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   ))}
                 </div>
               )}
-              <div className="flex justify-end gap-4 mt-4">
+              <div className="flex justify-center gap-4 mt-4">
                 <Dialog.Close asChild>
-                  <button type="button" className="bos-button text-lg px-6 py-2">Cancel</button>
+                  <button type="button" className="bos-button" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px' }}>Cancel</button>
                 </Dialog.Close>
-                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-lg px-6 py-2 disabled:opacity-50">
+                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button disabled:opacity-50" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px' }}>
                   {isUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>
