@@ -21,7 +21,7 @@ const colorSubmissionSchema = z.object({
   sourceMaterial: z.string().min(1, 'Source material is required'),
   type: z.enum(['pigment', 'dye', 'ink']),
   application: z.string().optional(),
-  process: z.string().min(1, 'Process description is required'),
+  process: z.string().min(1, 'Process description is required').max(5000, 'Process description must be less than 5000 characters'),
   season: z.string().min(1, 'Season is required'),
   dateCollected: z.string().refine((date) => {
     const d = new Date(date);
@@ -529,7 +529,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 {showSuggestions && locationSuggestions.length > 0 && (
                   <div
                     ref={suggestionsRef}
-                    className="absolute z-10 w-full mt-1 bg-white border-2 border-[#2C3E50] max-h-60 overflow-auto"
+                    className="absolute z-50 w-full mt-1 bg-white border-2 border-[#2C3E50] max-h-60 overflow-auto shadow-lg"
                   >
                     {locationSuggestions.map((suggestion, index) => (
                       <button
@@ -573,13 +573,19 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 </label>
                 <textarea
                   {...register('process')}
-                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[100px]"
-                  placeholder="Describe the process used to create this color"
-                  rows={4}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[150px] resize-y"
+                  placeholder="Describe the process used to create this color (up to 5000 characters)"
+                  rows={6}
+                  maxLength={5000}
                 />
-                {errors.process && (
-                  <p className="mt-1 text-red-500 text-xs">{errors.process.message}</p>
-                )}
+                <div className="flex justify-between items-center mt-1">
+                  {errors.process && (
+                    <p className="text-red-500 text-xs">{errors.process.message}</p>
+                  )}
+                  <p className="text-xs text-gray-500 font-mono ml-auto">
+                    {watch('process')?.length || 0}/5000 characters
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

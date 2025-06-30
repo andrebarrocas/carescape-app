@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import MapGL, { Marker, NavigationControl, Popup } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ColorSubmission } from '@/types/colors';
@@ -17,6 +17,7 @@ import AnimalSubmissionForm from './AnimalSubmissionForm';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
 import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
 import * as Dialog from '@radix-ui/react-dialog';
+import { clusterMarkers, parseCoordinates, MapMarker } from '@/lib/map';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
@@ -40,21 +41,6 @@ interface Animal {
   date: string;
 }
 
-function parseCoordinates(coords: any): { lat: number; lng: number } | null {
-  if (!coords) return null;
-  if (typeof coords === 'string') {
-    try {
-      return JSON.parse(coords);
-    } catch {
-      return null;
-    }
-  }
-  if (typeof coords === 'object' && 'lat' in coords && 'lng' in coords) {
-    return coords as { lat: number; lng: number };
-  }
-  return null;
-}
-
 export default function Map({ colors, titleColor }: MapProps) {
   const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
   const [showColorForm, setShowColorForm] = useState(false);
@@ -75,6 +61,24 @@ export default function Map({ colors, titleColor }: MapProps) {
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [captions, setCaptions] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Process colors for clustering
+  const clusteredColors = useMemo(() => {
+    const colorMarkers: MapMarker[] = colors
+      .map(color => {
+        const coords = parseCoordinates(color.coordinates);
+        if (!coords) return null;
+        return {
+          id: color.id,
+          lat: coords.lat,
+          lng: coords.lng,
+          data: color,
+        };
+      })
+      .filter(Boolean) as MapMarker[];
+
+    return clusterMarkers(colorMarkers, 0.01); // 0.01 degrees ≈ 1km threshold
+  }, [colors]);
 
   const colorCoords = colors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
   const defaultCenter = colorCoords.length ? {
@@ -381,14 +385,19 @@ export default function Map({ colors, titleColor }: MapProps) {
         <NavigationControl position="bottom-right" />
 
         {/* Render Color Markers */}
-        {(currentView === 'all' || currentView === 'colors') && colors.map((color, idx) => {
-          const coords = parseCoordinates(color.coordinates);
+        {(currentView === 'all' || currentView === 'colors') && clusteredColors.map((cluster, idx) => {
+          const coords = parseCoordinates(cluster.data.coordinates);
           if (!coords) return null;
+          
+          // Apply offset if this marker is part of a cluster
+          const adjustedLat = coords.lat + (cluster.offset?.y || 0);
+          const adjustedLng = coords.lng + (cluster.offset?.x || 0);
+          
           return (
             <Marker
-              key={color.id}
-              longitude={coords.lng}
-              latitude={coords.lat}
+              key={cluster.id}
+              longitude={adjustedLng}
+              latitude={adjustedLat}
               anchor="bottom"
               onClick={e => {
                 e.originalEvent.stopPropagation();
@@ -397,10 +406,15 @@ export default function Map({ colors, titleColor }: MapProps) {
                 setSelectedColor(null);
               }}
             >
-              <div
-                className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}
-                style={{ backgroundColor: color.hex }}
-              />
+              <div className="relative">
+                <div
+                  className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}
+                  style={{ backgroundColor: cluster.data.hex }}
+                  title={cluster.isClustered && cluster.clusterSize ? `${cluster.clusterSize} colors at this location` : cluster.data.name}
+                />
+                {/* Show cluster indicator if this marker is part of a cluster */}
+                {/* No badge, always show all markers offset and visible */}
+              </div>
             </Marker>
           );
         })}
@@ -537,8 +551,8 @@ export default function Map({ colors, titleColor }: MapProps) {
             </div>
             {/* Separator line and action bar */}
             <div className="w-full flex flex-col items-center">
-              <div className="w-full max-w-lg mx-auto my-3">
-                <hr className="border-t border-gray-300 rounded-full" />
+              <div className="w-full my-3">
+                <div className="w-full h-px bg-black"></div>
               </div>
               <div className="w-full px-6 pb-6 flex flex-col items-center">
                 <div className="grid grid-cols-2 grid-rows-2 gap-4 w-full max-w-lg">
@@ -639,8 +653,10 @@ export default function Map({ colors, titleColor }: MapProps) {
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
                   <Dialog.Title className="text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
-                  {/* Matching left-side line */}
-                  <hr className="border-t border-gray-300 rounded-full w-full mb-4" />
+                  
+                  {/* Black line separator - full width like modal border */}
+                  <div className="w-full h-0.5 bg-black"></div>
+                  
                   <form onSubmit={handleUpload} className="flex flex-col gap-6">
                     <input type="file" accept="image/*" multiple onChange={handleMediaChange} className="mb-4" />
                     {mediaFiles.length > 0 && (

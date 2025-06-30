@@ -103,7 +103,7 @@ model Process {
   id          String   @id @default(cuid())
   technique   String
   application String
-  notes       String
+  notes       String   @db.Text
   colorId     String
   color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())

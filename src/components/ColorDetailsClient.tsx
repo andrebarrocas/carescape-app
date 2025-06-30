@@ -131,11 +131,16 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
       });
       if (res.ok) {
         const { uploads } = await res.json();
-        setMediaUploads(prev => [...uploads, ...prev]);
+        setMediaUploads(prev => [...prev, ...uploads]);
         setAddMediaOpen(false);
         setMediaFiles([]);
         setCaptions([]);
+      } else {
+        throw new Error('Failed to upload images');
       }
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      alert('Failed to upload images. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -425,7 +430,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
             <Dialog.Title className="text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
             
-            {/* Black line separator */}
+            {/* Black line separator - full width like modal border */}
             <div className="w-full h-0.5 bg-black"></div>
             
             <form onSubmit={handleUpload} className="flex flex-col gap-6">

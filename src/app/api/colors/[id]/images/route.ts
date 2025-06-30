@@ -75,9 +75,17 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           mimetype: true,
           type: true,
           caption: true,
+          colorId: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
-      uploads.push(upload);
+      uploads.push({
+        ...upload,
+        comments: [],
+        createdAt: upload.createdAt.toISOString(),
+        updatedAt: upload.updatedAt.toISOString(),
+      });
     }
 
     return NextResponse.json({ success: true, uploads });
