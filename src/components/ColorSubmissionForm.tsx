@@ -12,7 +12,7 @@ import Image from 'next/image';
 
 const colorSubmissionSchema = z.object({
   name: z.string().min(1, 'Color name is required'),
-  description: z.string().min(1, 'Description is required'),
+  description: z.string().min(1, 'Description is required').max(1000, 'Description must be less than 1000 characters'),
   location: z.string().min(1, 'Location is required'),
   coordinates: z.object({
     lat: z.number(),
@@ -471,11 +471,18 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 <textarea
                   {...register('description')}
                   className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[100px]"
-                  placeholder="Describe the color and its significance"
+                  placeholder="Describe the color and its significance (up to 1000 characters)"
+                  rows={4}
+                  maxLength={1000}
                 />
-                {errors.description && (
-                  <p className="mt-1 text-red-500 text-xs">{errors.description.message}</p>
-                )}
+                <div className="flex justify-between items-center mt-1">
+                  {errors.description && (
+                    <p className="text-red-500 text-xs">{errors.description.message}</p>
+                  )}
+                  <p className="text-xs text-gray-500 font-mono ml-auto">
+                    {watch('description')?.length || 0}/1000 characters
+                  </p>
+                </div>
               </div>
 
               <div>
