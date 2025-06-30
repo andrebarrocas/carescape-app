@@ -128,7 +128,6 @@ Respond in under 4 sentences.`;
 
     const userMessage = input;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     await generateResponse(userMessage);
   };
 
