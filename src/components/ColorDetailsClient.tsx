@@ -32,6 +32,12 @@ interface ImageContainerProps {
   key: string;
 }
 
+// Utility function to truncate text
+function truncateText(text: string, maxLength: number) {
+  if (!text) return '';
+  return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+}
+
 export function ColorDetailsClient({ children, color, mediaUploads: initialMediaUploads, session }: ColorDetailsClientProps) {
   const router = useRouter();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -278,8 +284,8 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 />
               </div>
               {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption && (
-                <p className="mt-2 text-base text-[#2C3E50]/80">
-                  {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption}
+                <p className="mt-2 text-base text-[#2C3E50]/80" title={mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption}>
+                  {truncateText(mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption || '', 80)}
                 </p>
               )}
             </div>
@@ -333,7 +339,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <div key={process.id}>
                   <p>- Application: {process.application}</p>
                   <p>- Process/Recipe: {process.technique}</p>
-                  <p className="text-sm text-black/80 pl-4 italic">{process.notes}</p>
+                  <p className="text-sm text-black/80 pl-4 italic" title={process.notes || ''}>
+                    {truncateText(process.notes || '', 80)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -354,6 +362,11 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                       comments: media.comments ?? []
                     }}
                   />
+                  {media.caption && (
+                    <p className="mt-2 text-xs text-[#2C3E50]/80" title={media.caption}>
+                      {truncateText(media.caption || '', 80)}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

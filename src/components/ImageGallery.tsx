@@ -8,6 +8,12 @@ interface ImageGalleryProps {
   onCommentsClick: () => void;
 }
 
+// Utility function to truncate text
+function truncateText(text: string, maxLength: number) {
+  if (!text) return '';
+  return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+}
+
 export function ImageGallery({ media, onCommentsClick }: ImageGalleryProps) {
   return (
     <div className="relative group cursor-pointer" onClick={onCommentsClick}>
@@ -29,8 +35,8 @@ export function ImageGallery({ media, onCommentsClick }: ImageGalleryProps) {
       
       {/* Caption */}
       {media.caption && (
-        <p className="mt-2 text-sm text-[#2C3E50]/80">
-          {media.caption}
+        <p className="mt-2 text-sm text-[#2C3E50]/80" title={media.caption}>
+          {truncateText(media.caption, 80)}
         </p>
       )}
     </div>
