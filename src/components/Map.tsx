@@ -543,7 +543,7 @@ export default function Map({ colors, titleColor }: MapProps) {
             onClick={() => setStoryMode(false)}
           />
           <div 
-            className="fixed top-0 right-0 h-full w-full md:w-[600px] z-50 bg-white shadow-2xl flex flex-col p-0 overflow-y-auto border-l border-black" 
+            className="fixed top-0 right-0 h-full w-full md:w-[900px] z-50 bg-white shadow-2xl flex flex-col p-0 overflow-y-auto border-l border-black" 
             style={{ fontFamily: 'Futura Magazine, monospace' }}
           >
             <div className="flex-1 overflow-y-auto p-6">

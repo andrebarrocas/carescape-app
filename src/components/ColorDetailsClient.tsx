@@ -389,10 +389,10 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
           <Dialog.Content
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full md:w-[800px] max-w-full z-50 bg-white shadow-2xl rounded-2xl flex flex-col p-8 overflow-y-auto border-2 border-[#2C3E50]"
-        style={{ fontFamily: 'Caveat, cursive', maxHeight: '90vh' }}
-      >
-  <Dialog.Title className="sr-only">Sustainability Analysis</Dialog.Title>
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 max-w-2/3 z-50 bg-white shadow-2xl rounded-2xl flex flex-col p-8 overflow-y-auto border-2 border-[#2C3E50]"
+            style={{ fontFamily: 'Caveat, cursive', maxHeight: '90vh' }}
+          >
+            <Dialog.Title className="sr-only">Sustainability Analysis</Dialog.Title>
             <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setSustainabilityModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
             <SustainabilityAnalysis
               color={color.name}
@@ -440,12 +440,10 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 max-w-2/3 bg-white rounded-2xl shadow-2xl p-8 z-50 flex flex-col gap-6 border-2 border-[#2C3E50]">
             <Dialog.Title className="text-3xl text-[#2C3E50] mb-4">Add Media Photos</Dialog.Title>
-            
             {/* Black line separator - full width like modal border */}
             <div className="w-full h-0.5 bg-black"></div>
-            
             <form onSubmit={handleUpload} className="flex flex-col gap-6">
               <input type="file" accept="image/*" multiple onChange={handleMediaChange} className="mb-4" />
               {mediaFiles.length > 0 && (

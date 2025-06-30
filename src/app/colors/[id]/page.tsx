@@ -128,12 +128,17 @@ export default async function ColorDetails({
     const content = (
       <main className="min-h-screen bg-[#FFFCF5] py-12 pt-24">
         <MenuAndBreadcrumbs colorName={color.name} />
-        <div className="max-w-[1800px] mx-auto px-8">
-          <ColorDetailsClient
-            color={color}
-            mediaUploads={color.mediaUploads}
-            session={session}
-          />
+        <div className="flex w-full min-h-[80vh]">
+          <div className="w-1/3 h-[80vh] sticky top-0">
+            <MapComponent coordinates={coordinates} boundary={boundary} />
+          </div>
+          <div className="w-2/3 h-[80vh] overflow-y-auto">
+            <ColorDetailsClient
+              color={color}
+              mediaUploads={color.mediaUploads}
+              session={session}
+            />
+          </div>
         </div>
       </main>
     );
