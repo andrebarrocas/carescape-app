@@ -24,7 +24,7 @@ export default function MapFilterButtons({ onFilterChange }: MapFilterButtonsPro
       <div className="fixed top-6 left-6 z-50 flex gap-4">
         <button 
           onClick={handleCareScapeClick}
-          className="bg-gradient-to-r from-red-500 via-blue-600 via-cyan-500 via-green-500 to-yellow-500 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:opacity-90 transition-opacity"
+          className="bg-gradient-to-r from-blue-500  via-red-670 via-cyan-500 via-yellow-500 to-green-500 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:opacity-90 transition-opacity"
         >
           CareScape
         </button>

@@ -36,7 +36,7 @@ export function ImageGallery({ media, onCommentsClick }: ImageGalleryProps) {
       {/* Caption */}
       {media.caption && (
         <p className="mt-2 text-sm text-[#2C3E50]/80" title={media.caption}>
-          {truncateText(media.caption, 80)}
+          {truncateText(media.caption, 40)}
         </p>
       )}
     </div>
