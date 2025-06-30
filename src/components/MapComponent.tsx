@@ -13,8 +13,9 @@ export function MapComponent({ coordinates, boundary }: MapComponentProps) {
       <PigeonMap
         height={192}
         defaultCenter={[coordinates.lat, coordinates.lng]}
-        defaultZoom={11}
+        defaultZoom={13}
         animate={true}
+        center={[coordinates.lat, coordinates.lng]}
       >
         {/* Bioregion boundary */}
         {boundary && boundary.length > 0 && (
@@ -37,7 +38,7 @@ export function MapComponent({ coordinates, boundary }: MapComponentProps) {
         {/* Location marker */}
         <Overlay anchor={[coordinates.lat, coordinates.lng]} offset={[0, 0]}>
           <div 
-            className="w-3 h-3 bg-[#2C3E50] rounded-full"
+            className="w-4 h-4 bg-[#2C3E50] rounded-full shadow-lg"
             style={{ transform: 'translate(-50%, -50%)' }}
           />
         </Overlay>

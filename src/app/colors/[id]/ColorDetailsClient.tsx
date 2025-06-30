@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import EditColorForm from '@/components/EditColorForm';
-import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
-import { ExtendedColor, MediaUploadWithComments } from '@/app/colors/[id]/types';
+import { format } from 'date-fns';
 import { Pencil, Palette, X, Plus, Leaf } from 'lucide-react';
-import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import Image from 'next/image';
+import { ExtendedColor, MediaUploadWithComments } from './types';
+import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
+import EditColorForm from '@/components/EditColorForm';
+import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
 import SustainableDesignButton from './SustainableDesignButton';
-import { format } from 'date-fns';
-import Image from 'next/image';
-import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
+import { MapComponent } from '@/components/MapComponent';
 
 interface ColorDetailsClientProps {
   children?: React.ReactNode;
@@ -281,7 +281,10 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               <p>- Specific Location: {color.location}</p>
               {color.coordinates && (
                 <div className="pl-4">
-                  {/* MapComponent can be added here if needed */}
+                  <MapComponent 
+                    coordinates={typeof color.coordinates === 'string' ? JSON.parse(color.coordinates) : color.coordinates} 
+                    boundary={color.bioregion?.boundary?.coordinates?.[0]?.map(([lng, lat]) => [lat, lng]) as [number, number][] | undefined}
+                  />
                 </div>
               )}
               {color.bioregion?.description && (

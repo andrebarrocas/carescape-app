@@ -247,7 +247,7 @@ export default function Map({ colors, titleColor }: MapProps) {
         setIsAnimating(true);
         mapRef.current.flyTo({
           center: [coords.lng, coords.lat],
-          zoom: 8,
+          zoom: 12, // Increased zoom level for better centering
           duration: 2000,
           essential: true
         });
@@ -393,6 +393,11 @@ export default function Map({ colors, titleColor }: MapProps) {
           const adjustedLat = coords.lat + (cluster.offset?.y || 0);
           const adjustedLng = coords.lng + (cluster.offset?.x || 0);
           
+          // Calculate marker size based on zoom level
+          const baseSize = 40; // 10 * 4 (w-10 = 40px)
+          const zoomFactor = Math.max(0.5, Math.min(2, viewport.zoom / 8)); // Scale between 0.5x and 2x based on zoom
+          const markerSize = baseSize * zoomFactor;
+          
           return (
             <Marker
               key={cluster.id}
@@ -408,8 +413,12 @@ export default function Map({ colors, titleColor }: MapProps) {
             >
               <div className="relative">
                 <div
-                  className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}
-                  style={{ backgroundColor: cluster.data.hex }}
+                  className={`rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}
+                  style={{ 
+                    backgroundColor: cluster.data.hex,
+                    width: `${markerSize}px`,
+                    height: `${markerSize}px`
+                  }}
                   title={cluster.isClustered && cluster.clusterSize ? `${cluster.clusterSize} colors at this location` : cluster.data.name}
                 />
                 {/* Show cluster indicator if this marker is part of a cluster */}
@@ -437,6 +446,11 @@ export default function Map({ colors, titleColor }: MapProps) {
             return null;
           }
           
+          // Calculate marker size based on zoom level
+          const baseSize = 48; // 12 * 4 (w-12 = 48px)
+          const zoomFactor = Math.max(0.5, Math.min(2, viewport.zoom / 8)); // Scale between 0.5x and 2x based on zoom
+          const markerSize = baseSize * zoomFactor;
+          
           return (
             <Marker
               key={animal.id}
@@ -451,8 +465,12 @@ export default function Map({ colors, titleColor }: MapProps) {
               }}
             >
               <div 
-                className="w-12 h-12 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform bg-white p-1 overflow-hidden"
-                style={{ border: '2px solid #2C3E50' }}
+                className="rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 bg-white p-1 overflow-hidden"
+                style={{ 
+                  border: '2px solid #2C3E50',
+                  width: `${markerSize}px`,
+                  height: `${markerSize}px`
+                }}
               >
                 <div className="relative w-full h-full">
                   <Image
