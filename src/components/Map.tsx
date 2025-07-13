@@ -561,7 +561,7 @@ export default function Map({ colors, titleColor }: MapProps) {
             onClick={() => setStoryMode(false)}
           />
           <div 
-            className="fixed top-0 right-0 h-full w-full md:w-[900px] z-50 bg-white shadow-2xl flex flex-col p-0 overflow-y-auto border-l border-black" 
+            className="fixed top-0 right-0 h-full w-full md:w-[650px] z-50 bg-white shadow-2xl flex flex-col p-0 overflow-y-auto border-l border-black" 
             style={{ fontFamily: 'Futura Magazine, monospace' }}
           >
             <div className="flex-1 overflow-y-auto p-6">
@@ -573,45 +573,42 @@ export default function Map({ colors, titleColor }: MapProps) {
                 <div className="w-full h-px bg-black"></div>
               </div>
               <div className="w-full px-6 pb-6 flex flex-col items-center">
-                <div className="grid grid-cols-2 grid-rows-2 gap-4 w-full max-w-lg">
-                  {/* Row 1, Col 1: AI Analysis */}
+                <div className="flex flex-row gap-2 w-full items-center justify-center">
+                  {/* AI Buttons Group */}
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
-                    className="bg-green-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full row-start-1 col-start-1"
+                    className="bg-green-600 text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
                   >
                     AI Analysis
                   </button>
-                  {/* Row 1, Col 2: Add Content */}
-                  <button
-                    onClick={() => setAddMediaOpen(true)}
-                    className="bg-[#5C5954] text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full row-start-1 col-start-2"
-                  >
-                    + Add Content
-                  </button>
-                  {/* Row 2, Col 1: AI Design Ideas */}
                   <button
                     onClick={() => setPigmentModalOpen(true)}
-                    className="bg-cyan-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 rounded-none transition-opacity h-14 w-full row-start-2 col-start-1"
+                    className="bg-cyan-600 text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
                   >
                     AI Design Ideas
                   </button>
-                  {/* Row 2, Col 2: Navigation arrows */}
-                  <div className="flex gap-4 w-full h-14 row-start-2 col-start-2">
-                    <button
-                      onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
-                      disabled={currentColorIndex === 0 || isAnimating}
-                      className="bg-[#A7A39E] text-white text-2xl font-mono font-bold px-6 py-4 rounded-none transition-opacity disabled:opacity-40 h-14 w-1/2"
-                    >
-                      {'<'}
-                    </button>
-                    <button
-                      onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
-                      disabled={currentColorIndex === colors.length - 1 || isAnimating}
-                      className="bg-[#A7A39E] text-white text-2xl font-mono font-bold px-6 py-4 rounded-none transition-opacity disabled:opacity-40 h-14 w-1/2"
-                    >
-                      {'>'}
-                    </button>
-                  </div>
+                  {/* Add Content Button */}
+                  <button
+                    onClick={() => setAddMediaOpen(true)}
+                    className="bg-[#5C5954] text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
+                  >
+                    + Add Content
+                  </button>
+                  {/* Navigation arrows */}
+                  <button
+                    onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
+                    disabled={currentColorIndex === 0 || isAnimating}
+                    className="bg-[#A7A39E] text-white text-xl font-mono font-bold px-0 py-3 rounded-none transition-opacity disabled:opacity-40 h-12 w-12 flex-shrink-0"
+                  >
+                    {'<'}
+                  </button>
+                  <button
+                    onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
+                    disabled={currentColorIndex === colors.length - 1 || isAnimating}
+                    className="bg-[#A7A39E] text-white text-xl font-mono font-bold px-0 py-3 rounded-none transition-opacity disabled:opacity-40 h-12 w-12 flex-shrink-0"
+                  >
+                    {'>'}
+                  </button>
                 </div>
               </div>
             </div>
