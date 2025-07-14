@@ -1,24 +1,12 @@
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
-
-interface AuthContextType {
-  user: any | null;
-  loading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-});
+import { SessionProvider } from 'next-auth/react';
+import { ReactNode } from 'react';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Add your authentication logic here
   return (
-    <AuthContext.Provider value={{ user: null, loading: false }}>
+    <SessionProvider>
       {children}
-    </AuthContext.Provider>
+    </SessionProvider>
   );
-}
-
-export const useAuth = () => useContext(AuthContext); 
+} 

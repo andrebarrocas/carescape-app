@@ -27,6 +27,7 @@ export interface ClusteredMarker extends MapMarker {
   offset?: { x: number; y: number };
   clusterSize?: number;
   isClustered?: boolean;
+  baseOffset?: { x: number; y: number }; // Store the base offset for zoom scaling
 }
 
 /**
@@ -58,8 +59,8 @@ export function clusterMarkers(
 
     if (cluster.length > 1) {
       clusters.push(cluster);
-      // Only mark the current marker as processed
-      processed.add(marker.id);
+      // Mark all markers in the cluster as processed
+      cluster.forEach(m => processed.add(m.id));
     }
   });
 
@@ -69,22 +70,14 @@ export function clusterMarkers(
   markers.forEach((marker) => {
     const cluster = clusters.find(c => c.some(m => m.id === marker.id));
     
-    if (cluster && cluster.length === 2) {
-      // For exactly 2, offset one left and one right by a fixed amount
+    if (cluster && cluster.length >= 2) {
       const index = cluster.findIndex(m => m.id === marker.id);
-      const offset = { x: (index === 0 ? -0.0005 : 0.0005), y: 0 };
+      const baseOffset = calculateClusterOffset(index, cluster.length);
+      
       result.push({
         ...marker,
-        offset,
-        // No isClustered or clusterSize
-      });
-    } else if (cluster && cluster.length > 2) {
-      // For 3 or more, show badge
-      const index = cluster.findIndex(m => m.id === marker.id);
-      const offset = calculateClusterOffset(index, cluster.length);
-      result.push({
-        ...marker,
-        offset,
+        baseOffset, // Store the base offset
+        offset: baseOffset, // Initial offset
         clusterSize: cluster.length,
         isClustered: true,
       });
@@ -113,14 +106,26 @@ function calculateDistance(a: MapMarker, b: MapMarker): number {
 /**
  * Calculate offset for a marker within a cluster
  * Uses a spiral pattern to distribute markers around the center
+ * Enhanced to create better visual separation
  */
 function calculateClusterOffset(index: number, clusterSize: number): { x: number; y: number } {
   if (clusterSize <= 1) return { x: 0, y: 0 };
 
-  // Use a spiral pattern for better distribution
+  // Extreme spiral pattern for maximum separation
   const angle = (index * 2 * Math.PI) / clusterSize;
-  const radius = 0.0005 + (index * 0.0001); // Base radius + increasing offset
-  
+
+  // Extremely large radius for maximum separation
+  let radius: number;
+  if (clusterSize === 2) {
+    return { x: (index === 0 ? -0.025 : 0.025), y: 0 };
+  } else if (clusterSize === 3) {
+    radius = 0.025;
+  } else if (clusterSize === 4) {
+    radius = 0.03;
+  } else {
+    radius = 0.02 + (index * 0.01);
+  }
+
   return {
     x: Math.cos(angle) * radius,
     y: Math.sin(angle) * radius,
@@ -128,9 +133,37 @@ function calculateClusterOffset(index: number, clusterSize: number): { x: number
 }
 
 /**
+ * Apply zoom-based scaling to cluster offsets
+ * This creates the illusion of displacement that changes with zoom level
+ */
+export function applyZoomScaling(
+  clusteredMarkers: ClusteredMarker[],
+  zoom: number
+): ClusteredMarker[] {
+  return clusteredMarkers.map(marker => {
+    if (!marker.isClustered || !marker.baseOffset) {
+      return marker;
+    }
+
+    // Allow offset to approach zero at high zoom
+    const zoomFactor = Math.max(0.05, Math.min(20, 60 / zoom));
+
+    const scaledOffset = {
+      x: marker.baseOffset.x * zoomFactor,
+      y: marker.baseOffset.y * zoomFactor,
+    };
+
+    return {
+      ...marker,
+      offset: scaledOffset,
+    };
+  });
+}
+
+/**
  * Parse coordinates from various formats
  */
-export function parseCoordinates(coords: any): { lat: number; lng: number } | null {
+export function parseCoordinates(coords: unknown): { lat: number; lng: number } | null {
   if (!coords) return null;
   
   if (typeof coords === 'string') {

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { GET as authHandler } from '@/app/api/auth/[...nextauth]/route';
-import { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { verify } from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
 interface ColorWithMedia {
   id: string;
@@ -18,6 +18,7 @@ interface ColorWithMedia {
   season: string;
   dateCollected: Date;
   userId: string;
+  authorName: string | null;
   user: {
     id: string;
     name: string | null;
@@ -60,6 +61,26 @@ interface TransformedColor extends Omit<ColorWithMedia, 'coordinates'> {
 
 export async function GET() {
   try {
+    // Check for NextAuth session
+    const session = await getServerSession(authOptions);
+    
+    // Check for custom auth token
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth-token')?.value;
+    let customTokenValid = false;
+    
+    if (authToken) {
+      try {
+        const decoded = verify(authToken, process.env.NEXTAUTH_SECRET || 'fallback-secret');
+        customTokenValid = !!decoded;
+      } catch (error) {
+        console.error('Custom token verification failed:', error);
+      }
+    }
+    
+    if (!session?.user && !customTokenValid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const colors = await prisma.color.findMany({
       include: {
         user: {
@@ -118,16 +139,73 @@ export async function GET() {
   }
 }
 
-// Function to convert image URL to Buffer
-async function imageUrlToBuffer(url: string): Promise<Buffer> {
-  const response = await fetch(url);
-  const arrayBuffer = await response.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+// Helper function to safely get or create a user
+async function getOrCreateUser(email: string, authorName?: string) {
+  try {
+    console.log('getOrCreateUser called with email:', email);
+    
+    // First try to find existing user
+    let user = await prisma.user.findFirst({
+      where: { email: email }
+    });
+
+    if (!user) {
+      console.log('No existing user found, creating new user');
+      // Try to create new user
+      user = await prisma.user.create({
+        data: {
+          email: email,
+          name: authorName || 'Anonymous',
+        }
+      });
+      console.log('Created new user:', user.id);
+    } else {
+      console.log('Found existing user:', user.id);
+      // Update the user's name if authorName is provided and different from current name
+      if (authorName && authorName !== user.name) {
+        console.log('Updating user name from', user.name, 'to', authorName);
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { name: authorName }
+        });
+        console.log('Updated user name:', user.name);
+      }
+    }
+
+    return user;
+  } catch (error) {
+    console.error('Failed to get or create user with email:', email, error);
+    
+    // Fallback to anonymous user
+    console.log('Falling back to anonymous user');
+    let anonymousUser = await prisma.user.findFirst({
+      where: { email: 'anonymous@carespace.app' }
+    });
+
+    if (!anonymousUser) {
+      console.log('Creating anonymous user');
+      anonymousUser = await prisma.user.create({
+        data: {
+          email: 'anonymous@carespace.app',
+          name: 'Anonymous',
+        }
+      });
+      console.log('Created anonymous user:', anonymousUser.id);
+    } else {
+      console.log('Found existing anonymous user:', anonymousUser.id);
+    }
+
+    return anonymousUser;
+  }
 }
 
 export async function POST(req: Request) {
   try {
     const data = await req.json();
+    console.log('Received color submission data:', data);
+    console.log('Email from request:', data.email);
+    console.log('Email type:', typeof data.email);
+    
     const {
       name,
       description,
@@ -144,53 +222,71 @@ export async function POST(req: Request) {
       mediaUploads,
       userId,
       authorName,
+      email,
     } = data;
 
-    // Get or create anonymous user if no userId provided
+    // Get or create user based on email or session
     let finalUserId = userId;
+    console.log('Processing user creation/lookup for email:', email);
+    
     if (!finalUserId) {
       const session = await getServerSession(authOptions);
       if (session?.user?.id) {
         finalUserId = session.user.id;
-        // Update user's name if authorName is provided
-        if (authorName) {
-          await prisma.user.update({
-            where: { id: finalUserId },
-            data: { name: authorName }
-          });
-        }
+        console.log('Using session user ID:', finalUserId);
+      } else if (email) {
+        // Use the helper function to safely get or create user
+        console.log('Getting or creating user with email:', email);
+        const user = await getOrCreateUser(email, authorName);
+        finalUserId = user.id;
+        console.log('Using user ID:', finalUserId);
       } else {
-        // Create or find anonymous user
-        const anonymousUser = await prisma.user.findFirst({
-          where: { email: 'anonymous@carespace.app' }
-        });
-
-        if (!anonymousUser) {
-          const newAnonymousUser = await prisma.user.create({
-            data: {
-              email: 'anonymous@carespace.app',
-              name: authorName || 'Anonymous',
-            }
-          });
-          finalUserId = newAnonymousUser.id;
-        } else {
-          finalUserId = anonymousUser.id;
-          // Update anonymous user's name if authorName is provided
-          if (authorName) {
-            await prisma.user.update({
-              where: { id: finalUserId },
-              data: { name: authorName }
-            });
-          }
-        }
+        // No email provided, use anonymous user
+        console.log('No email provided, using anonymous user');
+        const anonymousUser = await getOrCreateUser('anonymous@carespace.app', 'Anonymous');
+        finalUserId = anonymousUser.id;
+        console.log('Using anonymous user ID:', finalUserId);
       }
-    } else if (authorName) {
-      // Update existing user's name if authorName is provided
-      await prisma.user.update({
-        where: { id: finalUserId },
-        data: { name: authorName }
-      });
     }
+    
+    console.log('Final user ID for color creation:', finalUserId);
+
+    // Verify the user exists before creating the color
+    if (finalUserId) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: finalUserId }
+      });
+      
+      if (!userExists) {
+        console.error('User does not exist with ID:', finalUserId);
+        // Create anonymous user as fallback
+        const anonymousUser = await getOrCreateUser('anonymous@carespace.app', 'Anonymous');
+        finalUserId = anonymousUser.id;
+        console.log('Using anonymous user as fallback:', finalUserId);
+      } else {
+        console.log('Verified user exists:', finalUserId);
+      }
+    } else {
+      console.error('No userId available, creating anonymous user');
+      const anonymousUser = await getOrCreateUser('anonymous@carespace.app', 'Anonymous');
+      finalUserId = anonymousUser.id;
+      console.log('Using anonymous user:', finalUserId);
+    }
+
+    console.log('Creating color with data:', {
+      name,
+      description,
+      location,
+      coordinates,
+      hex,
+      dateCollected,
+      season,
+      userId: finalUserId,
+      sourceMaterial,
+      type,
+      application,
+      process
+    });
 
     const color = await prisma.color.create({
       data: {
@@ -203,6 +299,7 @@ export async function POST(req: Request) {
         dateCollected: new Date(dateCollected),
         season,
         userId: finalUserId,
+        authorName: authorName || null,
         materials: {
           create: {
             name: sourceMaterial,
@@ -218,11 +315,11 @@ export async function POST(req: Request) {
           },
         },
         mediaUploads: mediaUploads ? {
-          create: mediaUploads.map((upload: any) => ({
-            filename: upload.filename,
-            mimetype: upload.mimetype,
-            type: upload.type,
-            caption: upload.caption,
+          create: mediaUploads.map((upload: unknown) => ({
+            filename: (upload as { filename: string }).filename,
+            mimetype: (upload as { mimetype: string }).mimetype,
+            type: (upload as { type: string }).type,
+            caption: (upload as { caption: string }).caption,
           })),
         } : undefined,
       },
@@ -231,8 +328,31 @@ export async function POST(req: Request) {
     return NextResponse.json(color);
   } catch (error) {
     console.error('Error creating color:', error);
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json(
+          { error: 'A color with this name already exists' },
+          { status: 400 }
+        );
+      }
+      if (error.message.includes('Invalid email')) {
+        return NextResponse.json(
+          { error: 'Invalid email address provided' },
+          { status: 400 }
+        );
+      }
+      if (error.message.includes('Foreign key constraint')) {
+        return NextResponse.json(
+          { error: 'User account issue. Please try again or contact support.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create color' },
+      { error: 'Failed to create color. Please try again.' },
       { status: 500 }
     );
   }

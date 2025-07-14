@@ -15,6 +15,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useState } from 'react';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
 import { X } from 'lucide-react';
+import { Metadata } from 'next';
 
 async function getColorDetails(id: string): Promise<ExtendedColor> {
   // First, get the color with basic relations
@@ -103,6 +104,33 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
   };
 }
 
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}): Promise<Metadata> {
+  try {
+    const { id } = await params;
+    const color = await getColorDetails(id);
+    const mainImage = color.mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome');
+    
+    return {
+      title: `${color.name} - CareScape`,
+      description: color.description || `Color details for ${color.name}`,
+      other: {
+        ...(mainImage && {
+          'link[rel="preload"]': `href="/api/images/${mainImage.id}" as="image"`,
+        })
+      }
+    };
+  } catch (error) {
+    return {
+      title: 'Color Details - CareScape',
+      description: 'Color details page'
+    };
+  }
+}
+
 export default async function ColorDetails({ 
   params 
 }: { 
@@ -127,7 +155,7 @@ export default async function ColorDetails({
 
     const content = (
       <main className="min-h-screen bg-[#FFFCF5] py-12 pt-24">
-        <MenuAndBreadcrumbs colorName={color.name} />
+        <MenuAndBreadcrumbs />
         <div className="flex w-full min-h-[80vh]">
           <div className="w-1/3 h-[80vh] sticky top-0">
             <MapComponent coordinates={coordinates} boundary={boundary} />

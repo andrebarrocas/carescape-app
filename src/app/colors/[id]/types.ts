@@ -1,4 +1,4 @@
-import { ColorSubmission, Material, Process, MediaUpload } from '@/types/colors';
+import { MediaUpload } from '@/types/colors';
 
 export interface Comment {
   id: string;
@@ -7,7 +7,9 @@ export interface Comment {
   user: {
     name: string | null;
     image: string | null;
+    displayName?: string;
   };
+  replies?: Comment[];
 }
 
 export interface MediaUploadWithComments extends Omit<MediaUpload, 'data'> {
@@ -22,7 +24,7 @@ export interface ExtendedColor {
   id: string;
   name: string;
   hex: string;
-  description: string;
+  description: string | null;
   aiDescription?: string;
   location: string;
   coordinates: string | null;
@@ -35,6 +37,7 @@ export interface ExtendedColor {
   } | null;
   dateCollected: string;
   season: string;
+  authorName?: string | null;
   materials: {
     id: string;
     name: string;

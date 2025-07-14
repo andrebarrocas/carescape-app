@@ -31,7 +31,6 @@ export async function POST(request: Request) {
     }
 
     let description: string;
-    let boundary: number[][];
 
     // Create a more detailed boundary with multiple layers
     const layers = [

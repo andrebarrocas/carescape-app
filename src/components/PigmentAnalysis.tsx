@@ -49,21 +49,9 @@ export default function PigmentAnalysis({
   useEffect(() => {
     if (hasGeneratedInitial.current || !color || !hex || !materials) return;
 
-    const initialPrompt = `You are a sustainable design expert.
-
-This pigment/color sample has the following details:
-${pigmentContext}
-
-Respond with a short, poetic and expert-level suggestion for eco-friendly use of this pigment. Format your response as:
-
-1. A poetic description of the pigment and place.
-2. A sustainable design idea using this pigment.
-3. An ethical consideration.
-4. A follow-up question.
-
-Respond in under 4 sentences.`;
-
-    generateResponse(initialPrompt, true, true);
+    // Add introduction message instead of generating ideas immediately
+    const introMessage = "Hi, would you like to explore some sustainable design ideas related to this color?";
+    setMessages([{ role: 'assistant', content: introMessage, styled: false }]);
     hasGeneratedInitial.current = true;
   }, [color, hex, materials]);
 
@@ -171,7 +159,7 @@ Respond in under 4 sentences.`;
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask About sustainable design ideas..."
+            placeholder="Ask about sustainable design ideas..."
             className="flex-1 p-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
             disabled={isLoading}
           />
@@ -183,6 +171,13 @@ Respond in under 4 sentences.`;
             Send
           </button>
         </form>
+        
+        {/* AI Model Transparency */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-500 italic">
+            Powered by Gemini AI. This AI model helps generate sustainable design suggestions based on your color data.
+          </p>
+        </div>
       </div>
     </div>
   );

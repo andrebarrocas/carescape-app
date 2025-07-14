@@ -23,11 +23,12 @@ export const viewport = {
   themeColor: "#000000",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Removed authentication redirect logic to avoid infinite redirect loop
   return (
     <html lang="en" suppressHydrationWarning>
       <body 

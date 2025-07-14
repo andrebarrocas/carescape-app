@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Map as PigeonMap, Marker } from 'pigeon-maps';
-import { Upload, X, Camera, Search } from 'lucide-react';
+import { Upload, X, Search, Crop } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import DragDropUpload from './DragDropUpload';
+import ImageCropper from './ImageCropper';
+import { MapComponent } from './MapComponent';
 
 const colorSubmissionSchema = z.object({
   name: z.string().min(1, 'Color name is required'),
@@ -28,7 +30,10 @@ const colorSubmissionSchema = z.object({
     return !isNaN(d.getTime());
   }, "Please enter a valid date"),
   authorName: z.string().optional(),
-  email: z.string().email('Valid email is required'),
+  email: z.string().min(1, 'Email is required').refine((email) => {
+    // Simple email validation - just check for @ and .
+    return email.includes('@') && email.includes('.') && email.length > 5;
+  }, 'Please enter a valid email address'),
   agreeToTerms: z.boolean().optional(),
   hex: z.string().min(1, 'Hex color is required'),
   mediaUploads: z.array(z.any()).optional(),
@@ -64,21 +69,10 @@ interface ProcessImage {
   caption: string;
 }
 
-// Add maptiler provider for better map tiles
-const maptilerProvider = (x: number, y: number, z: number) => {
-  return `https://api.maptiler.com/maps/basic-v2/256/${z}/${x}/${y}.png?key=YOUR_MAPTILER_KEY`
-}
 
-// Use OpenStreetMap provider which is free and reliable
-const osmProvider = (x: number, y: number, z: number) => {
-  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`
-}
 
 export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: ColorSubmissionFormProps) {
   const router = useRouter();
-  const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([40, -74.5]);
-  const [mapZoom, setMapZoom] = useState(3);
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
@@ -87,6 +81,10 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [processImages, setProcessImages] = useState<ProcessImage[]>([]);
   const [currentCaption, setCurrentCaption] = useState('');
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropperImage, setCropperImage] = useState<string>('');
+  const [cropperType, setCropperType] = useState<'outcome' | 'landscape'>('outcome');
+  const [mapCoordinates, setMapCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   const {
     register,
@@ -108,30 +106,30 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     if (isOpen) {
       reset();
       setMediaFiles([]);
-      setSelectedLocation(null);
-      setMapCenter([40, -74.5]);
-      setMapZoom(3);
+      // Only set if not already set
+      if (!mapCoordinates) {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((pos) => {
+            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            setMapCoordinates(coords);
+            setValue('coordinates', coords);
+          });
+        } else {
+          // fallback to a default location (e.g., 0,0)
+          setMapCoordinates({ lat: 0, lng: 0 });
+          setValue('coordinates', { lat: 0, lng: 0 });
+        }
+      }
     }
   }, [isOpen, reset]);
 
-  const handleMapClick = useCallback((coords: { lat: number; lng: number }) => {
-    const newLocation: [number, number] = [coords.lat, coords.lng];
-    setSelectedLocation(newLocation);
-    setMapCenter(newLocation);
-    setMapZoom(6);
-    setValue('coordinates', coords);
-    
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.display_name) {
-          setValue('location', data.display_name);
-        }
-      })
-      .catch(error => {
-        console.error('Error reverse geocoding:', error);
-      });
-  }, [setValue]);
+  // Keep mapCoordinates in sync with form coordinates
+  useEffect(() => {
+    const coords = watch('coordinates');
+    if (coords && coords.lat && coords.lng) {
+      setMapCoordinates(coords);
+    }
+  }, [watch('coordinates')]);
 
   const searchLocation = async (query: string) => {
     if (query.length < 3) {
@@ -167,17 +165,21 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     setSearchTimeout(timeout);
   };
 
+  // When user picks a location from suggestions, update mapCoordinates
   const handleSuggestionClick = (suggestion: LocationSuggestion) => {
     const lat = parseFloat(suggestion.lat);
     const lng = parseFloat(suggestion.lon);
-    const newLocation: [number, number] = [lat, lng];
-    
     setValue('location', suggestion.display_name);
     setValue('coordinates', { lat, lng });
-    setSelectedLocation(newLocation);
-    setMapCenter(newLocation);
-    setMapZoom(6);
+    setMapCoordinates({ lat, lng });
     setShowSuggestions(false);
+  };
+
+  // Handler for clicking on the map
+  const handleMapClick = ({ latLng }: { latLng: [number, number] }) => {
+    const [lat, lng] = latLng;
+    setMapCoordinates({ lat, lng });
+    setValue('coordinates', { lat, lng });
   };
 
   useEffect(() => {
@@ -193,12 +195,11 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     };
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'outcome' | 'landscape' | 'process') => {
-    const files = e.target.files;
+  const handleFileUpload = async (files: File[], type: 'outcome' | 'landscape' | 'process') => {
     console.log('File upload triggered for type:', type);
     console.log('Files selected:', files?.length);
     
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
     // Handle multiple files for process type
     if (type === 'process') {
@@ -218,7 +219,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
         return;
       }
       
-      Array.from(files).forEach(async (file, index) => {
+      files.forEach(async (file, index) => {
         console.log(`Processing file ${index + 1}:`, file.name, file.size);
         
         // Check file size (limit to 10MB)
@@ -339,6 +340,47 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     });
   };
 
+  const handleCropImage = (type: 'outcome' | 'landscape') => {
+    const existingFile = mediaFiles.find(m => m.type === type);
+    if (existingFile) {
+      setCropperImage(existingFile.preview);
+      setCropperType(type);
+      setShowCropper(true);
+    }
+  };
+
+  const handleCropComplete = async (croppedFile: File) => {
+    const preview = URL.createObjectURL(croppedFile);
+    
+    if (cropperType === 'outcome') {
+      const hex = await getAverageColor(croppedFile);
+      setValue('hex', hex);
+      const newMedia: MediaFile = {
+        file: croppedFile,
+        type: 'outcome',
+        preview,
+        caption: hex,
+      };
+      setMediaFiles(prev => [...prev.filter(m => m.type !== 'outcome'), newMedia]);
+    } else {
+      const newMedia: MediaFile = {
+        file: croppedFile,
+        type: 'landscape',
+        preview,
+        caption: '',
+      };
+      setMediaFiles(prev => [...prev.filter(m => m.type !== 'landscape'), newMedia]);
+    }
+    
+    setShowCropper(false);
+    setCropperImage('');
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setCropperImage('');
+  };
+
   const handleProcessImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -362,6 +404,9 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     console.log('Media files count:', mediaFiles.length);
     console.log('Form errors:', errors);
     console.log('Form is valid:', Object.keys(errors).length === 0);
+          console.log('Email field value:', data.email);
+      console.log('Email field type:', typeof data.email);
+      console.log('All form data:', data);
     
     // Check if form has validation errors
     if (Object.keys(errors).length > 0) {
@@ -415,9 +460,6 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       // Reset form state
       reset();
       setMediaFiles([]);
-      setSelectedLocation(null);
-      setMapCenter([40, -74.5]);
-      setMapZoom(3);
       
       onClose();
     } catch (error) {
@@ -429,7 +471,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={() => {}}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" />
         <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto border-2 border-black z-[110]">
@@ -438,7 +480,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               Add New Color
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className="rounded-full p-1.5 hover:bg-black/5">
+              <button className="rounded-full p-1.5 hover:bg-black/5" onClick={onClose}>
                 <X className="h-5 w-5 text-[#2C3E50]" />
               </button>
             </Dialog.Close>
@@ -446,7 +488,10 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
           <form 
             onSubmit={handleSubmit(handleFormSubmit)} 
             className="space-y-8"
-            onChange={() => console.log('Form changed, errors:', errors)}
+            onChange={() => {
+              console.log('Form changed, errors:', errors);
+              console.log('Form values:', watch());
+            }}
           >
             {/* Basic Information */}
             <div className="space-y-4">
@@ -457,7 +502,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 <input
                   {...register('name')}
                   className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                  placeholder="Enter color name"
+                  placeholder="Enter the name you would give to this color"
                 />
                 {errors.name && (
                   <p className="mt-1 text-red-500 text-xs">{errors.name.message}</p>
@@ -466,12 +511,12 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
 
               <div>
                 <label className="block font-mono text-sm text-[#2C3E50] mb-2">
-                  Description
+                  Landscape Description
                 </label>
                 <textarea
                   {...register('description')}
                   className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[100px]"
-                  placeholder="Describe the color and its significance (up to 1000 characters)"
+                  placeholder="Describe the landscape where the material comes from"
                   rows={4}
                   maxLength={1000}
                 />
@@ -492,27 +537,10 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 <input
                   {...register('sourceMaterial')}
                   className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                  placeholder="Enter source material"
+                  placeholder="Enter the source material that originated this color"
                 />
                 {errors.sourceMaterial && (
                   <p className="mt-1 text-red-500 text-xs">{errors.sourceMaterial.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block font-mono text-sm text-[#2C3E50] mb-2">
-                  Type
-                </label>
-                <select
-                  {...register('type')}
-                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                >
-                  <option value="pigment">Pigment</option>
-                  <option value="dye">Dye</option>
-                  <option value="ink">Ink</option>
-                </select>
-                {errors.type && (
-                  <p className="mt-1 text-red-500 text-xs">{errors.type.message}</p>
                 )}
               </div>
 
@@ -552,37 +580,41 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 )}
                 {/* Map for location selection */}
                 <div className="mt-4 h-[300px] border-2 border-[#2C3E50] rounded-lg overflow-hidden">
-                  <PigeonMap
-                    center={mapCenter}
-                    zoom={mapZoom}
-                    defaultCenter={[40, -74.5]}
-                    defaultZoom={3}
-                    minZoom={2}
-                    maxZoom={8}
-                    onClick={({ latLng }) => handleMapClick({ lat: latLng[0], lng: latLng[1] })}
-                    boxClassname="w-full h-full"
-                  >
-                    {selectedLocation && (
-                      <Marker
-                        width={50}
-                        anchor={selectedLocation}
-                        color="#2C3E50"
-                        className="cursor-pointer transition-transform hover:scale-110"
-                      />
-                    )}
-                  </PigeonMap>
+                  {mapCoordinates && (
+                    <MapComponent
+                      coordinates={mapCoordinates}
+                      onClick={handleMapClick}
+                    />
+                  )}
                 </div>
               </div>
 
+              {/* Move Type field here, after Location */}
               <div>
                 <label className="block font-mono text-sm text-[#2C3E50] mb-2">
-                  Process Description
+                  Type
                 </label>
+                <select
+                  {...register('type')}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                >
+                  <option value="pigment">Pigment</option>
+                  <option value="dye">Dye</option>
+                  <option value="ink">Ink</option>
+                </select>
+                {errors.type && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.type.message}</p>
+                )}
+              </div>
+
+              {/* Process Description - Required field */}
+              <div className="space-y-2">
+                <label className="block font-mono text-sm text-[#2C3E50]">Process Description</label>
                 <textarea
                   {...register('process')}
-                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[150px] resize-y"
-                  placeholder="Describe the process used to create this color (up to 5000 characters)"
-                  rows={6}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none min-h-[100px]"
+                  placeholder="Describe the process used to create this color"
+                  rows={4}
                   maxLength={5000}
                 />
                 <div className="flex justify-between items-center mt-1">
@@ -595,63 +627,65 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block font-mono text-sm text-[#2C3E50]">Application (optional)</label>
-                  <input
-                    {...register('application')}
-                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                  />
-                </div>
+              {/* Application (optional) before Season */}
+              <div className="space-y-2">
+                <label className="block font-mono text-sm text-[#2C3E50]">Application (optional):</label>
+                <input
+                  {...register('application')}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block font-mono text-sm text-[#2C3E50]">Season</label>
-                  <select
-                    {...register('season')}
-                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                  >
-                    <option value="Spring">Spring</option>
-                    <option value="Summer">Summer</option>
-                    <option value="Autumn">Autumn</option>
-                    <option value="Winter">Winter</option>
-                  </select>
-                </div>
+              {/* Season before Email */}
+              <div className="space-y-2">
+                <label className="block font-mono text-sm text-[#2C3E50]">Season:</label>
+                <select
+                  {...register('season')}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                >
+                  <option value="Spring">Spring</option>
+                  <option value="Summer">Summer</option>
+                  <option value="Autumn">Autumn</option>
+                  <option value="Winter">Winter</option>
+                </select>
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block font-mono text-sm text-[#2C3E50]">Date Collected</label>
-                  <input
-                    {...register('dateCollected')}
-                    type="date"
-                    defaultValue={new Date().toISOString().split('T')[0]}
-                    max={new Date().toISOString().split('T')[0]}
-                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                  />
-                  {errors.dateCollected && (
-                    <p className="mt-1 text-red-500 text-xs">{errors.dateCollected.message}</p>
-                  )}
-                </div>
+              {/* Email after Season */}
+              <div className="space-y-2">
+                <label className="block font-mono text-sm text-[#2C3E50]">Email</label>
+                <input
+                  {...register('email')}
+                  type="email"
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                  placeholder="Enter your email"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.email.message}</p>
+                )}
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block font-mono text-sm text-[#2C3E50]">Email</label>
-                  <input
-                    {...register('email')}
-                    type="email"
-                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                    placeholder="Enter your email"
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-red-500 text-xs">{errors.email.message}</p>
-                  )}
-                </div>
+              {/* Date Collected and Name (optional) remain as before */}
+              <div className="space-y-2">
+                <label className="block font-mono text-sm text-[#2C3E50]">Date Collected</label>
+                <input
+                  {...register('dateCollected')}
+                  type="date"
+                  defaultValue={new Date().toISOString().split('T')[0]}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                />
+                {errors.dateCollected && (
+                  <p className="mt-1 text-red-500 text-xs">{errors.dateCollected.message}</p>
+                )}
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block font-mono text-sm text-[#2C3E50]">Name (optional)</label>
-                  <input
-                    {...register('authorName')}
-                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
-                    placeholder="Enter your name"
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="block font-mono text-sm text-[#2C3E50]">Name (optional)</label>
+                <input
+                  {...register('authorName')}
+                  className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                  placeholder="Enter your name"
+                />
               </div>
             </div>
 
@@ -668,77 +702,100 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 <div className="space-y-2">
                   <span className="font-mono text-sm text-[#2C3E50] block">Color Outcome</span>
                   <div className="max-w-[300px]">
-                    <label className="block w-full aspect-square border-2 border-[#2C3E50] relative cursor-pointer group">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileUpload(e, 'outcome')}
-                        className="hidden"
-                      />
-                      {mediaFiles.find(m => m.type === 'outcome') ? (
-                        <div className="relative w-full h-full">
-                          <Image
-                            src={mediaFiles.find(m => m.type === 'outcome')?.preview || ''}
-                            alt="Color outcome preview"
-                            fill
-                            className="object-cover"
-                          />
+                    {mediaFiles.find(m => m.type === 'outcome') ? (
+                      <div className="relative w-full aspect-square border-2 border-[#2C3E50]">
+                        <Image
+                          src={mediaFiles.find(m => m.type === 'outcome')?.preview || ''}
+                          alt="Color outcome preview"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleCropImage('outcome')}
+                            className="p-1 bg-white rounded-full shadow-lg z-10 hover:bg-gray-50"
+                            title="Crop image"
+                          >
+                            <Crop className="w-4 h-4 text-[#2C3E50]" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleRemoveFile(mediaFiles.findIndex(m => m.type === 'outcome'))}
-                            className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg z-10"
+                            className="p-1 bg-white rounded-full shadow-lg z-10 hover:bg-gray-50"
+                            title="Remove image"
                           >
                             <X className="w-4 h-4 text-[#2C3E50]" />
                           </button>
-                          {mediaFiles.find(m => m.type === 'outcome')?.caption && (
-                            <div className="absolute bottom-2 left-2 right-2 bg-white/90 p-2 rounded text-xs font-mono">
-                              Hex: {mediaFiles.find(m => m.type === 'outcome')?.caption}
-                            </div>
-                          )}
                         </div>
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
+                        {mediaFiles.find(m => m.type === 'outcome')?.caption && (
+                          <div className="absolute bottom-2 left-2 right-2 bg-white/90 p-2 rounded text-xs font-mono">
+                            Hex: {mediaFiles.find(m => m.type === 'outcome')?.caption}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <DragDropUpload
+                        onFilesSelected={(files) => handleFileUpload(files, 'outcome')}
+                        multiple={false}
+                        className="w-full aspect-square"
+                      >
+                        <div className="flex flex-col items-center justify-center h-full">
+                          <Upload className="w-8 h-8 text-[#2C3E50] mb-2" />
+                          <p className="text-sm text-[#2C3E50]">Upload outcome image</p>
+                          <p className="text-xs text-gray-500 mt-1">This will generate the hex color</p>
                         </div>
-                      )}
-                    </label>
+                      </DragDropUpload>
+                    )}
                   </div>
-                  <p className="font-mono text-xs text-[#2C3E50]">Upload an image to generate the hex color code</p>
+                  <p className="font-mono text-xs text-[#2C3E50]">
+                    Upload an image of the final color outcome. The hex color code will be automatically generated from this image.
+                  </p>
                 </div>
 
                 {/* Landscape Image Upload */}
                 <div className="space-y-2">
                   <span className="font-mono text-sm text-[#2C3E50] block">Landscape Photo</span>
                   <div className="max-w-[300px]">
-                    <label className="block w-full aspect-square border-2 border-[#2C3E50] relative cursor-pointer group">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileUpload(e, 'landscape')}
-                        className="hidden"
-                      />
-                      {mediaFiles.find(m => m.type === 'landscape') ? (
-                        <div className="relative w-full h-full">
-                          <Image
-                            src={mediaFiles.find(m => m.type === 'landscape')?.preview || ''}
-                            alt="Landscape preview"
-                            fill
-                            className="object-cover"
-                          />
+                    {mediaFiles.find(m => m.type === 'landscape') ? (
+                      <div className="relative w-full aspect-square border-2 border-[#2C3E50]">
+                        <Image
+                          src={mediaFiles.find(m => m.type === 'landscape')?.preview || ''}
+                          alt="Landscape preview"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleCropImage('landscape')}
+                            className="p-1 bg-white rounded-full shadow-lg z-10 hover:bg-gray-50"
+                            title="Crop image"
+                          >
+                            <Crop className="w-4 h-4 text-[#2C3E50]" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleRemoveFile(mediaFiles.findIndex(m => m.type === 'landscape'))}
-                            className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg z-10"
+                            className="p-1 bg-white rounded-full shadow-lg z-10 hover:bg-gray-50"
+                            title="Remove image"
                           >
                             <X className="w-4 h-4 text-[#2C3E50]" />
                           </button>
                         </div>
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Upload className="w-8 h-8 text-[#2C3E50] group-hover:scale-110 transition-transform" />
+                      </div>
+                    ) : (
+                      <DragDropUpload
+                        onFilesSelected={(files) => handleFileUpload(files, 'landscape')}
+                        multiple={false}
+                        className="w-full aspect-square"
+                      >
+                        <div className="flex flex-col items-center justify-center h-full">
+                          <Upload className="w-8 h-8 text-[#2C3E50] mb-2" />
+                          <p className="text-sm text-[#2C3E50]">Upload landscape photo</p>
                         </div>
-                      )}
-                    </label>
+                      </DragDropUpload>
+                    )}
                   </div>
                 </div>
               </div>
@@ -748,23 +805,18 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 <span className="font-mono text-sm text-[#2C3E50] block">Media Images</span>
                 <div className="flex flex-col space-y-4">
                   <div className="flex flex-col space-y-2">
-                    <label htmlFor="mediaUploads" className="text-lg">Add Media Photos</label>
-                    <button
-                      type="button"
-                      onClick={() => document.getElementById('mediaUploads')?.click()}
-                      className="bos-button text-lg px-6 py-2 flex items-center gap-2"
+                    <label className="text-lg">Add Media Photos</label>
+                    <DragDropUpload
+                      onFilesSelected={(files) => handleFileUpload(files, 'process')}
+                      multiple={true}
+                      maxFiles={20}
+                      className="w-full"
                     >
-                      <Upload className="w-5 h-5" />
-                      Add Media Photos
-                    </button>
-                    <input
-                      type="file"
-                      id="mediaUploads"
-                      multiple
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileUpload(e, 'process')}
-                    />
+                      <div className="flex items-center justify-center gap-2">
+                        <Upload className="w-5 h-5" />
+                        <span>Add Media Photos</span>
+                      </div>
+                    </DragDropUpload>
                   </div>
                 </div>
 
@@ -817,6 +869,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   console.log('Submit button clicked');
                   console.log('Submitting state:', submitting);
                   console.log('Media files count:', mediaFiles.length);
+                  console.log('Current form values:', watch());
+                  console.log('Current form errors:', errors);
                 }}
               >
                 {submitting ? 'Submitting...' : 'Submit Color'}
@@ -825,6 +879,22 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
           </form>
         </Dialog.Content>
       </Dialog.Portal>
+      
+      {/* Image Cropper Modal */}
+      <Dialog.Root open={showCropper} onOpenChange={(open) => { if (!open) handleCropCancel(); }}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/80 z-[200]" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-full w-[90vw] max-w-lg z-[201] bg-white rounded-lg shadow-lg p-0">
+            <Dialog.Title className="sr-only">Crop & Adjust Image</Dialog.Title>
+            <ImageCropper
+              imageSrc={cropperImage}
+              onCrop={handleCropComplete}
+              onCancel={handleCropCancel}
+              aspectRatio={1}
+            />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </Dialog.Root>
   );
 }

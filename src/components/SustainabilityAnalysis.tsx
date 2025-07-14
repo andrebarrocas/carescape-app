@@ -12,6 +12,7 @@ interface SustainabilityAnalysisProps {
   date: string;
   season: string;
   bioregion: string;
+  colorId: string;
   onOpenChat: () => void;
 }
 
@@ -29,6 +30,7 @@ export default function SustainabilityAnalysis({
   date,
   season,
   bioregion,
+  colorId,
   onOpenChat,
 }: SustainabilityAnalysisProps) {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
@@ -36,8 +38,19 @@ export default function SustainabilityAnalysis({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const generateAnalysis = async () => {
+    const fetchOrGenerateAnalysis = async () => {
       try {
+        // First, try to fetch existing analysis from database
+        const fetchResponse = await fetch(`/api/colors/${colorId}/sustainability-analysis`);
+        
+        if (fetchResponse.ok) {
+          const existingAnalysis = await fetchResponse.json();
+          setAnalysis(existingAnalysis);
+          setIsLoading(false);
+          return;
+        }
+
+        // If no existing analysis, generate new one
         const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
         if (!apiKey) throw new Error('API key not found');
 
@@ -50,9 +63,9 @@ export default function SustainabilityAnalysis({
           },
         });
 
-        const prompt = `You are a sustainability analyst.
+        const prompt = `You are a sustainability analyst specializing in natural materials and their environmental impact.
 
-Given the following information About a natural pigment, write a very short summary (1 sentence) on the sustainability of the materials used. Then list 3–4 environmental *advantages* and *disadvantages*.
+Given the following information about a natural pigment, provide a concise sustainability analysis that focuses specifically on the source material and its relationship to the local landscape.
 
 Details:
 - Color: ${color} (${hex})
@@ -62,22 +75,41 @@ Details:
 - Season: ${season}
 - Bioregion: ${bioregion}
 
+Write a brief summary (1 sentence) on the sustainability of this specific material in its local context. Then list 3-4 environmental advantages and 3-4 environmental concerns, focusing on:
+- Local ecosystem impact
+- Material sourcing sustainability
+- Cultural and traditional practices
+- Long-term environmental considerations
+
 Respond with ONLY valid JSON in this format:
 {
-  "summary": "A short sustainability summary sentence.",
-  "advantages": ["..."],
-  "disadvantages": ["..."]
-}
-`;
+  "summary": "A concise sustainability summary focusing on the local material and landscape context.",
+  "advantages": ["advantage 1", "advantage 2", "advantage 3"],
+  "disadvantages": ["concern 1", "concern 2", "concern 3"]
+}`;
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim();
+        const aiResponse = await result.response;
+        const text = aiResponse.text().trim();
 
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('No JSON found in AI response');
 
         const parsed = JSON.parse(jsonMatch[0]);
+        
+        // Save the analysis to database
+        const saveResponse = await fetch(`/api/colors/${colorId}/sustainability-analysis`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(parsed),
+        });
+
+        if (!saveResponse.ok) {
+          console.warn('Failed to save analysis to database');
+        }
+
         setAnalysis(parsed);
       } catch (err: any) {
         setError(err.message || 'Failed to generate analysis');
@@ -86,14 +118,14 @@ Respond with ONLY valid JSON in this format:
       }
     };
 
-    generateAnalysis();
-  }, [color, hex, materials, location, date, season, bioregion]);
+    fetchOrGenerateAnalysis();
+  }, [color, hex, location, materials, date, season, bioregion, colorId]);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-2 mb-6">
-          
+         
           <h2 className="text-2xl text-[#2C3E50]">Sustainability Analysis</h2>
         </div>
 
@@ -115,8 +147,8 @@ Respond with ONLY valid JSON in this format:
             <p className="italic text-base md:text-lg leading-relaxed">{analysis.summary}</p>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-red-50 border border-red-200 rounded-xl p-5">
-                <h3 className="text-xl text-red-700 mb-4">⚠️ Environmental Concerns</h3>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                <h3 className="text-xl text-gray-700 mb-4">Environmental Concerns</h3>
                 <ul className="list-disc list-inside space-y-2 text-sm md:text-base font-sans leading-relaxed">
                   {analysis.disadvantages.map((item, i) => (
                     <li key={i}>{item}</li>
@@ -125,7 +157,7 @@ Respond with ONLY valid JSON in this format:
               </div>
 
               <div className="bg-green-50 border border-green-200 rounded-xl p-5">
-                <h3 className="text-xl text-green-800 mb-4">🌿 Environmental Advantages</h3>
+                <h3 className="text-xl text-green-800 mb-4">Environmental Advantages</h3>
                 <ul className="list-disc list-inside space-y-2 text-sm md:text-base font-sans leading-relaxed">
                   {analysis.advantages.map((item, i) => (
                     <li key={i}>{item}</li>
@@ -136,14 +168,13 @@ Respond with ONLY valid JSON in this format:
 
             <div className="text-center mt-6">
               <p className="text-sm text-[#2C3E50]/60 italic mb-3">
-                This insight was generated using AI. Please verify with sustainability experts.
+                Powered by AI. Please verify with sustainability experts.
               </p>
               <button
                 onClick={onOpenChat}
                 className="bos-button text-lg px-6 py-2 flex items-center gap-2"
               >
-                
-                <span>Generate Sustainable Design Ideas</span>
+                <span>Design Ideas</span>
               </button>
             </div>
           </div>

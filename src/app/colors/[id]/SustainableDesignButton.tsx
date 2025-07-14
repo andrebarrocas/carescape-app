@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Palette, X } from "lucide-react";
+import { X } from "lucide-react";
 import PigmentAnalysis from "@/components/PigmentAnalysis";
-import { Leaf } from 'lucide-react'
 
 interface SustainableDesignButtonProps {
   color: string;
@@ -25,7 +24,7 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
           className="bos-button text-2xl px-8 py-3"
           style={{ lineHeight: 1.1 }}
         >
-          <span>Generate Sustainable Design Ideas</span>
+          <span>Design Ideas</span>
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -34,7 +33,7 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
           <Dialog.Title asChild>
             <div className="flex items-center gap-2 mb-4">
               
-              <span className="font-mono text-base text-[#2C3E50]/80">Sustainable Design Chat</span>
+              <span className="font-mono text-base text-[#2C3E50]/80">Design Ideas</span>
             </div>
           </Dialog.Title>
           <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>

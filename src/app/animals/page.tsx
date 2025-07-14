@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import MenuAndBreadcrumbs from '@/components/MenuAndBreadcrumbs';
-import { BiodiversityClient } from './BiodiversityClient';
+import { BiodiversityClient } from './AnimalsClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

@@ -2,26 +2,26 @@
 
 import { ImageGallery } from './ImageGallery';
 import { MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CommentsModal } from './CommentsModal';
-import { useRouter } from 'next/navigation';
 
 interface ImageGalleryWrapperProps {
   media: MediaUploadWithComments;
+  onCommentAdded?: () => void;
 }
 
-export function ImageGalleryWrapper({ media }: ImageGalleryWrapperProps) {
+export function ImageGalleryWrapper({ media, onCommentAdded }: ImageGalleryWrapperProps) {
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
-  const router = useRouter();
 
-  const handleAddComment = async (mediaId: string, content: string) => {
+  const handleAddComment = useMemo(() => async (mediaId: string, content: string, parentId?: string) => {
     try {
       const response = await fetch(`/api/colors/${media.colorId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content,
-          mediaId
+          mediaId,
+          parentId
         }),
       });
 
@@ -29,12 +29,18 @@ export function ImageGalleryWrapper({ media }: ImageGalleryWrapperProps) {
         throw new Error('Failed to add comment');
       }
 
-      // Refresh the page to show the new comment
-      router.refresh();
+      // Call the callback instead of refreshing the entire page
+      if (onCommentAdded) {
+        onCommentAdded();
+      }
     } catch (error) {
       console.error('Error adding comment:', error);
       alert('Failed to add comment. Please try again.');
     }
+  }, [media.colorId, onCommentAdded]);
+
+  const handleModalClose = () => {
+    setIsCommentsOpen(false);
   };
 
   return (
@@ -46,7 +52,7 @@ export function ImageGalleryWrapper({ media }: ImageGalleryWrapperProps) {
       {isCommentsOpen && (
         <CommentsModal
           media={media}
-          onClose={() => setIsCommentsOpen(false)}
+          onClose={handleModalClose}
           onAddComment={handleAddComment}
         />
       )}

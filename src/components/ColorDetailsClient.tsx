@@ -18,7 +18,7 @@ interface ColorDetailsClientProps {
   children?: React.ReactNode;
   color: ExtendedColor;
   mediaUploads: MediaUploadWithComments[];
-  session?: any;
+  session?: unknown;
 }
 
 interface TitleContainerProps {
@@ -167,7 +167,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 onClick={() => setSustainabilityModalOpen(true)}
                 className="bos-button flex items-center gap-2"
               >
-                <Leaf className="w-5 h-5" />
+                
                 <span>Sustainability Analysis</span>
               </button>
               <SustainableDesignButton
@@ -238,7 +238,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   {color.name}
                 </h1>
                 <p className="text-xl text-[#2C3E50]/80 italic">
-                  by {color.user?.name || color.user?.pseudonym || 'Anonymous'}
+                  by {color.authorName || color.user?.name || color.user?.pseudonym || 'Anonymous'}
                 </p>
                 
                 <p className="text-lg text-[#2C3E50]/60">
@@ -249,7 +249,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                     onClick={() => setSustainabilityModalOpen(true)}
                     className="bos-button text-2xl px-8 py-3"
                   >
-                    <span>Sustainability Analysis</span>
+                    <span>Eco Analysis</span>
                   </button>
                   <SustainableDesignButton
                     color={color.name}
@@ -302,11 +302,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             </p>
           </div>
 
-          {/* Personal Description */}
+          {/* Landscape Description (above image) */}
           <div className="mb-10">
-            <p className="mt-2 text-base text-[#2C3E50]/80">
-              "{color.description}"
-            </p>
+            <p className="mt-2 text-base text-[#2C3E50]/80" dangerouslySetInnerHTML={{ __html: (color.description || '').replace(/\n/g, '<br>') }} />
           </div>
 
           {/* Landscape Details */}
@@ -339,9 +337,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <div key={process.id}>
                   <p>- Application: {process.application}</p>
                   <p>- Process/Recipe: {process.technique}</p>
-                  <p className="text-sm text-black/80 pl-4 italic" title={process.notes || ''}>
-                    {truncateText(process.notes || '', 80)}
-                  </p>
+                  <p className="text-sm text-black/80 pl-4 italic" title={process.notes || ''} dangerouslySetInnerHTML={{ __html: (process.notes || '').replace(/\n/g, '<br>') }} />
                 </div>
               ))}
             </div>
@@ -402,6 +398,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               date={color.dateCollected}
               season={color.season}
               bioregion={color.bioregion?.description || ''}
+              colorId={color.id}
               onOpenChat={() => {
                 setSustainabilityModalOpen(false);
                 setPigmentModalOpen(true);

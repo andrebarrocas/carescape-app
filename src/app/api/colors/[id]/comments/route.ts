@@ -15,6 +15,8 @@ export async function GET(
         user: {
           select: {
             name: true,
+            pseudonym: true,
+            email: true,
             image: true,
           },
         },
@@ -24,7 +26,27 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(comments);
+    const commentsWithDisplayName = comments.map((comment: any) => {
+      let displayName = 'Anonymous';
+      
+      if (comment.user.name) {
+        displayName = comment.user.name;
+      } else if (comment.user.pseudonym) {
+        displayName = comment.user.pseudonym;
+      } else if (comment.user.email && comment.user.email !== 'anonymous@carespace.app') {
+        displayName = comment.user.email.split('@')[0];
+      }
+      
+      return {
+        ...comment,
+        user: {
+          ...comment.user,
+          displayName,
+        },
+      };
+    });
+
+    return NextResponse.json(commentsWithDisplayName);
   } catch (error) {
     console.error('Error fetching comments:', error);
     return NextResponse.json(
@@ -36,52 +58,56 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const { id: colorId } = await context.params;
-    const { content, mediaId } = await request.json();
-
-    // Get or create anonymous user if no session
-    let userId = session?.user?.id;
-    if (!userId) {
-      const anonymousUser = await prisma.user.findFirst({
-        where: { email: 'anonymous@carespace.app' }
-      });
-
-      if (!anonymousUser) {
-        const newAnonymousUser = await prisma.user.create({
-          data: {
-            email: 'anonymous@carespace.app',
-            name: 'Anonymous User',
-          }
-        });
-        userId = newAnonymousUser.id;
-      } else {
-        userId = anonymousUser.id;
-      }
+    if (!session) {
+      return new Response('Unauthorized', { status: 401 });
     }
+    const { id: colorId } = await params;
+    const { content, mediaId, parentId } = await request.json();
 
-    // Create the comment
+    // Create the comment using the logged user's ID
     const comment = await prisma.comment.create({
       data: {
         content,
         colorId,
         mediaId,
-        userId,
+        userId: session.user.id,
+        ...(parentId ? { parentId } : {})
       },
       include: {
         user: {
           select: {
             name: true,
+            pseudonym: true,
+            email: true,
             image: true,
           },
         },
       },
     });
 
-    return NextResponse.json(comment);
+    let displayName = 'Anonymous';
+    
+    if (comment.user.name) {
+      displayName = comment.user.name;
+    } else if (comment.user.pseudonym) {
+      displayName = comment.user.pseudonym;
+    } else if (comment.user.email && comment.user.email !== 'anonymous@carespace.app') {
+      displayName = comment.user.email.split('@')[0];
+    }
+    
+    const commentWithDisplayName = {
+      ...comment,
+      user: {
+        ...comment.user,
+        displayName,
+      },
+    };
+
+    return NextResponse.json(commentWithDisplayName);
   } catch (error) {
     console.error('Error creating comment:', error);
     return new NextResponse(

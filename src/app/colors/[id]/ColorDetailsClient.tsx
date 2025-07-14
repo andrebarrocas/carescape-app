@@ -1,18 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { Pencil, Palette, X, Plus, Leaf } from 'lucide-react';
-import * as Dialog from '@radix-ui/react-dialog';
-import Image from 'next/image';
-import { ExtendedColor, MediaUploadWithComments } from './types';
-import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import EditColorForm from '@/components/EditColorForm';
-import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
+import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
+import { ExtendedColor, MediaUploadWithComments } from '@/app/colors/[id]/types';
+import { Pencil, Palette, X, Plus, Leaf } from 'lucide-react';
+import React from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
 import SustainableDesignButton from './SustainableDesignButton';
-import { MapComponent } from '@/components/MapComponent';
+import { format } from 'date-fns';
+import Image from 'next/image';
+import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
 
 interface ColorDetailsClientProps {
   children?: React.ReactNode;
@@ -43,6 +43,15 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
   const [captions, setCaptions] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [mediaUploads, setMediaUploads] = useState(initialMediaUploads);
+
+  // Memoize filtered media uploads to avoid recalculation
+  const mainImage = useMemo(() => {
+    return mediaUploads.find(media => media.type === 'landscape');
+  }, [mediaUploads]);
+
+  const processImages = useMemo(() => {
+    return mediaUploads.filter(media => media.type === 'process');
+  }, [mediaUploads]);
 
   const handleAddComment = async (mediaId: string, content: string) => {
     try {
@@ -141,62 +150,64 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
     }
   };
 
-  // Find the h1 element in children and wrap it with the edit button
-  const enhancedChildren = React.Children.map(children, (child) => {
-    if (React.isValidElement(child)) {
-      const childElement = child as React.ReactElement<TitleContainerProps | ImageContainerProps>;
-      
-      // Handle the title container
-      if (childElement.props.className?.includes('mb-12')) {
-        return React.cloneElement(childElement, { className: childElement.props.className }, (
-          <div className="flex items-center justify-between">
-            <div className="flex-1">{childElement.props.children}</div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsEditModalOpen(true)}
-                className="bos-button flex items-center gap-2"
-              >
-                <Pencil className="w-5 h-5" />
-                <span>Edit Color</span>
-              </button>
+  // Memoize enhanced children to prevent unnecessary re-renders
+  const enhancedChildren = useMemo(() => {
+    return React.Children.map(children, (child) => {
+      if (React.isValidElement(child)) {
+        const childElement = child as React.ReactElement<TitleContainerProps | ImageContainerProps>;
+        
+        // Handle the title container
+        if (childElement.props.className?.includes('mb-12')) {
+          return React.cloneElement(childElement, { className: childElement.props.className }, (
+            <div className="flex items-center justify-between">
+              <div className="flex-1">{childElement.props.children}</div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="bos-button flex items-center gap-2"
+                >
+                  <Pencil className="w-5 h-5" />
+                  <span>Edit Color</span>
+                </button>
+              </div>
             </div>
-          </div>
-        ));
-      }
+          ));
+        }
 
-      // Handle the process images container
-      if (childElement.props.className?.includes('grid-cols-2')) {
-        const imageChildren = React.Children.map(childElement.props.children, (imageChild) => {
-          if (React.isValidElement(imageChild)) {
-            const imageElement = imageChild as React.ReactElement<ImageContainerProps>;
-            const media = mediaUploads.find(m => m.id === imageElement.key);
-            
-            if (media) {
-              return React.cloneElement(imageElement, {
-                className: imageElement.props.className,
-                children: (
-                  <ImageGalleryWrapper
-                    media={{
-                      ...media,
-                      colorId: color.id,
-                      comments: media.comments ?? [],
-                      createdAt: media.createdAt ?? '',
-                      type: media.type || 'outcome',
-                      caption: media.caption ?? ''
-                    }}
-                  />
-                )
-              });
+        // Handle the process images container
+        if (childElement.props.className?.includes('grid-cols-2')) {
+          const imageChildren = React.Children.map(childElement.props.children, (imageChild) => {
+            if (React.isValidElement(imageChild)) {
+              const imageElement = imageChild as React.ReactElement<ImageContainerProps>;
+              const media = mediaUploads.find(m => m.id === imageElement.key);
+              
+              if (media) {
+                return React.cloneElement(imageElement, {
+                  className: imageElement.props.className,
+                  children: (
+                    <ImageGalleryWrapper
+                      media={{
+                        ...media,
+                        colorId: color.id,
+                        comments: media.comments ?? [],
+                        createdAt: media.createdAt ?? '',
+                        type: media.type || 'outcome',
+                        caption: media.caption ?? ''
+                      }}
+                    />
+                  )
+                });
+              }
             }
-          }
-          return imageChild;
-        });
+            return imageChild;
+          });
 
-        return React.cloneElement(childElement, { className: childElement.props.className }, imageChildren);
+          return React.cloneElement(childElement, { className: childElement.props.className }, imageChildren);
+        }
       }
-    }
-    return child;
-  });
+      return child;
+    });
+  }, [children, mediaUploads, color.id, setIsEditModalOpen]);
 
   return (
     <>
@@ -210,59 +221,49 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <h1 className="text-6xl text-[#2C3E50] mb-3 leading-tight">
                   {color.name}
                 </h1>
+                {/* Color Swatch and Hex moved here */}
+                <div className="flex items-center gap-4 mb-3">
+                  <div 
+                    className="w-16 h-16 rounded-full shadow-lg"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                </div>
                 <p className="text-base text-[#2C3E50]/80 italic">
                   by {color.user?.name || color.user?.pseudonym || 'Anonymous'}
                 </p>
-                
                 <p className="text-base text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
+                  {color.season ? `, ${color.season}` : ''}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Main Landscape Image */}
-          {(() => {
-            const landscapeImage = mediaUploads.find(media => media.type === 'landscape');
-            const outcomeImage = mediaUploads.find(media => media.type === 'outcome');
-            const mainImage = landscapeImage || outcomeImage;
-            
-            return mainImage ? (
-              <div className="mb-8">
-                <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
-                  <ImageGalleryWrapper
-                    media={{
-                      ...mainImage,
-                      colorId: color.id,
-                      id: mainImage.id,
-                      filename: mainImage.filename,
-                      mimetype: mainImage.mimetype,
-                      comments: mainImage.comments,
-                      createdAt: mainImage.createdAt,
-                      type: mainImage.type,
-                      caption: mainImage.caption
-                    }}
-                  />
-                </div>
-                {mainImage.caption && (
-                  <p className="mt-2 text-base text-[#2C3E50]/80">
-                    {mainImage.caption}
-                  </p>
-                )}
+          {mainImage && (
+            <div className="mb-8">
+              <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
+                <ImageGalleryWrapper
+                  media={{
+                    ...mainImage,
+                    colorId: color.id,
+                    id: mainImage.id,
+                    filename: mainImage.filename,
+                    mimetype: mainImage.mimetype,
+                    comments: mainImage.comments,
+                    createdAt: mainImage.createdAt,
+                    type: mainImage.type,
+                    caption: mainImage.caption
+                  }}
+                />
               </div>
-            ) : null;
-          })()}
-
-          {/* Color Swatch and Hex */}
-          <div className="flex items-start gap-4 mb-8">
-            <div 
-              className="w-16 h-16 rounded-full shadow-lg"
-              style={{ backgroundColor: color.hex }}
-            />
-            <p className="font-mono text-base text-[#2C3E50]">
-              HEX: {color.hex}
-            </p>
-          </div>
+              {mainImage.caption && (
+                <p className="mt-2 text-base text-[#2C3E50]/80">
+                  {mainImage.caption}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Personal Description */}
           <div className="mb-10">
@@ -281,10 +282,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               <p>- Specific Location: {color.location}</p>
               {color.coordinates && (
                 <div className="pl-4">
-                  <MapComponent 
-                    coordinates={typeof color.coordinates === 'string' ? JSON.parse(color.coordinates) : color.coordinates} 
-                    boundary={color.bioregion?.boundary?.coordinates?.[0]?.map(([lng, lat]) => [lat, lng]) as [number, number][] | undefined}
-                  />
+                  {/* MapComponent can be added here if needed */}
                 </div>
               )}
               {color.bioregion?.description && (
@@ -315,9 +313,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         {/* Right Column - Process Images */}
         <div className="space-y-6">
           {/* Process Images */}
-          {mediaUploads.filter(media => media.type === 'process').length > 0 && (
+          {processImages.length > 0 && (
             <div className="grid grid-cols-2 gap-6">
-              {mediaUploads.filter(media => media.type === 'process').map(media => (
+              {processImages.map(media => (
                 <div key={media.id} className="relative">
                   <ImageGalleryWrapper
                     media={{
@@ -361,6 +359,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               date={color.dateCollected}
               season={color.season}
               bioregion={color.bioregion?.description || ''}
+              colorId={color.id}
               onOpenChat={() => {
                 setSustainabilityModalOpen(false);
                 setPigmentModalOpen(true);

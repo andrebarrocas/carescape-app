@@ -5,17 +5,18 @@ import { Map as PigeonMap, Overlay } from 'pigeon-maps';
 interface MapComponentProps {
   coordinates: { lat: number; lng: number };
   boundary?: [number, number][];
+  onClick?: (args: { latLng: [number, number] }) => void;
 }
 
-export function MapComponent({ coordinates, boundary }: MapComponentProps) {
+export function MapComponent({ coordinates, boundary, onClick }: MapComponentProps) {
   return (
-    <div className="relative h-48 w-full rounded-lg overflow-hidden border border-[#2C3E50]/20">
+    <div className="relative w-full h-full rounded-lg overflow-hidden border border-[#2C3E50]/20">
       <PigeonMap
-        height={192}
         defaultCenter={[coordinates.lat, coordinates.lng]}
         defaultZoom={13}
         animate={true}
         center={[coordinates.lat, coordinates.lng]}
+        onClick={onClick}
       >
         {/* Bioregion boundary */}
         {boundary && boundary.length > 0 && (

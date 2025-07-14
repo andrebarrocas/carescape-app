@@ -9,14 +9,13 @@ import AnimalSubmissionForm from '@/components/AnimalSubmissionForm';
 
 interface BiodiversityClientProps {
   animals: Animal[];
-  session: any;
 }
 
-export function BiodiversityClient({ animals, session }: BiodiversityClientProps) {
+export function BiodiversityClient({ animals }: BiodiversityClientProps) {
   const [isAddAnimalOpen, setIsAddAnimalOpen] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: unknown) => {
     try {
       const response = await fetch('/api/animals', {
         method: 'POST',

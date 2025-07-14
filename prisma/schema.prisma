@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,20 +8,21 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  email         String       @unique
+  id            String    @id @default(cuid())
+  email         String    @unique
+  pseudonym     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  password      String?
   emailVerified DateTime?
   image         String?
-  pseudonym     String?
-  password      String?   // Hashed password for credentials provider
+  name          String?
+  accounts      Account[]
+  animals       Animal[]
   colors        Color[]
   comments      Comment[]
-  accounts      Account[] // Relation to accounts for OAuth providers
-  sessions      Session[] // Relation to sessions
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  animals       Animal[]
+  likes         Like[]
+  sessions      Session[]
 
   @@map("users")
 }
@@ -35,15 +33,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -60,113 +57,148 @@ model Session {
 }
 
 model Color {
-  id            String        @id @default(cuid())
-  name          String
-  hex           String
-  description   String?       @db.Text
-  aiDescription String?       @db.Text
-  location      String
-  coordinates   String?       // JSON string with lat/lng
-  bioregion     String?       // AI-generated bioregion description
-  bioregionMap  String?       // URL to the bioregion map image
-  season        String
-  dateCollected DateTime
-  userId        String
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  materials     Material[]
-  processes     Process[]
-  mediaUploads  MediaUpload[]
-  comments      Comment[]
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  bioregionId   String?
+  id                     String                  @id @default(cuid())
+  name                   String
+  hex                    String
+  description            String?
+  location               String
+  coordinates            String?
+  season                 String
+  dateCollected          DateTime
+  userId                 String
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  bioregion              String?
+  bioregionMap           String?
+  aiDescription          String?
+  bioregionId            String?
+  authorName             String?
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments               Comment[]
+  likes                  Like[]
+  materials              Material[]
+  mediaUploads           MediaUpload[]
+  processes              Process[]
+  sustainabilityAnalysis SustainabilityAnalysis?
 
-  @@map("colors")
   @@index([userId])
+  @@map("colors")
 }
 
 model Material {
-  id          String   @id @default(cuid())
-  name        String
-  partUsed    String
-  originNote  String
-  colorId     String
-  color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  name       String
+  partUsed   String
+  originNote String
+  colorId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  color      Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
 
-  @@map("materials")
   @@index([colorId])
+  @@map("materials")
 }
 
 model Process {
   id          String   @id @default(cuid())
   technique   String
   application String
-  notes       String   @db.Text
+  notes       String
   colorId     String
-  color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  color       Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
 
-  @@map("processes")
   @@index([colorId])
+  @@map("processes")
 }
 
 model MediaUpload {
-  id          String   @id @default(cuid())
-  filename    String
-  mimetype    String
-  type        String   // 'process', 'outcome', or 'landscape'
-  data        Bytes    // Binary data of the file
-  caption     String?  // Caption for the image
-  colorId     String?  // Make colorId optional for initial upload
-  color       Color?   @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  comments    Comment[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  type      String
+  colorId   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  data      Bytes
+  filename  String
+  mimetype  String
+  caption   String?
+  comments  Comment[]
+  color     Color?    @relation(fields: [colorId], references: [id], onDelete: Cascade)
 
-  @@map("media_uploads")
   @@index([colorId])
+  @@map("media_uploads")
 }
 
 model Comment {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   content   String
   colorId   String
-  color     Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
   mediaId   String
-  media     MediaUpload @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  parentId  String?
+  color     Color       @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  media     MediaUpload @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  parent    Comment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]   @relation("CommentReplies")
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("comments")
   @@index([colorId])
   @@index([userId])
   @@index([mediaId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  colorId   String
+  userId    String
+  createdAt DateTime @default(now())
+  color     Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([colorId, userId])
+  @@index([colorId])
+  @@index([userId])
+  @@map("likes")
 }
 
 model Animal {
   id             String   @id @default(cuid())
   name           String
   type           String
-  description    String   @db.Text
+  description    String
   location       String
-  coordinates    String   // JSON string with lat/lng
+  coordinates    String
   image          String
   date           DateTime
-  scientificName String?
-  habitat        String?  @db.Text
-  diet           String?  @db.Text
-  behavior       String?  @db.Text
-  conservation   String?  @db.Text
   userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  behavior       String?
+  conservation   String?
+  diet           String?
+  habitat        String?
+  scientificName String?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("animals")
   @@index([userId])
-} 
+  @@map("animals")
+}
+
+model SustainabilityAnalysis {
+  id            String   @id @default(cuid())
+  colorId       String   @unique
+  summary       String
+  advantages    String[]
+  disadvantages String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  color         Color    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+
+  @@index([colorId])
+  @@map("sustainability_analysis")
+}

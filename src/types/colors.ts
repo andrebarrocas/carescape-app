@@ -51,6 +51,7 @@ export interface ColorSubmission {
   createdAt: string;
   updatedAt: string;
   userId: string;
+  authorName?: string | null;
   sourceMaterial: string;
   type: 'pigment' | 'dye' | 'ink';
 } 

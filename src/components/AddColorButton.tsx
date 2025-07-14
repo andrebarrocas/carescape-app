@@ -46,10 +46,10 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
         console.log('Uploading media files:', mediaFiles.length);
         try {
           const formData = new FormData();
-          mediaFiles.forEach((media: any) => {
-            formData.append('media', media.file);
-            formData.append('captions', media.caption || '');
-            formData.append('types', media.type);
+          mediaFiles.forEach((media: unknown) => {
+            formData.append('media', (media as any).file);
+            formData.append('captions', (media as any).caption || '');
+            formData.append('types', (media as any).type);
           });
 
           const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
@@ -62,44 +62,37 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
           if (!mediaResponse.ok) {
             const errorText = await mediaResponse.text();
             console.error('Media upload failed:', errorText);
-          } else {
-            console.log('Media files uploaded successfully');
+            throw new Error('Failed to upload media files');
           }
+          console.log('Media uploaded successfully.');
         } catch (error) {
           console.error('Error uploading media files:', error);
-          // Continue even if media upload fails
+          throw new Error('Failed to upload media files');
         }
       }
-
-      await onSubmit(data);
-      setIsOpen(false);
+      console.log('Color submission process finished.');
     } catch (error) {
       console.error('Error submitting color:', error);
-      // Show error message to user
-      alert('Failed to submit color. Please try again.');
-      throw error;
+      throw new Error('Failed to submit color');
     }
   };
 
-  const openModal = () => {
-    setIsOpen(true);
-  };
-
   return (
-    <>
+    <div>
       <button
-        onClick={openModal}
-        className="bos-button flex items-center gap-2"
+        onClick={() => setIsOpen(true)}
+        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
       >
-        <Plus className="w-4 h-4 text-[#2C3E50]" strokeWidth={1.2} />
-        <span>Add Color</span>
+        <Plus className="mr-2" /> Add New Color
       </button>
 
-      <ColorSubmissionForm
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onSubmit={handleSubmit}
-      />
-    </>
+      {isOpen && (
+        <ColorSubmissionForm
+          isOpen={isOpen}
+          onSubmit={handleSubmit}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
+    </div>
   );
-} 
+}

@@ -1,4 +1,4 @@
-import { ColorThief } from 'color-thief-ts';
+import ColorThief from 'color-thief-ts';
 
 export const extractDominantColor = async (imageUrl: string): Promise<string> => {
   try {
@@ -42,7 +42,7 @@ export const extractColorPalette = async (
       img.onload = () => {
         try {
           const palette = colorThief.getPalette(img, colorCount);
-          const hexColors = palette.map((color) =>
+          const hexColors = palette.map((color: [number, number, number]) =>
             rgbToHex(color[0], color[1], color[2])
           );
           resolve(hexColors);

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
     const { id } = await context.params;
@@ -35,7 +35,10 @@ export async function GET(
       headers: {
         'Content-Type': image.mimetype || 'image/jpeg',
         'Cache-Control': 'public, max-age=31536000, immutable',
-        'Content-Length': imageData.length.toString()
+        'Content-Length': imageData.length.toString(),
+        'Accept-Ranges': 'bytes',
+        'ETag': `"${id}-${imageData.length}"`,
+        'Last-Modified': new Date().toUTCString()
       },
     });
   } catch (error) {

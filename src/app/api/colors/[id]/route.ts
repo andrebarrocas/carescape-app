@@ -1,69 +1,10 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Color, MediaUpload, Comment, User, Prisma } from '@prisma/client';
-
-interface MediaUploadWithComments extends MediaUpload {
-  comments: (Comment & {
-    user: Pick<User, 'name' | 'image'> | null;
-  })[];
-}
-
-interface ColorWithRelations extends Color {
-  materials: any[];
-  processes: any[];
-  mediaUploads: MediaUploadWithComments[];
-}
-
-const mediaUploadSelect = {
-  id: true,
-  type: true,
-  caption: true,
-  mimetype: true,
-  data: false,
-  comments: {
-    include: {
-      user: {
-        select: {
-          name: true,
-          image: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  }
-} as const;
-
-type MediaUploadSelect = Prisma.MediaUploadSelect & {
-  comments?: {
-    include: {
-      user: {
-        select: {
-          name: true;
-          image: true;
-        };
-      };
-    };
-    orderBy: {
-      createdAt: 'desc';
-    };
-  };
-};
-
-type ExtendedMediaUpload = MediaUpload & {
-  comments: Array<Comment & {
-    user: Pick<User, 'name' | 'image'>;
-  }>;
-};
-
-type ExtendedColor = Color & {
-  mediaUploads: ExtendedMediaUpload[];
-};
+import { Comment, User, MediaUpload } from '@prisma/client';
 
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
     const { id } = await context.params;
@@ -86,7 +27,7 @@ export async function DELETE(
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
     const { id } = await context.params;
@@ -95,7 +36,7 @@ export async function GET(
       return new NextResponse('Color ID is required', { status: 400 });
     }
 
-    // First, get the color with basic relations
+    // Get the color with basic relations
     const color = await prisma.color.findUnique({
       where: { id },
       include: {
@@ -109,36 +50,64 @@ export async function GET(
       return new NextResponse('Color not found', { status: 404 });
     }
 
-    // Then, get comments for each media upload
-    const mediaUploadsWithComments = await Promise.all(
-      color.mediaUploads.map(async (media) => {
-        const comments = await prisma.comment.findMany({
-          where: { mediaId: media.id },
-          include: {
-            user: {
-              select: {
-                name: true,
-                image: true
-              }
+    // --- OPTIMIZED: Fetch all comments for all media uploads in one query ---
+    const mediaIds = color.mediaUploads.map(m => m.id);
+    let allComments: any[] = [];
+    if (mediaIds.length > 0) {
+      allComments = await prisma.comment.findMany({
+        where: { mediaId: { in: mediaIds } },
+        include: {
+          user: {
+            select: {
+              name: true,
+              image: true
             }
           }
-        });
-
-        const { data, ...mediaWithoutData } = media;
-        return {
-          ...mediaWithoutData,
-          comments
-        };
-      })
-    );
-
-    // Combine all data
-    const fullColor = {
+        }
+      });
+    }
+    // Group comments by mediaId
+    const commentsByMediaId: Record<string, any[]> = {};
+    for (const comment of allComments) {
+      const mediaId = comment.mediaId;
+      if (!commentsByMediaId[mediaId]) commentsByMediaId[mediaId] = [];
+      commentsByMediaId[mediaId].push({
+        ...comment,
+        createdAt: comment.createdAt?.toISOString?.() || null,
+        updatedAt: comment.updatedAt?.toISOString?.() || null,
+      });
+    }
+    // Attach comments to each media upload
+    const mediaUploadsWithComments = color.mediaUploads.map(media => ({
+      ...media,
+      createdAt: media.createdAt?.toISOString?.() || null,
+      updatedAt: media.updatedAt?.toISOString?.() || null,
+      comments: commentsByMediaId[media.id] || []
+    }));
+    // Format color object
+    const colorObj = {
       ...color,
-      mediaUploads: mediaUploadsWithComments
+      dateCollected: color.dateCollected?.toISOString?.() || null,
+      createdAt: color.createdAt?.toISOString?.() || null,
+      updatedAt: color.updatedAt?.toISOString?.() || null,
+      materials: color.materials.map(m => ({
+        ...m,
+        createdAt: m.createdAt?.toISOString?.() || null,
+        updatedAt: m.updatedAt?.toISOString?.() || null
+      })),
+      processes: color.processes.map(p => ({
+        ...p,
+        createdAt: p.createdAt?.toISOString?.() || null,
+        updatedAt: p.updatedAt?.toISOString?.() || null
+      })),
+      mediaUploads: mediaUploadsWithComments,
     };
-
-    return NextResponse.json(fullColor);
+    return NextResponse.json(colorObj, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, s-maxage=600',
+        'ETag': `"${color.id}-${color.updatedAt}"`
+      }
+    });
   } catch (error) {
     console.error('Error fetching color:', error);
     return new NextResponse('Error fetching color', { status: 500 });
@@ -147,27 +116,26 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
     const { id } = await context.params;
-    const data = await request.json();
-
+    const body = await request.json();
     // Update the color
     const color = await prisma.color.update({
       where: { id },
       data: {
-        name: data.name,
-        description: data.description,
-        location: data.location,
-        season: data.season,
+        name: body.name,
+        description: body.description,
+        location: body.location,
+        season: body.season,
         materials: {
           updateMany: {
             where: {},
             data: {
-              name: data.material.name,
-              partUsed: data.material.partUsed,
-              originNote: data.material.originNote,
+              name: body.material?.name,
+              partUsed: body.material?.partUsed,
+              originNote: body.material?.originNote,
             },
           },
         },
@@ -175,9 +143,9 @@ export async function PATCH(
           updateMany: {
             where: {},
             data: {
-              technique: data.process.technique,
-              application: data.process.application,
-              notes: data.process.notes,
+              technique: body.process?.technique,
+              application: body.process?.application,
+              notes: body.process?.notes,
             },
           },
         },
@@ -196,7 +164,6 @@ export async function PATCH(
         },
       },
     });
-
     return NextResponse.json(color);
   } catch (error) {
     console.error('Error updating color:', error);
@@ -210,20 +177,49 @@ export async function PATCH(
 // --- Storytelling Full Details Endpoint ---
 export async function GET_full(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
     const { id } = await context.params;
     if (!id) {
       return new NextResponse('Color ID is required', { status: 400 });
     }
-    // Get the color with all relations
+    
+    // Get the color with all relations in a single optimized query
     const color = await prisma.color.findUnique({
       where: { id },
       include: {
-        materials: true,
-        processes: true,
-        mediaUploads: true,
+        materials: {
+          select: {
+            id: true,
+            name: true,
+            partUsed: true,
+            originNote: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        },
+        processes: {
+          select: {
+            id: true,
+            technique: true,
+            application: true,
+            notes: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        },
+        mediaUploads: {
+          select: {
+            id: true,
+            filename: true,
+            mimetype: true,
+            type: true,
+            caption: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        },
         user: {
           select: {
             id: true,
@@ -234,55 +230,101 @@ export async function GET_full(
         }
       }
     });
+    
     if (!color) {
       return new NextResponse('Color not found', { status: 404 });
     }
-    // Get comments for each media upload
-    const mediaUploadsWithComments = await Promise.all(
-      color.mediaUploads.map(async (media) => {
-        const comments = await prisma.comment.findMany({
-          where: { mediaId: media.id },
-          include: {
-            user: {
-              select: {
-                name: true,
-                image: true
-              }
+    
+    // Only fetch comments if there are media uploads
+    let mediaUploadsWithComments: any[] = [];
+    if (color.mediaUploads.length > 0) {
+      const mediaIds = color.mediaUploads.map(m => m.id);
+      
+      // Fetch comments with pagination to limit data
+      const allComments = await prisma.comment.findMany({
+        where: { mediaId: { in: mediaIds } },
+        include: {
+          user: {
+            select: {
+              name: true,
+              image: true
             }
           }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50 // Limit to 50 most recent comments total
+      });
+      
+      // Group comments by mediaId
+      const commentsByMediaId: Record<string, any[]> = {};
+      for (const comment of allComments) {
+        const mediaId = comment.mediaId;
+        if (!commentsByMediaId[mediaId]) commentsByMediaId[mediaId] = [];
+        commentsByMediaId[mediaId].push({
+          id: comment.id,
+          content: comment.content,
+          createdAt: comment.createdAt?.toISOString?.() || null,
+          updatedAt: comment.updatedAt?.toISOString?.() || null,
+          user: comment.user
         });
-        const { data, ...mediaWithoutData } = media;
-        return {
-          ...mediaWithoutData,
-          comments: comments.map(comment => ({
-            ...comment,
-            createdAt: comment.createdAt.toISOString(),
-          }))
-        };
-      })
-    );
+      }
+      
+      // Attach comments to each media upload
+      mediaUploadsWithComments = color.mediaUploads.map(media => ({
+        ...media,
+        createdAt: media.createdAt?.toISOString?.() || null,
+        updatedAt: media.updatedAt?.toISOString?.() || null,
+        comments: commentsByMediaId[media.id] || []
+      }));
+    }
+    
     // Parse bioregion data from string if present
     const bioregion = color.bioregion ? JSON.parse(color.bioregion) : null;
-    // Format color object
+    
+    // Format color object with optimized data structure
     const colorObj = {
-      ...color,
+      id: color.id,
+      name: color.name,
+      hex: color.hex,
+      description: color.description,
+      location: color.location,
+      coordinates: color.coordinates,
       bioregion,
       dateCollected: color.dateCollected?.toISOString?.() || null,
-      createdAt: color.createdAt?.toISOString?.() || null,
-      updatedAt: color.updatedAt?.toISOString?.() || null,
+      season: color.season,
       materials: color.materials.map(m => ({
-        ...m,
+        id: m.id,
+        name: m.name,
+        partUsed: m.partUsed,
+        originNote: m.originNote,
         createdAt: m.createdAt?.toISOString?.() || null,
         updatedAt: m.updatedAt?.toISOString?.() || null
       })),
       processes: color.processes.map(p => ({
-        ...p,
+        id: p.id,
+        technique: p.technique,
+        application: p.application,
+        notes: p.notes,
         createdAt: p.createdAt?.toISOString?.() || null,
         updatedAt: p.updatedAt?.toISOString?.() || null
       })),
       mediaUploads: mediaUploadsWithComments,
+      createdAt: color.createdAt?.toISOString?.() || null,
+      updatedAt: color.updatedAt?.toISOString?.() || null,
+      userId: color.userId,
+      user: color.user
     };
-    return NextResponse.json({ color: colorObj, mediaUploads: mediaUploadsWithComments, session: null });
+    
+    return NextResponse.json({ 
+      color: colorObj, 
+      mediaUploads: mediaUploadsWithComments, 
+      session: null 
+    }, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, s-maxage=600', // Cache for 5 minutes client, 10 minutes CDN
+        'ETag': `"${color.id}-${color.updatedAt}"` // Add ETag for conditional requests
+      }
+    });
   } catch (error) {
     console.error('Error fetching full color details:', error);
     return new NextResponse('Error fetching full color details', { status: 500 });

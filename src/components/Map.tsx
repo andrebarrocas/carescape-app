@@ -17,7 +17,7 @@ import AnimalSubmissionForm from './AnimalSubmissionForm';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
 import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
 import * as Dialog from '@radix-ui/react-dialog';
-import { clusterMarkers, parseCoordinates, MapMarker } from '@/lib/map';
+import { clusterMarkers, parseCoordinates, MapMarker, applyZoomScaling } from '@/lib/map';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
@@ -28,6 +28,8 @@ const EmbeddedAnimalDetails = dynamic(() => import('@/components/AnimalDetails')
 interface MapProps {
   colors: ColorSubmission[];
   titleColor?: string;
+  onColorSelect?: (color: ColorSubmission) => void;
+  selectedColorForFilter?: ColorSubmission | null;
 }
 
 interface Animal {
@@ -41,7 +43,7 @@ interface Animal {
   date: string;
 }
 
-export default function Map({ colors, titleColor }: MapProps) {
+export default function Map({ colors, titleColor, onColorSelect, selectedColorForFilter }: MapProps) {
   const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
   const [showColorForm, setShowColorForm] = useState(false);
   const [showAnimalForm, setShowAnimalForm] = useState(false);
@@ -61,10 +63,29 @@ export default function Map({ colors, titleColor }: MapProps) {
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [captions, setCaptions] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [colorFilter, setColorFilter] = useState({ color: '', material: '', location: '' });
 
-  // Process colors for clustering
+  // Filtered colors for map markers
+  const filteredColors = useMemo(() => {
+    return colors.filter(c => {
+      const matchColor = colorFilter.color ? c.name.toLowerCase().includes(colorFilter.color.toLowerCase()) : true;
+      const matchMaterial = colorFilter.material ? c.materials.some(m => m.name.toLowerCase().includes(colorFilter.material.toLowerCase())) : true;
+      const matchLocation = colorFilter.location ? c.location.toLowerCase().includes(colorFilter.location.toLowerCase()) : true;
+      return matchColor && matchMaterial && matchLocation;
+    });
+  }, [colors, colorFilter]);
+
+  const colorCoords = filteredColors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
+  const defaultCenter = colorCoords.length ? {
+    latitude: colorCoords.reduce((sum, c) => sum + c!.lat, 0) / colorCoords.length,
+    longitude: colorCoords.reduce((sum, c) => sum + c!.lng, 0) / colorCoords.length,
+    zoom: 3
+  } : { latitude: 20, longitude: 0, zoom: 2 };
+  const [viewport, setViewport] = useState(defaultCenter);
+
+  // Process colors for clustering with zoom-based scaling
   const clusteredColors = useMemo(() => {
-    const colorMarkers: MapMarker[] = colors
+    const colorMarkers: MapMarker[] = filteredColors
       .map(color => {
         const coords = parseCoordinates(color.coordinates);
         if (!coords) return null;
@@ -77,16 +98,9 @@ export default function Map({ colors, titleColor }: MapProps) {
       })
       .filter(Boolean) as MapMarker[];
 
-    return clusterMarkers(colorMarkers, 0.01); // 0.01 degrees ≈ 1km threshold
-  }, [colors]);
-
-  const colorCoords = colors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
-  const defaultCenter = colorCoords.length ? {
-    latitude: colorCoords.reduce((sum, c) => sum + c!.lat, 0) / colorCoords.length,
-    longitude: colorCoords.reduce((sum, c) => sum + c!.lng, 0) / colorCoords.length,
-    zoom: 3
-  } : { latitude: 20, longitude: 0, zoom: 2 };
-  const [viewport, setViewport] = useState(defaultCenter);
+    const baseClustered = clusterMarkers(colorMarkers, 0.01); // 0.01 degrees ≈ 1km threshold
+    return applyZoomScaling(baseClustered, viewport.zoom);
+  }, [filteredColors, viewport.zoom]);
 
   const mapRef = useRef<any>(null);
 
@@ -150,17 +164,18 @@ export default function Map({ colors, titleColor }: MapProps) {
             'fill-opacity': 0.6
           }
         },
-        {
-          id: 'roads',
-          type: 'line',
-          source: 'mapbox-streets',
-          'source-layer': 'road',
-          paint: {
-            'line-color': '#8B7355',  // Warm brown
-            'line-width': 1,
-            'line-opacity': 0.3
-          }
-        },
+        // Roads layer removed to disable road network display
+        // {
+        //   id: 'roads',
+        //   type: 'line',
+        //   source: 'mapbox-streets',
+        //   'source-layer': 'road',
+        //   paint: {
+        //     'line-color': '#8B7355',  // Warm brown
+        //     'line-width': 1,
+        //     'line-opacity': 0.3
+        //   }
+        // },
         {
           id: 'buildings',
           type: 'fill',
@@ -298,7 +313,10 @@ export default function Map({ colors, titleColor }: MapProps) {
   return (
     <div className="relative w-full h-full">
       {/* Map Filter Buttons */}
-      <MapFilterButtons onFilterChange={handleFilterChange} />
+      <MapFilterButtons 
+        onFilterChange={handleFilterChange}
+        onColorFilterChange={setColorFilter}
+      />
 
       {/* Map */}
       <MapGL
@@ -357,17 +375,18 @@ export default function Map({ colors, titleColor }: MapProps) {
                 'fill-opacity': 0.6
               }
             },
-            {
-              id: 'roads',
-              type: 'line',
-              source: 'mapbox-streets',
-              'source-layer': 'road',
-              paint: {
-                'line-color': '#2C3E50',
-                'line-width': 1,
-                'line-opacity': 0.4
-              }
-            },
+            // Roads layer removed to disable road network display
+            // {
+            //   id: 'roads',
+            //   type: 'line',
+            //   source: 'mapbox-streets',
+            //   'source-layer': 'road',
+            //   paint: {
+            //     'line-color': '#2C3E50',
+            //     'line-width': 1,
+            //     'line-opacity': 0.4
+            //   }
+            // },
             {
               id: 'buildings',
               type: 'fill',
@@ -409,11 +428,19 @@ export default function Map({ colors, titleColor }: MapProps) {
                 setStoryMode(true);
                 setCurrentColorIndex(idx);
                 setSelectedColor(null);
+                // Call the onColorSelect callback if provided
+                if (onColorSelect) {
+                  onColorSelect(cluster.data);
+                }
               }}
             >
               <div className="relative">
                 <div
-                  className={`rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''}`}
+                  className={`rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${
+                    storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''
+                  } ${
+                    selectedColorForFilter && selectedColorForFilter.id === cluster.data.id ? 'ring-4 ring-green-500 ring-opacity-75' : ''
+                  }`}
                   style={{ 
                     backgroundColor: cluster.data.hex,
                     width: `${markerSize}px`,
@@ -506,6 +533,9 @@ export default function Map({ colors, titleColor }: MapProps) {
             // Extract media files from the data
             const { mediaFiles, ...colorData } = data;
             
+            console.log('Submitting color data:', colorData);
+            console.log('Media files:', mediaFiles);
+            
             // First, create the color
             const response = await fetch('/api/colors', {
               method: 'POST',
@@ -516,7 +546,9 @@ export default function Map({ colors, titleColor }: MapProps) {
             });
             
             if (!response.ok) {
-              throw new Error('Failed to submit color');
+              const errorText = await response.text();
+              console.error('API error response:', errorText);
+              throw new Error(`Failed to submit color: ${errorText}`);
             }
 
             const color = await response.json();
@@ -549,6 +581,7 @@ export default function Map({ colors, titleColor }: MapProps) {
             router.refresh();
           } catch (error) {
             console.error('Error submitting color:', error);
+            alert(`Failed to submit color: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }}
       />
@@ -579,13 +612,13 @@ export default function Map({ colors, titleColor }: MapProps) {
                     onClick={() => setSustainabilityModalOpen(true)}
                     className="bg-green-600 text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
                   >
-                    AI Analysis
+                    Eco Analysis
                   </button>
                   <button
                     onClick={() => setPigmentModalOpen(true)}
                     className="bg-cyan-600 text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
                   >
-                    AI Design Ideas
+                    Design Ideas
                   </button>
                   {/* Add Content Button */}
                   <button
@@ -632,6 +665,7 @@ export default function Map({ colors, titleColor }: MapProps) {
                       date={colors[currentColorIndex]?.dateCollected}
                       season={colors[currentColorIndex]?.season}
                       bioregion={colors[currentColorIndex]?.bioregion?.description || ''}
+                      colorId={colors[currentColorIndex]?.id || ''}
                       onOpenChat={() => {
                         setSustainabilityModalOpen(false);
                         setPigmentModalOpen(true);
@@ -646,7 +680,7 @@ export default function Map({ colors, titleColor }: MapProps) {
               <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
                 <Dialog.Content className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full md:w-[500px] max-w-full z-50 bg-white shadow-2xl rounded-t-2xl flex flex-col p-8 overflow-y-auto border-t-4 border-black" style={{fontFamily:'Caveat, cursive', maxHeight: '80vh'}}>
-                  <Dialog.Title className="sr-only">AI Design Ideas</Dialog.Title>
+                  <Dialog.Title className="sr-only">Design Ideas</Dialog.Title>
                   <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setPigmentModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
                   {storyColorId && (
                     <PigmentAnalysis

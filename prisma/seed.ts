@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
+import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -21,11 +22,13 @@ async function main() {
   await prisma.color.deleteMany();
   await prisma.user.deleteMany({});
 
-  // Create test user
+  // Create test user with password
+  const hashedPassword = await hash('password123', 12);
   const user = await prisma.user.create({
     data: {
       email: 'test@example.com',
       pseudonym: 'TestUser',
+      password: hashedPassword,
     },
   });
 

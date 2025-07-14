@@ -93,7 +93,7 @@ export default function AnimalSubmissionForm({ isOpen, onClose, onSubmit }: Anim
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={() => {}}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" />
         <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto border-2 border-black z-[110]">
@@ -101,7 +101,7 @@ export default function AnimalSubmissionForm({ isOpen, onClose, onSubmit }: Anim
             <Dialog.Title className="text-2xl font-bold text-[#2C3E50]" style={{ fontFamily: '"Futura Magazine", monospace' }}>
               Add New Animal
             </Dialog.Title>
-            <Dialog.Close className="rounded-full p-1.5 hover:bg-black/5">
+            <Dialog.Close className="rounded-full p-1.5 hover:bg-black/5" onClick={onClose}>
               <X className="h-5 w-5 text-[#2C3E50]" />
             </Dialog.Close>
           </div>

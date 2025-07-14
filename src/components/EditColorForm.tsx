@@ -63,7 +63,7 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={() => {}}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50" />
         <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
@@ -72,7 +72,7 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
               <Dialog.Title className="text-2xl font-serif text-[#2C3E50]">
                 Edit Color
               </Dialog.Title>
-              <Dialog.Close className="text-[#2C3E50] hover:text-[#2C3E50]/80">
+              <Dialog.Close className="text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={onClose}>
                 <X className="w-6 h-6" />
               </Dialog.Close>
             </div>

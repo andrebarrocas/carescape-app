@@ -1,23 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Comment, MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { X } from 'lucide-react';
+import { X, Reply } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface CommentsModalProps {
   media: MediaUploadWithComments;
   onClose: () => void;
-  onAddComment: (mediaId: string, content: string) => Promise<void>;
+  onAddComment: (mediaId: string, content: string, parentId?: string) => Promise<void>;
 }
 
 export function CommentsModal({ media, onClose, onAddComment }: CommentsModalProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [comments, setComments] = useState(media.comments);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+
+  // Memoize the initial comments to prevent unnecessary state updates
+  const initialComments = useMemo(() => media.comments, [media.comments]);
+
+  // Helper to fetch latest comments for this media
+  const fetchComments = useMemo(() => async () => {
+    const res = await fetch(`/api/colors/${media.colorId}/comments`);
+    if (res.ok) {
+      const allComments = await res.json();
+      // Filter for this media only
+      setComments(allComments.filter((c: any) => c.mediaId === media.id));
+    }
+  }, [media.colorId, media.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,20 +43,22 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
     setIsSubmitting(true);
     try {
       await onAddComment(media.id, newComment.trim());
-      // Optimistically add the comment to the list
-      setComments(prev => [
-        {
-          id: Math.random().toString(36).substr(2, 9),
-          content: newComment.trim(),
-          createdAt: new Date().toISOString(),
-          user: {
-            name: session?.user?.name || 'You',
-            image: session?.user?.image || null
-          }
-        },
-        ...prev
-      ]);
       setNewComment('');
+      await fetchComments(); // Refresh comments in modal
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReply = async (commentId: string) => {
+    if (!replyContent.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await onAddComment(media.id, replyContent.trim(), commentId);
+      setReplyContent('');
+      setReplyingTo(null);
+      await fetchComments(); // Refresh comments in modal
     } finally {
       setIsSubmitting(false);
     }
@@ -100,16 +119,86 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                             {(comment.user.name?.[0] || 'A').toUpperCase()}
                           </div>
                         )}
-                        <div>
+                        <div className="flex-1">
                           <span className="font-medium text-[#2C3E50]">
-                            {comment.user.name || 'Anonymous'}
+                            {comment.user.displayName || 'Anonymous'}
                           </span>
                           <p className="text-xs text-gray-500">
                             {format(new Date(comment.createdAt), 'MMM d, yyyy')}
                           </p>
                         </div>
+                        <button
+                          onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                          className="text-gray-500 hover:text-[#2C3E50] transition-colors"
+                          title="Reply"
+                        >
+                          <Reply className="w-4 h-4" />
+                        </button>
                       </div>
-                      <p className="text-[#2C3E50] ml-9">{comment.content}</p>
+                      <p className="text-[#2C3E50] ml-9 mb-2">{comment.content}</p>
+                      
+                      {/* Reply form */}
+                      {replyingTo === comment.id && (
+                        <div className="ml-9 mt-2">
+                          <textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            placeholder="Write a reply..."
+                            className="w-full border rounded-lg px-3 py-2 min-h-[60px] max-h-[120px] resize-vertical focus:outline-none focus:ring-2 focus:ring-[#2C3E50]/20 font-mono text-sm"
+                            rows={2}
+                          />
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => handleReply(comment.id)}
+                              disabled={isSubmitting || !replyContent.trim()}
+                              className="bg-[#2C3E50] text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                            >
+                              Reply
+                            </button>
+                            <button
+                              onClick={() => {
+                                setReplyingTo(null);
+                                setReplyContent('');
+                              }}
+                              className="text-gray-500 px-3 py-1 rounded text-sm hover:bg-gray-100"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Show replies */}
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div className="ml-9 mt-3 space-y-2">
+                          {comment.replies.map((reply) => (
+                            <div key={reply.id} className="bg-white rounded-lg p-2 shadow-sm border-l-2 border-[#2C3E50]/20">
+                              <div className="flex items-center gap-2 mb-1">
+                                {reply.user.image ? (
+                                  <Image
+                                    src={reply.user.image}
+                                    alt={reply.user.name || 'User'}
+                                    width={20}
+                                    height={20}
+                                    className="rounded-full"
+                                  />
+                                ) : (
+                                  <div className="w-5 h-5 rounded-full bg-[#2C3E50] text-white flex items-center justify-center text-xs">
+                                    {(reply.user.name?.[0] || 'A').toUpperCase()}
+                                  </div>
+                                )}
+                                <span className="font-medium text-[#2C3E50] text-sm">
+                                  {reply.user.displayName || 'Anonymous'}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {format(new Date(reply.createdAt), 'MMM d, yyyy')}
+                                </span>
+                              </div>
+                              <p className="text-[#2C3E50] text-sm ml-7">{reply.content}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
@@ -21,18 +20,24 @@ export default function SignInPage() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch('/api/auth/simple-signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (result?.error) {
-        setError('Invalid email or password');
-      } else {
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Sign in successful:', data);
         router.push('/colors');
+      } else {
+        setError(data.error || 'Sign in failed');
       }
     } catch (error) {
+      console.error('Sign in error:', error);
       setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -42,9 +47,8 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-white">
       <MenuAndBreadcrumbs />
-      <div className="flex items-start justify-center pt-24 pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-center justify-center px-4 py-24">
         <div className="max-w-md w-full space-y-8 relative">
-          {/* Content */}
           <div className="border-2 border-black bg-white p-8 relative z-10">
             <div className="text-center">
               <motion.h2
@@ -148,7 +152,7 @@ export default function SignInPage() {
               className="mt-6 text-center"
             >
               <p className="text-sm text-black opacity-80">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/signup"
                   className="text-black hover:text-red-500 transition-colors duration-200 border-b-2 border-black"

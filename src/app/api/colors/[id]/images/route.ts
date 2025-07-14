@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: colorId } = await params;
+    const { id: colorId } = params;
 
     const images = await prisma.mediaUpload.findMany({
       where: {
@@ -43,8 +43,8 @@ export async function GET(
   }
 }
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const { id: colorId } = await context.params;
+export async function POST(request: Request, context: { params: { id: string } }) {
+  const { id: colorId } = context.params;
   try {
     const formData = await request.formData();
     const files = formData.getAll('media') as File[];
