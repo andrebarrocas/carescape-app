@@ -28,15 +28,11 @@ export async function GET(
 
     const commentsWithDisplayName = comments.map((comment: any) => {
       let displayName = 'Anonymous';
-      
       if (comment.user.name) {
         displayName = comment.user.name;
-      } else if (comment.user.pseudonym) {
-        displayName = comment.user.pseudonym;
       } else if (comment.user.email && comment.user.email !== 'anonymous@carespace.app') {
         displayName = comment.user.email.split('@')[0];
       }
-      
       return {
         ...comment,
         user: {
@@ -68,6 +64,21 @@ export async function POST(
     const { id: colorId } = await params;
     const { content, mediaId, parentId } = await request.json();
 
+    // Ensure the user exists in the database and has the correct name
+    let user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user) {
+      const userData: any = { id: session.user.id };
+      if (session.user.email) userData.email = session.user.email;
+      if (session.user.name) userData.name = session.user.name;
+      if (session.user.pseudonym) userData.pseudonym = session.user.pseudonym;
+      user = await prisma.user.create({ data: userData });
+    } else if (session.user.name && user.name !== session.user.name) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { name: session.user.name }
+      });
+    }
+
     // Create the comment using the logged user's ID
     const comment = await prisma.comment.create({
       data: {
@@ -90,11 +101,8 @@ export async function POST(
     });
 
     let displayName = 'Anonymous';
-    
     if (comment.user.name) {
       displayName = comment.user.name;
-    } else if (comment.user.pseudonym) {
-      displayName = comment.user.pseudonym;
     } else if (comment.user.email && comment.user.email !== 'anonymous@carespace.app') {
       displayName = comment.user.email.split('@')[0];
     }

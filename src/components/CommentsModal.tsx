@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Comment, MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { X, Reply } from 'lucide-react';
+import { X, Reply, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface CommentsModalProps {
@@ -76,8 +76,9 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
         </button>
         {/* Header */}
         <div className="w-full text-center mb-8">
-          <h2 className="text-1xl text-[#2C3E50] mb-2">{media.caption || 'Image Details'}</h2>
-         
+          <h2 className="text-1xl text-[#2C3E50] mb-2 font-mono font-bold">
+            {media.caption ? media.caption : 'Image Details'}
+          </h2>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 w-full gap-2 md:gap-4">
@@ -91,6 +92,9 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
+              <button className="absolute top-2 right-2 bg-white/80 rounded-full p-1 shadow hover:bg-white">
+                <Heart className="w-6 h-6 text-[#2C3E50]" strokeWidth={1.5} fill="none" />
+              </button>
             </div>
           </div>
 
@@ -127,6 +131,9 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                             {format(new Date(comment.createdAt), 'MMM d, yyyy')}
                           </p>
                         </div>
+                        <button className="ml-2 p-1 rounded-full hover:bg-gray-100">
+                          <Heart className="w-5 h-5 text-[#2C3E50]" strokeWidth={1.5} fill="none" />
+                        </button>
                         <button
                           onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                           className="text-gray-500 hover:text-[#2C3E50] transition-colors"

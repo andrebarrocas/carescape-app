@@ -321,7 +321,8 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                     media={{
                       ...media,
                       colorId: color.id,
-                      comments: media.comments ?? []
+                      comments: media.comments ?? [],
+                      caption: media.caption ?? ''
                     }}
                   />
                 </div>

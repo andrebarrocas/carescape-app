@@ -63,7 +63,7 @@ export function ImageGallery({ media, onCommentsClick, priority = false }: Image
       
       {/* Caption */}
       {media.caption && (
-        <p className="mt-2 text-sm text-[#2C3E50]/80" title={media.caption}>
+        <p className="mt-2 text-sm text-[#2C3E50]/80 break-words break-all hyphens-auto" title={media.caption}>
           {truncateText(media.caption, 40)}
         </p>
       )}
