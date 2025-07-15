@@ -135,6 +135,8 @@ function calculateClusterOffset(index: number, clusterSize: number): { x: number
 /**
  * Apply zoom-based scaling to cluster offsets
  * This creates the illusion of displacement that changes with zoom level
+ * When zoomed in enough, colors appear at their real positions
+ * Maintains minimal clustering to distinguish very close colors
  */
 export function applyZoomScaling(
   clusteredMarkers: ClusteredMarker[],
@@ -145,8 +147,21 @@ export function applyZoomScaling(
       return marker;
     }
 
-    // Allow offset to approach zero at high zoom
-    const zoomFactor = Math.max(0.05, Math.min(20, 60 / zoom));
+    // At high zoom levels (zoom >= 10), show colors with minimal offset for distinction
+    // At medium zoom levels (zoom >= 8), reduce offset significantly
+    // At low zoom levels, keep the clustering effect
+    let zoomFactor: number;
+    
+    if (zoom >= 10) {
+      // Show with minimal offset when zoomed in to distinguish very close colors
+      zoomFactor = 0.15; // 15% of original offset for minimal clustering
+    } else if (zoom >= 8) {
+      // Reduce offset significantly at medium zoom
+      zoomFactor = Math.max(0.15, 1 - (zoom - 8) * 0.425); // 0.15 to 1.0 range
+    } else {
+      // Keep clustering effect at low zoom
+      zoomFactor = Math.max(0.05, Math.min(20, 60 / zoom));
+    }
 
     const scaledOffset = {
       x: marker.baseOffset.x * zoomFactor,

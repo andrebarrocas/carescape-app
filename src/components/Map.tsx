@@ -50,7 +50,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
   const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
   const router = useRouter();
   const [storyMode, setStoryMode] = useState(false);
-  const [currentColorIndex, setCurrentColorIndex] = useState(0);
+  const [currentColorId, setCurrentColorId] = useState<string | null>(null);
   const [storyColorId, setStoryColorId] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMapStyle, setCurrentMapStyle] = useState('all');
@@ -101,6 +101,17 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
     const baseClustered = clusterMarkers(colorMarkers, 0.01); // 0.01 degrees ≈ 1km threshold
     return applyZoomScaling(baseClustered, viewport.zoom);
   }, [filteredColors, viewport.zoom]);
+
+  // Get current color index for navigation
+  const currentColorIndex = useMemo(() => {
+    if (!currentColorId) return 0;
+    return filteredColors.findIndex(color => color.id === currentColorId);
+  }, [currentColorId, filteredColors]);
+
+  // Get current color object
+  const currentColor = useMemo(() => {
+    return filteredColors[currentColorIndex] || null;
+  }, [filteredColors, currentColorIndex]);
 
   const mapRef = useRef<any>(null);
 
@@ -233,31 +244,34 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
     setCurrentView(filter);
   };
 
-  // Keyboard navigation for story mode
+  // Handle keyboard navigation
   useEffect(() => {
     if (!storyMode) return;
+    
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1));
+        const nextIndex = Math.min(currentColorIndex + 1, filteredColors.length - 1);
+        setCurrentColorId(filteredColors[nextIndex]?.id || null);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        setCurrentColorIndex(i => Math.max(i - 1, 0));
+        const prevIndex = Math.max(currentColorIndex - 1, 0);
+        setCurrentColorId(filteredColors[prevIndex]?.id || null);
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [storyMode, colors.length]);
+  }, [storyMode, currentColorIndex, filteredColors]);
 
-  // Update story color ID when index changes
+  // Update story color ID when current color changes
   useEffect(() => {
-    if (storyMode && colors[currentColorIndex]) {
-      setStoryColorId(colors[currentColorIndex].id);
+    if (storyMode && currentColor) {
+      setStoryColorId(currentColor.id);
     }
-  }, [storyMode, currentColorIndex, colors]);
+  }, [storyMode, currentColor]);
 
   // Handle viewport animation for story mode
   useEffect(() => {
-    if (storyMode && colors[currentColorIndex]) {
-      const coords = parseCoordinates(colors[currentColorIndex].coordinates);
+    if (storyMode && currentColor) {
+      const coords = parseCoordinates(currentColor.coordinates);
       if (coords && mapRef.current) {
         setIsAnimating(true);
         mapRef.current.flyTo({
@@ -273,7 +287,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
         }, 2000);
       }
     }
-  }, [storyMode, currentColorIndex, colors]);
+  }, [storyMode, currentColor]);
 
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -426,7 +440,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
               onClick={e => {
                 e.originalEvent.stopPropagation();
                 setStoryMode(true);
-                setCurrentColorIndex(idx);
+                setCurrentColorId(cluster.data.id);
                 setSelectedColor(null);
                 // Call the onColorSelect callback if provided
                 if (onColorSelect) {
@@ -437,7 +451,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
               <div className="relative">
                 <div
                   className={`rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${
-                    storyMode && idx === currentColorIndex ? 'ring-4 ring-[#2C3E50]' : ''
+                    storyMode && cluster.data.id === currentColorId ? 'ring-4 ring-[#2C3E50]' : ''
                   } ${
                     selectedColorForFilter && selectedColorForFilter.id === cluster.data.id ? 'ring-4 ring-green-500 ring-opacity-75' : ''
                   }`}
@@ -629,15 +643,21 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                   </button>
                   {/* Navigation arrows */}
                   <button
-                    onClick={() => setCurrentColorIndex(i => Math.max(i - 1, 0))}
+                    onClick={() => {
+                      const prevIndex = Math.max(currentColorIndex - 1, 0);
+                      setCurrentColorId(filteredColors[prevIndex]?.id || null);
+                    }}
                     disabled={currentColorIndex === 0 || isAnimating}
                     className="bg-[#A7A39E] text-white text-xl font-mono font-bold px-0 py-3 rounded-none transition-opacity disabled:opacity-40 h-12 w-12 flex-shrink-0"
                   >
                     {'<'}
                   </button>
                   <button
-                    onClick={() => setCurrentColorIndex(i => Math.min(i + 1, colors.length - 1))}
-                    disabled={currentColorIndex === colors.length - 1 || isAnimating}
+                    onClick={() => {
+                      const nextIndex = Math.min(currentColorIndex + 1, filteredColors.length - 1);
+                      setCurrentColorId(filteredColors[nextIndex]?.id || null);
+                    }}
+                    disabled={currentColorIndex === filteredColors.length - 1 || isAnimating}
                     className="bg-[#A7A39E] text-white text-xl font-mono font-bold px-0 py-3 rounded-none transition-opacity disabled:opacity-40 h-12 w-12 flex-shrink-0"
                   >
                     {'>'}
@@ -658,14 +678,14 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                   <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setSustainabilityModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
                   {storyColorId && (
                     <SustainabilityAnalysis
-                      color={colors[currentColorIndex]?.name}
-                      hex={colors[currentColorIndex]?.hex}
-                      location={colors[currentColorIndex]?.location}
-                      materials={colors[currentColorIndex]?.materials?.map(m => m.name).join(', ')}
-                      date={colors[currentColorIndex]?.dateCollected}
-                      season={colors[currentColorIndex]?.season}
-                      bioregion={colors[currentColorIndex]?.bioregion?.description || ''}
-                      colorId={colors[currentColorIndex]?.id || ''}
+                      color={currentColor?.name}
+                      hex={currentColor?.hex}
+                      location={currentColor?.location}
+                      materials={currentColor?.materials?.map(m => m.name).join(', ')}
+                      date={currentColor?.dateCollected}
+                      season={currentColor?.season}
+                      bioregion={currentColor?.bioregion?.description || ''}
+                      colorId={currentColor?.id || ''}
                       onOpenChat={() => {
                         setSustainabilityModalOpen(false);
                         setPigmentModalOpen(true);
@@ -684,13 +704,13 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                   <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setPigmentModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
                   {storyColorId && (
                     <PigmentAnalysis
-                      color={colors[currentColorIndex]?.name}
-                      hex={colors[currentColorIndex]?.hex}
-                      location={colors[currentColorIndex]?.location}
-                      materials={colors[currentColorIndex]?.materials?.map(m => m.name).join(', ')}
-                      date={colors[currentColorIndex]?.dateCollected}
-                      season={colors[currentColorIndex]?.season}
-                      bioregion={colors[currentColorIndex]?.bioregion?.description || ''}
+                      color={currentColor?.name}
+                      hex={currentColor?.hex}
+                      location={currentColor?.location}
+                      materials={currentColor?.materials?.map(m => m.name).join(', ')}
+                      date={currentColor?.dateCollected}
+                      season={currentColor?.season}
+                      bioregion={currentColor?.bioregion?.description || ''}
                     />
                   )}
                 </Dialog.Content>

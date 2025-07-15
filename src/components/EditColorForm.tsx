@@ -41,7 +41,7 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
       name: color.name || '',
       description: color.description || '',
       location: color.location || '',
-      sourceMaterial: color.sourceMaterial || '',
+      sourceMaterial: color.materials?.[0]?.name || '',
       type: color.type || 'pigment',
       application: color.processes?.[0]?.application || '',
       process: color.processes?.[0]?.notes || '',
@@ -65,8 +65,8 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
   return (
     <Dialog.Root open={isOpen} onOpenChange={() => {}}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
+        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[1000]" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 z-[1001] -translate-x-1/2 -translate-y-1/2 w-full max-w-lg md:max-w-xl lg:max-w-2xl bg-white rounded-2xl p-8 shadow-2xl border-2 border-[#2C3E50] focus:outline-none overflow-y-auto" style={{maxHeight: '90vh'}}>
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="flex justify-between items-start">
               <Dialog.Title className="text-2xl font-serif text-[#2C3E50]">

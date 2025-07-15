@@ -21,16 +21,7 @@ interface ColorDetailsClientProps {
   session?: any;
 }
 
-interface TitleContainerProps {
-  className?: string;
-  children: React.ReactNode;
-}
 
-interface ImageContainerProps {
-  className?: string;
-  children: React.ReactNode;
-  key: string;
-}
 
 export function ColorDetailsClient({ children, color, mediaUploads: initialMediaUploads, session }: ColorDetailsClientProps) {
   const router = useRouter();
@@ -76,7 +67,16 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
     }
   };
 
-  const handleEditSubmit = async (data: any) => {
+  const handleEditSubmit = async (data: {
+    name: string;
+    description: string;
+    location: string;
+    season: string;
+    sourceMaterial: string;
+    type: 'pigment' | 'dye' | 'ink';
+    application?: string;
+    process: string;
+  }) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/colors/${color.id}`, {
@@ -150,64 +150,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
     }
   };
 
-  // Memoize enhanced children to prevent unnecessary re-renders
-  const enhancedChildren = useMemo(() => {
-    return React.Children.map(children, (child) => {
-      if (React.isValidElement(child)) {
-        const childElement = child as React.ReactElement<TitleContainerProps | ImageContainerProps>;
-        
-        // Handle the title container
-        if (childElement.props.className?.includes('mb-12')) {
-          return React.cloneElement(childElement, { className: childElement.props.className }, (
-            <div className="flex items-center justify-between">
-              <div className="flex-1">{childElement.props.children}</div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="bos-button flex items-center gap-2"
-                >
-                  <Pencil className="w-5 h-5" />
-                  <span>Edit Color</span>
-                </button>
-              </div>
-            </div>
-          ));
-        }
 
-        // Handle the process images container
-        if (childElement.props.className?.includes('grid-cols-2')) {
-          const imageChildren = React.Children.map(childElement.props.children, (imageChild) => {
-            if (React.isValidElement(imageChild)) {
-              const imageElement = imageChild as React.ReactElement<ImageContainerProps>;
-              const media = mediaUploads.find(m => m.id === imageElement.key);
-              
-              if (media) {
-                return React.cloneElement(imageElement, {
-                  className: imageElement.props.className,
-                  children: (
-                    <ImageGalleryWrapper
-                      media={{
-                        ...media,
-                        colorId: color.id,
-                        comments: media.comments ?? [],
-                        createdAt: media.createdAt ?? '',
-                        type: media.type || 'outcome',
-                        caption: media.caption ?? ''
-                      }}
-                    />
-                  )
-                });
-              }
-            }
-            return imageChild;
-          });
-
-          return React.cloneElement(childElement, { className: childElement.props.className }, imageChildren);
-        }
-      }
-      return child;
-    });
-  }, [children, mediaUploads, color.id, setIsEditModalOpen]);
 
   return (
     <>
@@ -235,6 +178,16 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                   {color.season ? `, ${color.season}` : ''}
                 </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  aria-label="Edit Color"
+                  className="p-1 rounded-full hover:bg-[#f3f3f3] focus:outline-none transition-colors"
+                  style={{ border: 'none', background: 'none', boxShadow: 'none', color: '#2C3E50' }}
+                >
+                  <Pencil className="w-7 h-7" strokeWidth={2} />
+                </button>
               </div>
             </div>
           </div>
