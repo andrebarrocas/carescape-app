@@ -298,6 +298,7 @@ export async function POST(req: Request) {
         hex,
         dateCollected: new Date(dateCollected),
         season,
+        type: type || null,
         userId: finalUserId,
         authorName: authorName || null,
         materials: {
@@ -309,9 +310,9 @@ export async function POST(req: Request) {
         },
         processes: {
           create: {
-            technique: type,
+            technique: process,
             application: application || '',
-            notes: process,
+            notes: '',
           },
         },
         mediaUploads: mediaUploads ? {

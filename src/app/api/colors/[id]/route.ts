@@ -129,6 +129,7 @@ export async function PATCH(
         description: body.description,
         location: body.location,
         season: body.season,
+        type: body.type,
         materials: {
           updateMany: {
             where: {},

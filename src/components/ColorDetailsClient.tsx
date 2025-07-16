@@ -244,6 +244,37 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <p className="text-lg text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                 </p>
+                
+                {/* Materials Section - Bioregional Connection */}
+                <div className="mt-6 mb-4">
+                  <h3 className="text-lg font-semibold text-[#2C3E50] mb-2">
+                    Materials to make the color:
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {color.materials.map((material, index) => (
+                      <div
+                        key={material.id}
+                        className="bg-[#2C3E50]/10 border border-[#2C3E50]/20 rounded-full px-4 py-2 text-sm font-medium text-[#2C3E50]"
+                      >
+                        {material.name}
+                        {material.partUsed && (
+                          <span className="text-[#2C3E50]/70 ml-1">
+                            ({material.partUsed})
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {color.materials[0]?.originNote && (
+                    <p className="text-sm text-[#2C3E50]/70 mt-2 italic">
+                      {color.materials[0].originNote}
+                    </p>
+                  )}
+                </div>
+                
+                <div className="mt-4">
+                  
+                </div>
                 <div className="my-2 flex flex-col gap-2">
                   <button
                     onClick={() => setSustainabilityModalOpen(true)}
@@ -332,12 +363,11 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               Color Data
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
-              <p>- Type: {color.materials[0]?.name}</p>
+              <p>- Type: {color.type ? color.type.charAt(0).toUpperCase() + color.type.slice(1) : 'Not specified'}</p>
               {color.processes.map(process => (
                 <div key={process.id}>
                   <p>- Application: {process.application}</p>
-                  <p>- Process/Recipe: {process.technique}</p>
-                  <p className="text-sm text-black/80 pl-4 italic" title={process.notes || ''} dangerouslySetInnerHTML={{ __html: (process.notes || '').replace(/\n/g, '<br>') }} />
+                  <p>- Process: {process.notes}</p>
                 </div>
               ))}
             </div>

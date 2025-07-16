@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { MediaUploadWithComments } from '@/app/colors/[id]/types';
 import { useState } from 'react';
+import { MediaLikeButton } from '@/components/MediaLikeButton';
 
 interface ImageGalleryProps {
   media: MediaUploadWithComments;
@@ -58,6 +59,11 @@ export function ImageGallery({ media, onCommentsClick, priority = false }: Image
           <div className="text-white text-sm bg-black/50 px-3 py-1.5 rounded-full">
             {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
           </div>
+        </div>
+        
+        {/* Like button - positioned in top right */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <MediaLikeButton mediaId={media.id} />
         </div>
       </div>
       

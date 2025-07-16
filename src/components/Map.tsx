@@ -632,7 +632,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                     onClick={() => setPigmentModalOpen(true)}
                     className="bg-cyan-600 text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
                   >
-                    Design Ideas
+                    + Bioregional
                   </button>
                   {/* Add Content Button */}
                   <button
@@ -700,7 +700,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
               <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
                 <Dialog.Content className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full md:w-[500px] max-w-full z-50 bg-white shadow-2xl rounded-t-2xl flex flex-col p-8 overflow-y-auto border-t-4 border-black" style={{fontFamily:'Caveat, cursive', maxHeight: '80vh'}}>
-                  <Dialog.Title className="sr-only">Design Ideas</Dialog.Title>
+                  <Dialog.Title className="sr-only">More Bioregional</Dialog.Title>
                   <button className="absolute top-4 right-4 text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={() => setPigmentModalOpen(false)}><X className="w-5 h-5" strokeWidth={1.2} /></button>
                   {storyColorId && (
                     <PigmentAnalysis

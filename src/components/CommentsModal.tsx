@@ -7,6 +7,66 @@ import { format } from 'date-fns';
 import { Comment, MediaUploadWithComments } from '@/app/colors/[id]/types';
 import { X, Reply, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { MediaLikeButton } from '@/components/MediaLikeButton';
+
+// Comment Like Button Component
+function CommentLikeButton({ commentId }: { commentId: string }) {
+  const { data: session } = useSession();
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLikeToggle = async () => {
+    if (!session?.user?.id) {
+      alert('Please sign in to like comments');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/comments/${commentId}/likes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLikesCount(data.likesCount);
+        setIsLiked(data.isLiked);
+      } else {
+        console.error('Failed to toggle comment like');
+      }
+    } catch (error) {
+      console.error('Error toggling comment like:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleLikeToggle}
+      disabled={isLoading}
+      className={`flex items-center gap-1 p-1 rounded-full transition-all duration-200 ${
+        isLiked
+          ? 'text-red-500 hover:text-red-600'
+          : 'text-gray-500 hover:text-[#2C3E50]'
+      } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      title={isLiked ? 'Unlike this comment' : 'Like this comment'}
+    >
+      <Heart
+        className={`w-4 h-4 transition-all duration-200 ${
+          isLiked ? 'fill-current' : 'stroke-current fill-none'
+        }`}
+      />
+      {likesCount > 0 && (
+        <span className="text-xs font-medium">{likesCount}</span>
+      )}
+    </button>
+  );
+}
 
 interface CommentsModalProps {
   media: MediaUploadWithComments;
@@ -92,9 +152,9 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
-              <button className="absolute top-2 right-2 bg-white/80 rounded-full p-1 shadow hover:bg-white">
-                <Heart className="w-6 h-6 text-[#2C3E50]" strokeWidth={1.5} fill="none" />
-              </button>
+              <div className="absolute top-2 right-2">
+                <MediaLikeButton mediaId={media.id} />
+              </div>
             </div>
           </div>
 
@@ -131,9 +191,7 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                             {format(new Date(comment.createdAt), 'MMM d, yyyy')}
                           </p>
                         </div>
-                        <button className="ml-2 p-1 rounded-full hover:bg-gray-100">
-                          <Heart className="w-5 h-5 text-[#2C3E50]" strokeWidth={1.5} fill="none" />
-                        </button>
+                        <CommentLikeButton commentId={comment.id} />
                         <button
                           onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                           className="text-gray-500 hover:text-[#2C3E50] transition-colors"
@@ -200,6 +258,7 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
                                 <span className="text-xs text-gray-500">
                                   {format(new Date(reply.createdAt), 'MMM d, yyyy')}
                                 </span>
+                                <CommentLikeButton commentId={reply.id} />
                               </div>
                               <p className="text-[#2C3E50] text-sm ml-7">{reply.content}</p>
                             </div>

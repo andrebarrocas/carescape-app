@@ -174,7 +174,7 @@ Respond with ONLY valid JSON in this format:
                 onClick={onOpenChat}
                 className="bos-button text-lg px-6 py-2 flex items-center gap-2"
               >
-                <span>Design Ideas</span>
+                <span>+ Bioregional</span>
               </button>
             </div>
           </div>

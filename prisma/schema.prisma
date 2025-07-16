@@ -22,6 +22,8 @@ model User {
   colors        Color[]
   comments      Comment[]
   likes         Like[]
+  mediaLikes    MediaLike[]
+  commentLikes  CommentLike[]
   sessions      Session[]
 
   @@map("users")
@@ -65,6 +67,7 @@ model Color {
   coordinates            String?
   season                 String
   dateCollected          DateTime
+  type                   String?                 // 'pigment', 'dye', or 'ink'
   userId                 String
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
@@ -114,36 +117,38 @@ model Process {
 }
 
 model MediaUpload {
-  id        String    @id @default(cuid())
+  id        String      @id @default(cuid())
   type      String
   colorId   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   data      Bytes
   filename  String
   mimetype  String
   caption   String?
   comments  Comment[]
-  color     Color?    @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  mediaLikes MediaLike[]
+  color     Color?      @relation(fields: [colorId], references: [id], onDelete: Cascade)
 
   @@index([colorId])
   @@map("media_uploads")
 }
 
 model Comment {
-  id        String      @id @default(cuid())
-  content   String
-  colorId   String
-  mediaId   String
-  userId    String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  parentId  String?
-  color     Color       @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  media     MediaUpload @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  parent    Comment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[]   @relation("CommentReplies")
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  content      String
+  colorId      String
+  mediaId      String
+  userId       String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  parentId     String?
+  color        Color         @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  media        MediaUpload   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  parent       Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      Comment[]     @relation("CommentReplies")
+  commentLikes CommentLike[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([colorId])
   @@index([userId])
@@ -164,6 +169,34 @@ model Like {
   @@index([colorId])
   @@index([userId])
   @@map("likes")
+}
+
+model MediaLike {
+  id        String      @id @default(cuid())
+  mediaId   String
+  userId    String
+  createdAt DateTime    @default(now())
+  media     MediaUpload @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, userId])
+  @@index([mediaId])
+  @@index([userId])
+  @@map("media_likes")
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+  @@map("comment_likes")
 }
 
 model Animal {
