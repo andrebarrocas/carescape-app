@@ -40,20 +40,55 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
     throw new Error('Color not found');
   }
 
-  // Then, get comments for each media upload
+  // Then, get comments for each media upload with proper threading and user data
   const mediaUploadsWithComments = await Promise.all(
     color.mediaUploads.map(async (media) => {
       const comments = await prisma.comment.findMany({
-        where: { mediaId: media.id },
+        where: { 
+          mediaId: media.id,
+          parentId: null // Only get top-level comments
+        },
         include: {
           user: {
             select: {
               name: true,
+              pseudonym: true,
+              email: true,
               image: true
             }
+          },
+          replies: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  pseudonym: true,
+                  email: true,
+                  image: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'asc'
+            }
           }
+        },
+        orderBy: {
+          createdAt: 'desc'
         }
       });
+
+      // Helper function to get display name
+      const getDisplayName = (user: any): string => {
+        if (user.pseudonym) {
+          return user.pseudonym;
+        } else if (user.name) {
+          return user.name;
+        } else if (user.email && user.email !== 'anonymous@carespace.app') {
+          return user.email.split('@')[0];
+        }
+        return 'Anonymous';
+      };
 
       const { data, ...mediaWithoutData } = media;
       return {
@@ -62,7 +97,19 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
           id: comment.id,
           content: comment.content,
           createdAt: comment.createdAt.toISOString(),
-          user: comment.user
+          user: {
+            ...comment.user,
+            displayName: getDisplayName(comment.user)
+          },
+          replies: comment.replies.map(reply => ({
+            id: reply.id,
+            content: reply.content,
+            createdAt: reply.createdAt.toISOString(),
+            user: {
+              ...reply.user,
+              displayName: getDisplayName(reply.user)
+            }
+          }))
         })),
         createdAt: mediaWithoutData.createdAt.toISOString(),
         type: mediaWithoutData.type as 'outcome' | 'landscape' | 'process',

@@ -55,27 +55,79 @@ export async function GET(
     let allComments: any[] = [];
     if (mediaIds.length > 0) {
       allComments = await prisma.comment.findMany({
-        where: { mediaId: { in: mediaIds } },
+        where: { 
+          mediaId: { in: mediaIds },
+          parentId: null // Only get top-level comments
+        },
         include: {
           user: {
             select: {
               name: true,
+              pseudonym: true,
+              email: true,
               image: true
             }
+          },
+          replies: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  pseudonym: true,
+                  email: true,
+                  image: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'asc'
+            }
           }
+        },
+        orderBy: {
+          createdAt: 'desc'
         }
       });
     }
-    // Group comments by mediaId
+
+    // Helper function to get display name
+    const getDisplayName = (user: any): string => {
+      if (user.pseudonym) {
+        return user.pseudonym;
+      } else if (user.name) {
+        return user.name;
+      } else if (user.email && user.email !== 'anonymous@carespace.app') {
+        return user.email.split('@')[0];
+      }
+      return 'Anonymous';
+    };
+
+    // Group comments by mediaId and add display names
     const commentsByMediaId: Record<string, any[]> = {};
     for (const comment of allComments) {
       const mediaId = comment.mediaId;
       if (!commentsByMediaId[mediaId]) commentsByMediaId[mediaId] = [];
-      commentsByMediaId[mediaId].push({
+      
+      const commentWithDisplayName = {
         ...comment,
         createdAt: comment.createdAt?.toISOString?.() || null,
         updatedAt: comment.updatedAt?.toISOString?.() || null,
-      });
+        user: {
+          ...comment.user,
+          displayName: getDisplayName(comment.user)
+        },
+        replies: comment.replies.map((reply: any) => ({
+          ...reply,
+          createdAt: reply.createdAt?.toISOString?.() || null,
+          updatedAt: reply.updatedAt?.toISOString?.() || null,
+          user: {
+            ...reply.user,
+            displayName: getDisplayName(reply.user)
+          }
+        }))
+      };
+      
+      commentsByMediaId[mediaId].push(commentWithDisplayName);
     }
     // Attach comments to each media upload
     const mediaUploadsWithComments = color.mediaUploads.map(media => ({
@@ -243,31 +295,79 @@ export async function GET_full(
       
       // Fetch comments with pagination to limit data
       const allComments = await prisma.comment.findMany({
-        where: { mediaId: { in: mediaIds } },
+        where: { 
+          mediaId: { in: mediaIds },
+          parentId: null // Only get top-level comments
+        },
         include: {
           user: {
             select: {
               name: true,
+              pseudonym: true,
+              email: true,
               image: true
+            }
+          },
+          replies: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  pseudonym: true,
+                  email: true,
+                  image: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'asc'
             }
           }
         },
         orderBy: { createdAt: 'desc' },
         take: 50 // Limit to 50 most recent comments total
       });
+
+      // Helper function to get display name
+      const getDisplayName = (user: any): string => {
+        if (user.pseudonym) {
+          return user.pseudonym;
+        } else if (user.name) {
+          return user.name;
+        } else if (user.email && user.email !== 'anonymous@carespace.app') {
+          return user.email.split('@')[0];
+        }
+        return 'Anonymous';
+      };
       
-      // Group comments by mediaId
+      // Group comments by mediaId and add display names
       const commentsByMediaId: Record<string, any[]> = {};
       for (const comment of allComments) {
         const mediaId = comment.mediaId;
         if (!commentsByMediaId[mediaId]) commentsByMediaId[mediaId] = [];
-        commentsByMediaId[mediaId].push({
+        
+        const commentWithDisplayName = {
           id: comment.id,
           content: comment.content,
           createdAt: comment.createdAt?.toISOString?.() || null,
           updatedAt: comment.updatedAt?.toISOString?.() || null,
-          user: comment.user
-        });
+          user: {
+            ...comment.user,
+            displayName: getDisplayName(comment.user)
+          },
+          replies: comment.replies.map((reply: any) => ({
+            id: reply.id,
+            content: reply.content,
+            createdAt: reply.createdAt?.toISOString?.() || null,
+            updatedAt: reply.updatedAt?.toISOString?.() || null,
+            user: {
+              ...reply.user,
+              displayName: getDisplayName(reply.user)
+            }
+          }))
+        };
+        
+        commentsByMediaId[mediaId].push(commentWithDisplayName);
       }
       
       // Attach comments to each media upload

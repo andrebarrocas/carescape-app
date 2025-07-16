@@ -23,9 +23,9 @@ interface ColorDetailsClientProps {
 
 function truncateText(text: string, maxLength: number) {
   if (!text) return '';
-  // For captions, limit to 2-3 words
-  const words = text.split(' ').slice(0, 3);
-  return words.join(' ');
+  // For captions, limit to exactly 2 words and add "..."
+  const words = text.split(' ').slice(0, 2);
+  return words.join(' ') + (text.split(' ').length > 2 ? '...' : '');
 }
 
 
@@ -289,10 +289,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
 
           {/* Personal Description */}
           <div className="mb-10">
-
-            <p className="mt-2 text-base text-[#2C3E50]/80">
-              "{color.description}"
-            </p>
+            <div className="space-y-4 text-black font-sans text-base">
+              <p>"{color.description}"</p>
+            </div>
           </div>
 
           {/* Landscape Details */}

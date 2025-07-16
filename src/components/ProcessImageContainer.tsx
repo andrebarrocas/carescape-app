@@ -12,9 +12,9 @@ interface ProcessImageContainerProps {
 // Utility function to truncate text
 function truncateText(text: string) {
   if (!text) return '';
-  // For captions, limit to 2-3 words
-  const words = text.split(' ').slice(0, 3);
-  return words.join(' ');
+  // For captions, limit to exactly 2 words and add "..."
+  const words = text.split(' ').slice(0, 2);
+  return words.join(' ') + (text.split(' ').length > 2 ? '...' : '');
 }
 
 export function ProcessImageContainer({ media, onImageClick }: ProcessImageContainerProps) {

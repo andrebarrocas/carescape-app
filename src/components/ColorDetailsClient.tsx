@@ -35,9 +35,9 @@ interface ImageContainerProps {
 // Utility function to truncate text
 function truncateText(text: string, maxLength: number) {
   if (!text) return '';
-  // For captions, limit to 2-3 words
-  const words = text.split(' ').slice(0, 3);
-  return words.join(' ');
+  // For captions, limit to exactly 2 words and add "..."
+  const words = text.split(' ').slice(0, 2);
+  return words.join(' ') + (text.split(' ').length > 2 ? '...' : '');
 }
 
 export function ColorDetailsClient({ children, color, mediaUploads: initialMediaUploads, session }: ColorDetailsClientProps) {
@@ -361,7 +361,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
 
           {/* Landscape Description (above image) */}
           <div className="mb-10">
-            <p className="mt-2 text-base text-[#2C3E50]/80" dangerouslySetInnerHTML={{ __html: (color.description || '').replace(/\n/g, '<br>') }} />
+            <div className="space-y-4 text-black font-sans text-base">
+              <p dangerouslySetInnerHTML={{ __html: (color.description || '').replace(/\n/g, '<br>') }} />
+            </div>
           </div>
 
           {/* Landscape Details */}
