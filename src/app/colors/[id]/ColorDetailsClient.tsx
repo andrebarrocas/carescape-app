@@ -21,6 +21,12 @@ interface ColorDetailsClientProps {
   session?: any;
 }
 
+function truncateText(text: string, maxLength: number) {
+  if (!text) return '';
+  // For captions, limit to 2-3 words
+  const words = text.split(' ').slice(0, 3);
+  return words.join(' ');
+}
 
 
 export function ColorDetailsClient({ children, color, mediaUploads: initialMediaUploads, session }: ColorDetailsClientProps) {
@@ -38,6 +44,10 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
   // Memoize filtered media uploads to avoid recalculation
   const mainImage = useMemo(() => {
     return mediaUploads.find(media => media.type === 'landscape');
+  }, [mediaUploads]);
+
+  const outcomeImage = useMemo(() => {
+    return mediaUploads.find(media => media.type === 'outcome');
   }, [mediaUploads]);
 
   const processImages = useMemo(() => {
@@ -161,18 +171,46 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           <div className="mb-12">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-6xl text-[#2C3E50] mb-3 leading-tight">
+                <h1 className="text-4xl text-[#2C3E50] mb-3 leading-tight">
                   {color.name}
                 </h1>
-                {/* Color Swatch and Hex moved here */}
+                {/* Color Swatch and Outcome Image */}
                 <div className="flex items-center gap-4 mb-3">
                   <div 
                     className="w-16 h-16 rounded-full shadow-lg"
                     style={{ backgroundColor: color.hex }}
                   />
+                  {/* Outcome Image */}
+                  {(() => {
+                    const outcomeMedia = outcomeImage && outcomeImage.type === 'outcome' ? outcomeImage : null;
+                    
+                    if (outcomeMedia) {
+                      return (
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20">
+                          <Image
+                            src={`/api/images/${outcomeMedia.id}`}
+                            alt="Color outcome"
+                            fill
+                            className="object-contain"
+                            sizes="64px"
+                          />
+                        </div>
+                      );
+                    } else {
+                      // Show a placeholder if no outcome image is found
+                      return (
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20 bg-gray-200 flex items-center justify-center">
+                          <span className="text-xs text-gray-500">No outcome image</span>
+                        </div>
+                      );
+                    }
+                  })()}
+                  <p className="font-mono text-base text-[#2C3E50]">
+                    HEX: {color.hex}
+                  </p>
                 </div>
                 <p className="text-base text-[#2C3E50]/80 italic">
-                  by {color.user?.name || color.user?.pseudonym || 'Anonymous'}
+                  by {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'}
                 </p>
                 <p className="text-base text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
@@ -242,8 +280,8 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 />
               </div>
               {mainImage.caption && (
-                <p className="mt-2 text-base text-[#2C3E50]/80">
-                  {mainImage.caption}
+                <p className="mt-1 text-xs text-[#2C3E50]/70" title={mainImage.caption}>
+                  {truncateText(mainImage.caption, 80)}
                 </p>
               )}
             </div>

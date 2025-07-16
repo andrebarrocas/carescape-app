@@ -234,15 +234,15 @@ export async function POST(req: Request) {
       if (session?.user?.id) {
         finalUserId = session.user.id;
         console.log('Using session user ID:', finalUserId);
-      } else if (email) {
+      } else if (email && email !== 'anonymous@carespace.app') {
         // Use the helper function to safely get or create user
         console.log('Getting or creating user with email:', email);
         const user = await getOrCreateUser(email, authorName);
         finalUserId = user.id;
         console.log('Using user ID:', finalUserId);
       } else {
-        // No email provided, use anonymous user
-        console.log('No email provided, using anonymous user');
+        // No valid email provided, use anonymous user
+        console.log('No valid email provided, using anonymous user');
         const anonymousUser = await getOrCreateUser('anonymous@carespace.app', 'Anonymous');
         finalUserId = anonymousUser.id;
         console.log('Using anonymous user ID:', finalUserId);

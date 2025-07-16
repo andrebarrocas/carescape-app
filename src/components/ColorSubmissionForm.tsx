@@ -415,6 +415,13 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
       return;
     }
     
+    // Check if outcome photo is uploaded
+    const outcomePhoto = mediaFiles.find(m => m.type === 'outcome');
+    if (!outcomePhoto) {
+      alert('Please upload an outcome photo. This is required to generate the hex color code.');
+      return;
+    }
+    
     // Check if all required fields are present
     const requiredFields = ['name', 'description', 'location', 'sourceMaterial', 'process', 'season', 'dateCollected', 'email', 'hex'];
     const missingFields = requiredFields.filter(field => !data[field as keyof ColorSubmissionForm]);

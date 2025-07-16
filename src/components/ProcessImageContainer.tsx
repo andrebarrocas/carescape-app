@@ -9,6 +9,14 @@ interface ProcessImageContainerProps {
   onImageClick: (media: MediaUploadWithComments) => void;
 }
 
+// Utility function to truncate text
+function truncateText(text: string) {
+  if (!text) return '';
+  // For captions, limit to 2-3 words
+  const words = text.split(' ').slice(0, 3);
+  return words.join(' ');
+}
+
 export function ProcessImageContainer({ media, onImageClick }: ProcessImageContainerProps) {
   return (
     <div className="relative">
@@ -27,8 +35,8 @@ export function ProcessImageContainer({ media, onImageClick }: ProcessImageConta
         />
       </div>
       {media.caption && (
-        <p className="mt-2 text-sm text-[#2C3E50]/80">
-          {media.caption}
+        <p className="mt-1 text-xs text-[#2C3E50]/70" title={media.caption}>
+          {truncateText(media.caption)}
         </p>
       )}
     </div>

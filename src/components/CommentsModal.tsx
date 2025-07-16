@@ -88,11 +88,22 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
 
   // Helper to fetch latest comments for this media
   const fetchComments = useMemo(() => async () => {
-    const res = await fetch(`/api/colors/${media.colorId}/comments`);
-    if (res.ok) {
-      const allComments = await res.json();
-      // Filter for this media only
-      setComments(allComments.filter((c: any) => c.mediaId === media.id));
+    try {
+      const res = await fetch(`/api/colors/${media.colorId}/comments?t=${Date.now()}`, {
+        cache: 'no-store'
+      });
+      if (res.ok) {
+        const allComments = await res.json();
+        // Filter for this media only and exclude replies (comments with parentId)
+        const filteredComments = allComments.filter((c: any) => 
+          c.mediaId === media.id && !c.parentId
+        );
+        setComments(filteredComments);
+      } else {
+        console.error('Failed to fetch comments:', res.status);
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
     }
   }, [media.colorId, media.id]);
 
@@ -104,7 +115,8 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
     try {
       await onAddComment(media.id, newComment.trim());
       setNewComment('');
-      await fetchComments(); // Refresh comments in modal
+      // Force a fresh fetch of comments to ensure we have the latest data
+      setTimeout(() => fetchComments(), 100);
     } finally {
       setIsSubmitting(false);
     }
@@ -118,7 +130,8 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
       await onAddComment(media.id, replyContent.trim(), commentId);
       setReplyContent('');
       setReplyingTo(null);
-      await fetchComments(); // Refresh comments in modal
+      // Force a fresh fetch of comments to ensure we have the latest data
+      setTimeout(() => fetchComments(), 100);
     } finally {
       setIsSubmitting(false);
     }

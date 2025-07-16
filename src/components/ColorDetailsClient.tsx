@@ -35,7 +35,9 @@ interface ImageContainerProps {
 // Utility function to truncate text
 function truncateText(text: string, maxLength: number) {
   if (!text) return '';
-  return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+  // For captions, limit to 2-3 words
+  const words = text.split(' ').slice(0, 3);
+  return words.join(' ');
 }
 
 export function ColorDetailsClient({ children, color, mediaUploads: initialMediaUploads, session }: ColorDetailsClientProps) {
@@ -234,11 +236,46 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           <div className="mb-12">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-6xl text-[#2C3E50] mb-3 leading-tight">
+                <h1 className="text-4xl text-[#2C3E50] mb-3 leading-tight">
                   {color.name}
                 </h1>
+                {/* Color Swatch and Outcome Image */}
+                <div className="flex items-center gap-4 mb-3">
+                  <div 
+                    className="w-16 h-16 rounded-full shadow-lg"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                  {/* Outcome Image */}
+                  {(() => {
+                    const outcomeMedia = mediaUploads.find(media => media.type === 'outcome');
+                    
+                    if (outcomeMedia) {
+                      return (
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20">
+                          <Image
+                            src={`/api/images/${outcomeMedia.id}`}
+                            alt="Color outcome"
+                            fill
+                            className="object-contain"
+                            sizes="64px"
+                          />
+                        </div>
+                      );
+                    } else {
+                      // Show a placeholder if no outcome image is found
+                      return (
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20 bg-gray-200 flex items-center justify-center">
+                          <span className="text-xs text-gray-500">No outcome image</span>
+                        </div>
+                      );
+                    }
+                  })()}
+                  <p className="font-mono text-base text-[#2C3E50]">
+                    HEX: {color.hex}
+                  </p>
+                </div>
                 <p className="text-xl text-[#2C3E50]/80 italic">
-                  by {color.authorName || color.user?.name || color.user?.pseudonym || 'Anonymous'}
+                  by {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'}
                 </p>
                 
                 <p className="text-lg text-[#2C3E50]/60">
@@ -315,23 +352,12 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 />
               </div>
               {mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption && (
-                <p className="mt-2 text-base text-[#2C3E50]/80" title={mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption}>
+                <p className="mt-1 text-xs text-[#2C3E50]/70" title={mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption}>
                   {truncateText(mediaUploads.find(media => media.type === 'landscape' || media.type === 'outcome')?.caption || '', 80)}
                 </p>
               )}
             </div>
           )}
-
-          {/* Color Swatch and Hex */}
-          <div className="flex items-start gap-4 mb-8">
-            <div 
-              className="w-16 h-16 rounded-full shadow-lg"
-              style={{ backgroundColor: color.hex }}
-            />
-            <p className="font-mono text-base text-[#2C3E50]">
-              HEX: {color.hex}
-            </p>
-          </div>
 
           {/* Landscape Description (above image) */}
           <div className="mb-10">
@@ -389,7 +415,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                     }}
                   />
                   {media.caption && (
-                    <p className="mt-2 text-xs text-[#2C3E50]/80" title={media.caption}>
+                    <p className="mt-1 text-xs text-[#2C3E50]/70" title={media.caption}>
                       {truncateText(media.caption || '', 80)}
                     </p>
                   )}

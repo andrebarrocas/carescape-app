@@ -14,7 +14,9 @@ interface ImageGalleryProps {
 // Utility function to truncate text
 function truncateText(text: string, maxLength: number) {
   if (!text) return '';
-  return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+  // For captions, limit to 2-3 words
+  const words = text.split(' ').slice(0, 3);
+  return words.join(' ');
 }
 
 export function ImageGallery({ media, onCommentsClick, priority = false }: ImageGalleryProps) {
@@ -69,7 +71,7 @@ export function ImageGallery({ media, onCommentsClick, priority = false }: Image
       
       {/* Caption */}
       {media.caption && (
-        <p className="mt-2 text-sm text-[#2C3E50]/80 break-words break-all hyphens-auto" title={media.caption}>
+        <p className="mt-1 text-xs text-[#2C3E50]/70 break-words" title={media.caption}>
           {truncateText(media.caption, 40)}
         </p>
       )}
