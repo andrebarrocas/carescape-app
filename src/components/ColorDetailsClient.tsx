@@ -240,39 +240,37 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   {color.name}
                 </h1>
                 {/* Color Swatch and Outcome Image */}
-                <div className="flex items-center gap-4 mb-3">
-                  <div 
-                    className="w-16 h-16 rounded-full shadow-lg"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                  {/* Outcome Image */}
+                <div className="flex items-center gap-0 mb-3">
+                  {/* Outcome Image Rectangle */}
                   {(() => {
                     const outcomeMedia = mediaUploads.find(media => media.type === 'outcome');
-                    
                     if (outcomeMedia) {
                       return (
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20">
+                        <div className="relative w-20 h-20 rounded-none overflow-hidden shadow-lg border-2 border-[#2C3E50]/20" style={{ borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }}>
                           <Image
                             src={`/api/images/${outcomeMedia.id}`}
                             alt="Color outcome"
                             fill
-                            className="object-contain"
-                            sizes="64px"
+                            className="object-cover"
+                            sizes="80px"
                           />
                         </div>
                       );
                     } else {
-                      // Show a placeholder if no outcome image is found
                       return (
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20 bg-gray-200 flex items-center justify-center">
+                        <div className="relative w-20 h-20 rounded-none overflow-hidden shadow-lg border-2 border-[#2C3E50]/20 bg-gray-200 flex items-center justify-center" style={{ borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }}>
                           <span className="text-xs text-gray-500">No outcome image</span>
                         </div>
                       );
                     }
                   })()}
-                  <p className="font-mono text-base text-[#2C3E50]">
-                    HEX: {color.hex}
-                  </p>
+                  {/* Color Swatch Rectangle */}
+                  <div 
+                    className="w-20 h-20 rounded-none shadow-lg border-2 border-[#2C3E50]/20 flex items-center justify-center"
+                    style={{ backgroundColor: color.hex, borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}
+                  >
+                    <span className="font-mono text-base text-white drop-shadow" style={{textShadow:'0 1px 2px #0008'}}>{color.hex}</span>
+                  </div>
                 </div>
                 <p className="text-xl text-[#2C3E50]/80 italic">
                   by {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'}
@@ -285,7 +283,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 {/* Materials Section - Bioregional Connection */}
                 <div className="mt-6 mb-4">
                   <h3 className="text-lg font-semibold text-[#2C3E50] mb-2">
-                    Materials to make the color:
+                  Color Source Material:
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {color.materials.map((material, index) => (
@@ -381,8 +379,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               {color.bioregion?.description && (
                 <p>- Bioregion: {color.bioregion.description}</p>
               )}
-              <p>- Particular element used: {color.materials[0]?.partUsed}</p>
-            </div>
+              </div>
           </div>
 
           {/* Color Data */}
@@ -393,8 +390,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             <div className="space-y-4 text-black font-sans text-base">
               <p>- Type: {color.type ? color.type.charAt(0).toUpperCase() + color.type.slice(1) : 'Not specified'}</p>
               {color.processes.map(process => (
-                <div key={process.id}>
+                <div key={process.id} className="space-y-4">
                   <p>- Application: {process.application}</p>
+                  <p className="text-[#2C3E50]/80">This application method is commonly used for natural dye extraction and may vary depending on the material and desired outcome.</p>
                   <p>- Process: {process.notes}</p>
                 </div>
               ))}

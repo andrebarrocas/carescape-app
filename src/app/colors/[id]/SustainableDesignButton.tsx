@@ -21,7 +21,7 @@ export default function SustainableDesignButton(props: SustainableDesignButtonPr
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button
-          className="bos-button text-2xl px-8 py-3"
+          className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:opacity-90 transition-opacity"
           style={{ lineHeight: 1.1 }}
         >
           <span>+ Bioregional</span>

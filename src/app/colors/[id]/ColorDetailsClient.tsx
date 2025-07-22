@@ -210,7 +210,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   </p>
                 </div>
                 <p className="text-base text-[#2C3E50]/80 italic">
-                  by {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'}
+                  by {color.user?.pseudonym || color.user?.name || 'Anonymous'}
                 </p>
                 <p className="text-base text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
@@ -219,9 +219,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 
                 {/* Materials Section - Bioregional Connection */}
                 <div className="mt-6 mb-4">
-                  <h3 className="text-lg font-semibold text-[#2C3E50] mb-2">
-                    Materials to make the color:
-                  </h3>
+                  <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
+                    Color Materials:
+                  </h2>
                   <div className="flex flex-wrap gap-2">
                     {color.materials.map((material, index) => (
                       <div
@@ -229,11 +229,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                         className="bg-[#2C3E50]/10 border border-[#2C3E50]/20 rounded-full px-4 py-2 text-sm font-medium text-[#2C3E50]"
                       >
                         {material.name}
-                        {material.partUsed && (
-                          <span className="text-[#2C3E50]/70 ml-1">
-                            ({material.partUsed})
-                          </span>
-                        )}
+                      
                       </div>
                     ))}
                   </div>
@@ -321,8 +317,9 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             <div className="space-y-4 text-black font-sans text-base">
               <p>- Type: {color.type ? color.type.charAt(0).toUpperCase() + color.type.slice(1) : 'Not specified'}</p>
               {color.processes.map(process => (
-                <div key={process.id}>
+                <div key={process.id} className="space-y-4">
                   <p>- Application: {process.application}</p>
+                  <p className="text-[#2C3E50]/80"></p>
                   <p>- Process: {process.notes}</p>
                 </div>
               ))}

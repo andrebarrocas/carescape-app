@@ -20,12 +20,62 @@ export default function ImageCropper({ imageSrc, onCrop, onCancel, aspectRatio =
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
+  // Calculate boundary constraints for the image position
+  const getBoundaryConstraints = useCallback(() => {
+    if (!containerRef.current || !imageRef.current) return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    
+    const container = containerRef.current;
+    const img = imageRef.current;
+    
+    // Get the actual rendered image dimensions
+    const imageAspect = img.naturalWidth / img.naturalHeight;
+    const containerAspect = container.offsetWidth / container.offsetHeight;
+    
+    let renderedWidth, renderedHeight;
+    if (imageAspect > containerAspect) {
+      renderedWidth = container.offsetWidth * scale;
+      renderedHeight = renderedWidth / imageAspect;
+    } else {
+      renderedHeight = container.offsetHeight * scale;
+      renderedWidth = renderedHeight * imageAspect;
+    }
+    
+    // Calculate boundaries to keep image within container
+    const minX = container.offsetWidth - renderedWidth;
+    const maxX = 0;
+    const minY = container.offsetHeight - renderedHeight;
+    const maxY = 0;
+    
+    return { minX, maxX, minY, maxY };
+  }, [scale]);
+
+  // Constrain position within boundaries
+  const constrainPosition = useCallback((pos: { x: number; y: number }) => {
+    const bounds = getBoundaryConstraints();
+    return {
+      x: Math.max(bounds.minX, Math.min(bounds.maxX, pos.x)),
+      y: Math.max(bounds.minY, Math.min(bounds.maxY, pos.y)),
+    };
+  }, [getBoundaryConstraints]);
+
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.2, 3));
+    const newScale = Math.min(scale + 0.2, 3);
+    setScale(newScale);
+    
+    // Re-constrain position after zoom
+    setTimeout(() => {
+      setPosition(prev => constrainPosition(prev));
+    }, 0);
   };
 
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.2, 0.5));
+    const newScale = Math.max(scale - 0.2, 0.5);
+    setScale(newScale);
+    
+    // Re-constrain position after zoom
+    setTimeout(() => {
+      setPosition(prev => constrainPosition(prev));
+    }, 0);
   };
 
   const handleRotate = () => {
@@ -43,15 +93,24 @@ export default function ImageCropper({ imageSrc, onCrop, onCancel, aspectRatio =
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging) return;
     
-    setPosition({
+    const newPosition = {
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y,
-    });
-  }, [isDragging, dragStart]);
+    };
+    
+    // Apply boundary constraints
+    const constrainedPosition = constrainPosition(newPosition);
+    setPosition(constrainedPosition);
+  }, [isDragging, dragStart, constrainPosition]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
+
+  // Constrain position whenever scale changes
+  useEffect(() => {
+    setPosition(prev => constrainPosition(prev));
+  }, [scale, constrainPosition]);
 
   const handleCrop = () => {
     if (!imageRef.current || !containerRef.current) return;

@@ -40,11 +40,11 @@ export default function AboutPage() {
           <div className="mb-16 text-center">
             <div className="max-w-4xl mx-auto">
               <p className="text-lg md:text-xl text-black leading-relaxed mb-6 font-mono">
-                Welcome to CareScape—a collaborative platform celebrating the connection between landscapes and the colors they inspire. Here, we share the art and practice of making natural pigments and dyes from diverse ecosystems.
-              </p>
-              <p className="text-base md:text-lg text-black leading-relaxed mb-6 font-mono">
+                Welcome to CareScape — a collaborative platform celebrating the connection between landscapes and the colors they inspire. Here, we share the art and practice of making natural pigments and dyes from diverse ecosystems.
+                <br></br>
                 Our community brings together color makers, artists, and nature lovers to explore sustainable materials and share knowledge through stories and interactive maps.
               </p>
+         
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-start justify-center gap-8 mb-12">
@@ -87,11 +87,12 @@ export default function AboutPage() {
               <h2 className="text-xl font-bold mb-2 text-black font-mono">Networks of Care</h2>
               <p className="text-base mb-2 text-black leading-relaxed font-mono">Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.</p>
             </div>
+     
             <div className="flex flex-col items-start text-left max-w-xs">
               <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
                 <Image 
-                  src="/exploratory-dialogue.png" 
-                  alt="Exploratory Dialogue" 
+                  src="/desenho-4.jpg" 
+                  alt="About visual 4" 
                   width={256} 
                   height={256} 
                   className="object-cover w-full h-full scale-125" 
