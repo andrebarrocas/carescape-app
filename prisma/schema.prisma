@@ -8,11 +8,11 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String        @id @default(cuid())
+  email         String        @unique
   pseudonym     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   password      String?
   emailVerified DateTime?
   image         String?
@@ -20,10 +20,10 @@ model User {
   accounts      Account[]
   animals       Animal[]
   colors        Color[]
+  commentLikes  CommentLike[]
   comments      Comment[]
   likes         Like[]
   mediaLikes    MediaLike[]
-  commentLikes  CommentLike[]
   sessions      Session[]
 
   @@map("users")
@@ -67,7 +67,6 @@ model Color {
   coordinates            String?
   season                 String
   dateCollected          DateTime
-  type                   String?                 // 'pigment', 'dye', or 'ink'
   userId                 String
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
@@ -76,6 +75,7 @@ model Color {
   aiDescription          String?
   bioregionId            String?
   authorName             String?
+  type                   String?
   user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   comments               Comment[]
   likes                  Like[]
@@ -117,18 +117,18 @@ model Process {
 }
 
 model MediaUpload {
-  id        String      @id @default(cuid())
-  type      String
-  colorId   String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  data      Bytes
-  filename  String
-  mimetype  String
-  caption   String?
-  comments  Comment[]
+  id         String      @id @default(cuid())
+  type       String
+  colorId    String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  data       Bytes
+  filename   String
+  mimetype   String
+  caption    String?
+  comments   Comment[]
   mediaLikes MediaLike[]
-  color     Color?      @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  color      Color?      @relation(fields: [colorId], references: [id], onDelete: Cascade)
 
   @@index([colorId])
   @@map("media_uploads")
@@ -143,11 +143,11 @@ model Comment {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   parentId     String?
+  commentLikes CommentLike[]
   color        Color         @relation(fields: [colorId], references: [id], onDelete: Cascade)
   media        MediaUpload   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   parent       Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies      Comment[]     @relation("CommentReplies")
-  commentLikes CommentLike[]
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([colorId])

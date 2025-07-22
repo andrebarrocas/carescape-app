@@ -4,7 +4,7 @@ export interface MediaUpload {
   id: string;
   filename: string;
   mimetype: string;
-  type: 'outcome' | 'landscape' | 'process';
+  type: 'outcome' | 'landscape' | 'process' | 'outcome_original';
   caption: string | undefined;
   colorId: string | null;
   createdAt: string;

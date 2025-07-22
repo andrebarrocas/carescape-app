@@ -15,15 +15,19 @@ This feature allows multiple colors to be submitted at the same location and dis
 - The offset ensures all markers remain visible and clickable at all zoom levels
 
 ### 3. Zoom-Based Scaling
-- **Low Zoom (Zoomed Out)**: Markers are spread further apart to clearly show multiple colors exist
+- **Very Low Zoom (Zoomed Out)**: Markers are spread much further apart with aggressive clustering for maximum visibility
+- **Low Zoom**: Enhanced separation with larger offsets to clearly show multiple colors exist
+- **Medium Zoom**: Balanced clustering with moderate offsets
 - **High Zoom (Zoomed In)**: Markers are closer together for precise location viewing
+- **Very High Zoom**: Minimal clustering for accurate positioning
 - This creates an intuitive visual illusion that adapts to the user's viewing context
 
 ### 4. Distribution Patterns
-- **2 Colors**: Simple left-right offset for clear separation
-- **3 Colors**: Triangle pattern for balanced distribution
-- **4 Colors**: Square pattern for optimal spacing
-- **5+ Colors**: Spiral pattern with increasing radius for larger clusters
+- **2 Colors**: Simple left-right offset (0.08 degrees) for clear separation
+- **3 Colors**: Triangle pattern with 0.08 degree radius for balanced distribution
+- **4 Colors**: Square pattern with 0.1 degree radius for optimal spacing
+- **5 Colors**: Pentagon pattern with 0.12 degree radius
+- **6+ Colors**: Spiral pattern with increasing radius (0.08 + index * 0.03) for larger clusters
 
 ### 5. Visual Indicators
 - All markers remain individually clickable and visible
@@ -58,7 +62,7 @@ Users can now:
 5. Navigate smoothly between overview and detailed views
 
 ## Technical Details
-- **Clustering Threshold**: 0.01 degrees (approximately 1km)
-- **Zoom Scaling Factor**: 0.3x to 2.0x based on zoom level
-- **Base Offset Range**: 0.0007 to 0.0009 degrees for optimal visibility
+- **Clustering Threshold**: 0.015 to 0.08 degrees based on zoom level (approximately 1.5km to 8km)
+- **Zoom Scaling Factor**: 0.1x to 10.0x based on zoom level for optimal visual separation
+- **Base Offset Range**: 0.08 to 0.12 degrees for better visibility when zoomed out
 - **Performance**: O(n²) clustering algorithm with memoization for efficiency 

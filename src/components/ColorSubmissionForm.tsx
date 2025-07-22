@@ -19,7 +19,7 @@ const colorSubmissionSchema = z.object({
   coordinates: z.object({
     lat: z.number(),
     lng: z.number(),
-  }),
+  }).optional(),
   sourceMaterial: z.string().min(1, 'Source material is required'),
   type: z.enum(['pigment', 'dye', 'ink']),
   application: z.string().optional(),
@@ -58,7 +58,7 @@ interface LocationSuggestion {
 
 interface MediaFile {
   file: File;
-  type: 'outcome' | 'landscape' | 'process';
+  type: 'outcome' | 'landscape' | 'process' | 'outcome_original';
   preview: string;
   caption: string;
 }
@@ -98,6 +98,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     defaultValues: {
       type: 'pigment',
       season: 'Spring',
+      coordinates: { lat: 0, lng: 0 },
+      hex: '#000000',
     }
   });
 
@@ -256,8 +258,11 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
 
       // If it's an outcome image, generate hex code
       if (type === 'outcome') {
+        console.log('Generating hex for outcome image...');
         const hex = await getAverageColor(file);
+        console.log('Generated hex:', hex);
         setValue('hex', hex); // Set the hex value in the form
+        console.log('Hex value set in form');
         const newMedia: MediaFile = {
           file,
           type,
@@ -280,14 +285,18 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   };
 
   const getAverageColor = async (file: File): Promise<string> => {
+    console.log('getAverageColor called with file:', file.name);
     return new Promise<string>((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
+        console.log('File read successfully');
         const img = document.createElement('img');
         img.onload = () => {
+          console.log('Image loaded, dimensions:', img.width, 'x', img.height);
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           if (!ctx) {
+            console.log('No canvas context, using default hex');
             resolve('#000000');
             return;
           }
@@ -320,6 +329,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
 
           // Convert to hex
           const hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+          console.log('Calculated hex:', hex, 'from RGB:', r, g, b);
           resolve(hex);
         };
         img.src = e.target?.result as string;
@@ -329,6 +339,15 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   };
 
   const handleRemoveFile = (index: number) => {
+    const fileToRemove = mediaFiles[index];
+    console.log('Removing file:', fileToRemove);
+    
+    // If removing outcome image, clear the hex value
+    if (fileToRemove.type === 'outcome') {
+      console.log('Removing outcome image, clearing hex value');
+      setValue('hex', '');
+    }
+    
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -355,13 +374,38 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     if (cropperType === 'outcome') {
       const hex = await getAverageColor(croppedFile);
       setValue('hex', hex);
-      const newMedia: MediaFile = {
+      // Find the original file (from mediaFiles before cropping)
+      const originalMedia = mediaFiles.find(m => m.type === 'outcome');
+      // Save the original (uncropped) image as a separate media entry
+      if (originalMedia) {
+        const originalMediaEntry: MediaFile = {
+          file: originalMedia.file,
+          type: 'outcome_original',
+          preview: originalMedia.preview,
+          caption: '',
+        };
+        setMediaFiles(prev => [
+          ...prev.filter(m => m.type !== 'outcome' && m.type !== 'outcome_original'),
+          originalMediaEntry,
+          {
         file: croppedFile,
         type: 'outcome',
         preview,
         caption: hex,
-      };
-      setMediaFiles(prev => [...prev.filter(m => m.type !== 'outcome'), newMedia]);
+          }
+        ]);
+      } else {
+        // Fallback: just save the cropped image
+        setMediaFiles(prev => [
+          ...prev.filter(m => m.type !== 'outcome'),
+          {
+            file: croppedFile,
+            type: 'outcome',
+            preview,
+            caption: hex,
+          }
+        ]);
+      }
     } else {
       const newMedia: MediaFile = {
         file: croppedFile,
@@ -400,13 +444,18 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   };
 
   const handleFormSubmit = async (data: ColorSubmissionForm) => {
+    console.log('🎯 handleFormSubmit FUNCTION CALLED!');
+    console.log('=== FORM SUBMISSION STARTED ===');
     console.log('Form submission started with data:', data);
     console.log('Media files count:', mediaFiles.length);
     console.log('Form errors:', errors);
     console.log('Form is valid:', Object.keys(errors).length === 0);
-          console.log('Email field value:', data.email);
-      console.log('Email field type:', typeof data.email);
-      console.log('All form data:', data);
+    console.log('Email field value:', data.email);
+    console.log('Email field type:', typeof data.email);
+    console.log('Coordinates value:', data.coordinates);
+    console.log('Hex value:', data.hex);
+    console.log('All form data:', data);
+    console.log('=== FORM SUBMISSION DATA END ===');
     
     // Check if form has validation errors
     if (Object.keys(errors).length > 0) {
@@ -493,11 +542,17 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
             </Dialog.Close>
           </div>
           <form 
-            onSubmit={handleSubmit(handleFormSubmit)} 
+            onSubmit={handleSubmit(handleFormSubmit, (errors) => {
+              console.error('Form validation failed:', errors);
+              alert('Please fix the form errors before submitting.');
+            })} 
             className="space-y-8"
             onChange={() => {
               console.log('Form changed, errors:', errors);
               console.log('Form values:', watch());
+            }}
+            onInvalid={(e) => {
+              console.log('Form invalid event triggered:', e);
             }}
           >
             {/* Basic Information */}
@@ -704,6 +759,12 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               {errors.hex && (
                 <p className="mt-1 text-red-500 text-xs">{errors.hex.message}</p>
               )}
+              
+              {/* Hidden coordinates input */}
+              <input type="hidden" {...register('coordinates')} />
+              {errors.coordinates && (
+                <p className="mt-1 text-red-500 text-xs">{errors.coordinates.message}</p>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Outcome Image Upload */}
                 <div className="space-y-2">
@@ -878,6 +939,9 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   console.log('Media files count:', mediaFiles.length);
                   console.log('Current form values:', watch());
                   console.log('Current form errors:', errors);
+                  console.log('Form is valid:', Object.keys(errors).length === 0);
+                  console.log('Coordinates in form:', watch('coordinates'));
+                  console.log('Hex in form:', watch('hex'));
                 }}
               >
                 {submitting ? 'Submitting...' : 'Submit Color'}

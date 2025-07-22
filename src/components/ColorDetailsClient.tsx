@@ -132,6 +132,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
       mediaFiles.forEach((file, idx) => {
         formData.append('media', file);
         formData.append('captions', captions[idx] || '');
+        formData.append('types', 'process'); // Default type for additional media uploads
       });
       const res = await fetch(`/api/colors/${color.id}/images`, {
         method: 'POST',

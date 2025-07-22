@@ -174,43 +174,46 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <h1 className="text-4xl text-[#2C3E50] mb-3 leading-tight">
                   {color.name}
                 </h1>
-                {/* Color Swatch and Outcome Image */}
-                <div className="flex items-center gap-4 mb-3">
-                  <div 
-                    className="w-16 h-16 rounded-full shadow-lg"
+                {/* Color Swatch and Outcome Image - RECTANGLE VERSION */}
+                <div className="w-64 h-32 flex flex-row rounded-lg shadow-lg overflow-hidden border border-[#2C3E50]/20 mb-3 relative bg-white">
+                  {/* Left: Color Square */}
+                  <div
+                    className="flex-1 h-full flex items-center justify-center"
                     style={{ backgroundColor: color.hex }}
-                  />
-                  {/* Outcome Image */}
+                  >
+                    <span className="font-mono text-lg text-[#2C3E50] text-center">
+                      HEX: {color.hex}
+                    </span>
+                  </div>
+                  {/* Right: Outcome Image Square */}
                   {(() => {
-                    const outcomeMedia = outcomeImage && outcomeImage.type === 'outcome' ? outcomeImage : null;
-                    
+                    // Prefer uncropped outcome image if available
+                    const uncroppedOutcome = mediaUploads.find(media => media.type === 'outcome_original');
+                    const croppedOutcome = mediaUploads.find(media => media.type === 'outcome');
+                    const outcomeMedia = uncroppedOutcome || croppedOutcome || null;
                     if (outcomeMedia) {
                       return (
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20">
+                        <div className="flex-1 h-full relative">
                           <Image
                             src={`/api/images/${outcomeMedia.id}`}
                             alt="Color outcome"
                             fill
-                            className="object-contain"
-                            sizes="64px"
+                            className="object-cover"
+                            sizes="128px"
                           />
                         </div>
                       );
                     } else {
-                      // Show a placeholder if no outcome image is found
                       return (
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-lg border-2 border-[#2C3E50]/20 bg-gray-200 flex items-center justify-center">
+                        <div className="flex-1 h-full bg-gray-200 flex items-center justify-center">
                           <span className="text-xs text-gray-500">No outcome image</span>
                         </div>
                       );
                     }
                   })()}
-                  <p className="font-mono text-base text-[#2C3E50]">
-                    HEX: {color.hex}
-                  </p>
                 </div>
                 <p className="text-base text-[#2C3E50]/80 italic">
-                  by {color.user?.pseudonym || color.user?.name || 'Anonymous'}
+                  by {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'}
                 </p>
                 <p className="text-base text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}

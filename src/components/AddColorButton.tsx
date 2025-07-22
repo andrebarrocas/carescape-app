@@ -44,13 +44,29 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
       // Then, upload media files if any
       if (mediaFiles && mediaFiles.length > 0) {
         console.log('Uploading media files:', mediaFiles.length);
+        console.log('Media files structure:', mediaFiles);
+        
         try {
           const formData = new FormData();
-          mediaFiles.forEach((media: unknown) => {
-            formData.append('media', (media as any).file);
-            formData.append('captions', (media as any).caption || '');
-            formData.append('types', (media as any).type);
+          mediaFiles.forEach((media: unknown, index: number) => {
+            const mediaObj = media as any;
+            console.log(`Adding media file ${index + 1}:`, {
+              file: mediaObj.file,
+              caption: mediaObj.caption,
+              type: mediaObj.type
+            });
+            
+            if (!mediaObj.file) {
+              console.error(`Media file ${index + 1} has no file property:`, mediaObj);
+              return;
+            }
+            
+            formData.append('media', mediaObj.file);
+            formData.append('captions', mediaObj.caption || '');
+            formData.append('types', mediaObj.type || 'process');
           });
+
+          console.log('FormData created with entries');
 
           const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
             method: 'POST',
@@ -58,17 +74,23 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
           });
 
           console.log('Media upload response status:', mediaResponse.status);
+          console.log('Media upload response headers:', Object.fromEntries(mediaResponse.headers.entries()));
 
           if (!mediaResponse.ok) {
             const errorText = await mediaResponse.text();
             console.error('Media upload failed:', errorText);
-            throw new Error('Failed to upload media files');
+            throw new Error(`Failed to upload media files: ${errorText}`);
           }
+          
+          const responseData = await mediaResponse.json();
+          console.log('Media upload response data:', responseData);
           console.log('Media uploaded successfully.');
         } catch (error) {
           console.error('Error uploading media files:', error);
-          throw new Error('Failed to upload media files');
+          throw new Error(`Failed to upload media files: ${error}`);
         }
+      } else {
+        console.log('No media files to upload');
       }
       console.log('Color submission process finished.');
     } catch (error) {

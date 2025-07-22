@@ -98,7 +98,20 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
       })
       .filter(Boolean) as MapMarker[];
 
-    const baseClustered = clusterMarkers(colorMarkers, 0.01); // 0.01 degrees ≈ 1km threshold
+    // Enhanced threshold calculation for better clustering when zoomed out
+    let threshold: number;
+    if (viewport.zoom < 4) {
+      threshold = 0.08; // Very low zoom: cluster colors that are quite far apart
+    } else if (viewport.zoom < 6) {
+      threshold = 0.06; // Low zoom: cluster colors with medium distance
+    } else if (viewport.zoom < 8) {
+      threshold = 0.04; // Medium zoom: cluster colors that are closer
+    } else if (viewport.zoom < 10) {
+      threshold = 0.025; // High zoom: cluster only very close colors
+    } else {
+      threshold = 0.015; // Very high zoom: minimal clustering
+    }
+    const baseClustered = clusterMarkers(colorMarkers, threshold);
     return applyZoomScaling(baseClustered, viewport.zoom);
   }, [filteredColors, viewport.zoom]);
 
@@ -308,6 +321,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
       mediaFiles.forEach((file, idx) => {
         formData.append('media', file);
         formData.append('captions', captions[idx] || '');
+        formData.append('types', 'process'); // Default type for additional media uploads
       });
       if (!storyColorId) return;
       const res = await fetch(`/api/colors/${storyColorId}/images`, {
@@ -630,7 +644,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                   </button>
                   <button
                     onClick={() => setPigmentModalOpen(true)}
-                    className="bg-cyan-600 text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
+                    className="bg-blue-500 text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
                   >
                     + Bioregional
                   </button>

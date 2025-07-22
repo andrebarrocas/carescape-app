@@ -315,14 +315,8 @@ export async function POST(req: Request) {
             notes: '',
           },
         },
-        mediaUploads: mediaUploads ? {
-          create: mediaUploads.map((upload: unknown) => ({
-            filename: (upload as { filename: string }).filename,
-            mimetype: (upload as { mimetype: string }).mimetype,
-            type: (upload as { type: string }).type,
-            caption: (upload as { caption: string }).caption,
-          })),
-        } : undefined,
+        // Note: Media uploads are handled separately via the /api/colors/[id]/images endpoint
+        // This ensures proper file handling and binary data storage
       },
     });
 

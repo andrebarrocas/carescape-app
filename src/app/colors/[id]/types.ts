@@ -18,7 +18,7 @@ export interface MediaUploadWithComments extends Omit<MediaUpload, 'data'> {
   colorId: string | null;
   comments: Comment[];
   createdAt: string;
-  type: 'outcome' | 'landscape' | 'process';
+  type: 'outcome' | 'landscape' | 'process' | 'outcome_original';
   caption: string;
 }
 

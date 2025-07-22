@@ -111,19 +111,21 @@ function calculateDistance(a: MapMarker, b: MapMarker): number {
 function calculateClusterOffset(index: number, clusterSize: number): { x: number; y: number } {
   if (clusterSize <= 1) return { x: 0, y: 0 };
 
-  // Extreme spiral pattern for maximum separation
+  // Enhanced spiral pattern for better separation
   const angle = (index * 2 * Math.PI) / clusterSize;
 
-  // Extremely large radius for maximum separation
+  // Increased radius values for better separation when zoomed out
   let radius: number;
   if (clusterSize === 2) {
-    return { x: (index === 0 ? -0.025 : 0.025), y: 0 };
+    return { x: (index === 0 ? -0.08 : 0.08), y: 0 };
   } else if (clusterSize === 3) {
-    radius = 0.025;
+    radius = 0.08;
   } else if (clusterSize === 4) {
-    radius = 0.03;
+    radius = 0.1;
+  } else if (clusterSize === 5) {
+    radius = 0.12;
   } else {
-    radius = 0.02 + (index * 0.01);
+    radius = 0.08 + (index * 0.03);
   }
 
   return {
@@ -147,20 +149,30 @@ export function applyZoomScaling(
       return marker;
     }
 
-    // At high zoom levels (zoom >= 10), show colors with minimal offset for distinction
-    // At medium zoom levels (zoom >= 8), reduce offset significantly
-    // At low zoom levels, keep the clustering effect
+    // Enhanced zoom-based scaling for better separation when zoomed out
     let zoomFactor: number;
     
-    if (zoom >= 10) {
-      // Show with minimal offset when zoomed in to distinguish very close colors
-      zoomFactor = 0.15; // 15% of original offset for minimal clustering
+    if (zoom >= 12) {
+      // Show with minimal offset when very zoomed in
+      zoomFactor = 0.1; // 10% of original offset for minimal clustering
+    } else if (zoom >= 10) {
+      // Show with small offset when zoomed in to distinguish very close colors
+      zoomFactor = 0.2; // 20% of original offset
     } else if (zoom >= 8) {
-      // Reduce offset significantly at medium zoom
-      zoomFactor = Math.max(0.15, 1 - (zoom - 8) * 0.425); // 0.15 to 1.0 range
+      // Reduce offset at medium zoom
+      zoomFactor = Math.max(0.4, 1.2 - (zoom - 8) * 0.4); // 0.4 to 1.2 range
+    } else if (zoom >= 6) {
+      // Medium-low zoom: increase clustering
+      zoomFactor = Math.max(0.8, 2.5 - (zoom - 6) * 0.35); // 0.8 to 2.5 range
+    } else if (zoom >= 4) {
+      // Low zoom: much more aggressive clustering
+      zoomFactor = Math.max(1.5, 4.5 - (zoom - 4) * 0.75); // 1.5 to 3.0 range
+    } else if (zoom >= 2) {
+      // Very low zoom: maximum clustering
+      zoomFactor = Math.max(3.0, 8 - (zoom - 2) * 1.25); // 3.0 to 6.0 range
     } else {
-      // Keep clustering effect at low zoom
-      zoomFactor = Math.max(0.05, Math.min(20, 60 / zoom));
+      // Extremely low zoom: extreme clustering
+      zoomFactor = Math.max(6.0, 12 - zoom); // 6.0 to 10.0+ range
     }
 
     const scaledOffset = {
@@ -183,14 +195,18 @@ export function parseCoordinates(coords: unknown): { lat: number; lng: number } 
   
   if (typeof coords === 'string') {
     try {
-      return JSON.parse(coords);
+      const parsed = JSON.parse(coords);
+      if (parsed && typeof parsed === 'object' && 'lat' in parsed && 'lng' in parsed) {
+        return { lat: Number(parsed.lat), lng: Number(parsed.lng) };
+      }
+      return null;
     } catch {
       return null;
     }
   }
   
-  if (typeof coords === 'object' && 'lat' in coords && 'lng' in coords) {
-    return coords as { lat: number; lng: number };
+  if (typeof coords === 'object' && coords !== null && 'lat' in coords && 'lng' in coords) {
+    return { lat: Number((coords as any).lat), lng: Number((coords as any).lng) };
   }
   
   return null;
