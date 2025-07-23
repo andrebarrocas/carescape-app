@@ -42,18 +42,8 @@ export default function SignUpPage() {
         throw new Error(data.message || 'Failed to create account');
       }
 
-      // After successful signup, Sign In the user
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Failed to Sign In after account creation');
-      } else {
-        router.push('/colors');
-      }
+      // After successful signup, redirect to signin page
+      router.push('/auth/signin');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred during sign up');
     } finally {
