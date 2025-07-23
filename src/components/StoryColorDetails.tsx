@@ -29,31 +29,14 @@ function ProgressiveLoader({ colorId }: { colorId: string }) {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasInitialData, setHasInitialData] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
     setError(null);
     
-    // First, try to get basic color data quickly
-    const fetchBasicData = async () => {
-      try {
-        const res = await fetch(`/api/colors/${colorId}`);
-        if (res.ok) {
-          const basicColor = await res.json();
-          if (isMounted) {
-            setColor(basicColor);
-            setHasInitialData(true);
-          }
-        }
-      } catch (err) {
-        // Continue with full data fetch even if basic fetch fails
-      }
-    };
-
-    // Then fetch full data
-    const fetchFullData = async () => {
+    // Fetch full data with comments
+    const fetchData = async () => {
       try {
         const res = await fetch(`/api/colors/${colorId}/full`);
         if (!res.ok) throw new Error("Failed to fetch color details");
@@ -70,25 +53,12 @@ function ProgressiveLoader({ colorId }: { colorId: string }) {
       }
     };
 
-    // Start both fetches
-    fetchBasicData();
-    fetchFullData();
+    fetchData();
 
     return () => {
       isMounted = false;
     };
   }, [colorId]);
-
-  // Show basic content as soon as we have initial data
-  if (hasInitialData && color && !loading) {
-    return (
-      <SessionProvider>
-        <Suspense fallback={<LoadingSpinner />}>
-          <ColorDetailsClient color={color} mediaUploads={mediaUploads} session={session} />
-        </Suspense>
-      </SessionProvider>
-    );
-  }
 
   if (loading) {
     return <LoadingSpinner />;

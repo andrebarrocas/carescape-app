@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import ColorSubmissionForm from '@/components/ColorSubmissionForm';
 import { ColorSubmissionForm as ColorSubmissionFormType } from '@/components/ColorSubmissionForm';
-import UploadTest from '@/components/UploadTest';
+
 
 export default function TestFormPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,9 +101,7 @@ export default function TestFormPage() {
         onClose={() => setIsOpen(false)}
       />
 
-      <div className="mt-8">
-        <UploadTest />
-      </div>
+
     </div>
   );
 } 

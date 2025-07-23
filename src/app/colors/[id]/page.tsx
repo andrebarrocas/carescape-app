@@ -146,7 +146,7 @@ async function getColorDetails(id: string): Promise<ExtendedColor> {
     updatedAt: color.updatedAt.toISOString(),
     userId: color.userId,
     sourceMaterial: color.materials[0]?.name || '',
-    type: color.processes[0]?.technique as 'pigment' | 'dye' | 'ink',
+    type: (color.processes[0]?.technique || color.type) as 'pigment' | 'dye' | 'ink',
     user: color.user
   };
 }

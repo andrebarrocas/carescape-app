@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import EditColorForm from '@/components/EditColorForm';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import { ExtendedColor, MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { Pencil, Palette, X, Plus, Leaf } from 'lucide-react';
+import { Pencil, X } from 'lucide-react';
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
-import SustainableDesignButton from './SustainableDesignButton';
+
 import { format } from 'date-fns';
 import Image from 'next/image';
 import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
@@ -21,7 +21,7 @@ interface ColorDetailsClientProps {
   session?: any;
 }
 
-function truncateText(text: string, maxLength: number) {
+function truncateText(text: string) {
   if (!text) return '';
   // For captions, limit to exactly 2 words and add "..."
   const words = text.split(' ').slice(0, 2);
@@ -89,33 +89,48 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
   }) => {
     setIsSubmitting(true);
     try {
+      console.log('Submitting edit data:', data);
+      const requestBody = {
+        name: data.name,
+        description: data.description,
+        location: data.location,
+        season: data.season,
+        material: {
+          name: data.sourceMaterial,
+          partUsed: data.application || 'Not specified',
+          originNote: data.process
+        },
+        process: {
+          technique: data.type,
+          application: data.application || 'Not specified',
+          notes: data.process
+        }
+      };
+      console.log('Request body:', requestBody);
+      
       const response = await fetch(`/api/colors/${color.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: data.name,
-          description: data.description,
-          location: data.location,
-          season: data.season,
-          material: {
-            name: data.sourceMaterial,
-            partUsed: data.application || 'Not specified',
-            originNote: data.process
-          },
-          process: {
-            technique: data.type,
-            application: data.application || 'Not specified',
-            notes: data.process
-          }
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to update color');
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`Failed to update color: ${errorText}`);
       }
 
-      router.refresh();
+      const result = await response.json();
+      console.log('Update result:', result);
+
+      console.log('Refreshing page...');
+      // Force a page reload to get the updated data
+      window.location.reload();
+      console.log('Modal closing...');
       setIsEditModalOpen(false);
+      console.log('Edit complete');
     } catch (error) {
       console.error('Error updating color:', error);
       alert('Failed to update color. Please try again.');
@@ -256,11 +271,6 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                     </div>
                   ))}
                 </div>
-                {color.materials[0]?.originNote && (
-                  <p className="text-sm text-[#2C3E50]/70 mt-2 italic">
-                    {color.materials[0].originNote}
-                  </p>
-                )}
               </div>
               
               <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
@@ -280,7 +290,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               </div>
               {mainImage.caption && (
                 <p className="mt-1 text-xs text-[#2C3E50]/70" title={mainImage.caption}>
-                  {truncateText(mainImage.caption, 80)}
+                  {truncateText(mainImage.caption)}
                 </p>
               )}
             </div>
@@ -289,7 +299,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Personal Description */}
           <div className="mb-10">
             <div className="space-y-4 text-black font-sans text-base">
-              <p>"{color.description}"</p>
+              <p>&quot;{color.description}&quot;</p>
             </div>
           </div>
 
@@ -308,7 +318,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               {color.bioregion?.description && (
                 <p>- Bioregion: {color.bioregion.description}</p>
               )}
-              <p>- Particular element used: {color.materials[0]?.partUsed}</p>
+              <p>- Particular element used: {color.materials[0]?.partUsed || 'Not specified'}</p>
             </div>
           </div>
 
@@ -318,14 +328,41 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               Color Data
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
-              <p>- Type: {color.type ? color.type.charAt(0).toUpperCase() + color.type.slice(1) : 'Not specified'}</p>
-              {color.processes.map(process => (
-                <div key={process.id} className="space-y-4">
-                  <p>- Application: {process.application}</p>
-                  <p className="text-[#2C3E50]/80"></p>
-                  <p>- Process: {process.notes}</p>
+              <p>- Type: {(() => {
+                // Check if technique field contains a long description (corrupted data)
+                const technique = color.processes[0]?.technique;
+                const notes = color.processes[0]?.notes;
+                
+                // If technique is very long (more than 50 chars), it's probably corrupted data
+                const isTechniqueCorrupted = technique && technique.length > 50;
+                
+                // Use the actual type if available, otherwise try to extract from technique
+                if (color.type) {
+                  return color.type.charAt(0).toUpperCase() + color.type.slice(1);
+                } else if (technique && !isTechniqueCorrupted) {
+                  return technique.charAt(0).toUpperCase() + technique.slice(1);
+                } else {
+                  return 'Not specified';
+                }
+              })()}</p>
+              {color.processes.length > 0 ? (
+                color.processes.map(process => {
+                  // Check if technique field contains a long description (corrupted data)
+                  const isTechniqueCorrupted = process.technique && process.technique.length > 50;
+                  
+                  return (
+                    <div key={process.id} className="space-y-2">
+                      <p>- Application: {process.application || 'Not specified'}</p>
+                      <p>- Process: {isTechniqueCorrupted ? process.technique : (process.notes || 'Not specified')}</p>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="space-y-2">
+                  <p>- Application: Not specified</p>
+                  <p>- Process: Not specified</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Comment, User, MediaUpload } from '@prisma/client';
+
 
 export async function DELETE(
   request: Request,
@@ -173,6 +173,8 @@ export async function PATCH(
   try {
     const { id } = await context.params;
     const body = await request.json();
+    console.log('PATCH request body:', body);
+    console.log('Color ID:', id);
     // Update the color
     const color = await prisma.color.update({
       where: { id },
@@ -181,25 +183,21 @@ export async function PATCH(
         description: body.description,
         location: body.location,
         season: body.season,
-        type: body.type,
+        type: body.process?.technique || body.type,
         materials: {
-          updateMany: {
-            where: {},
-            data: {
-              name: body.material?.name,
-              partUsed: body.material?.partUsed,
-              originNote: body.material?.originNote,
-            },
+          deleteMany: {},
+          create: {
+            name: body.material?.name || 'Not specified',
+            partUsed: body.material?.partUsed || 'Not specified',
+            originNote: body.material?.originNote || 'Not specified',
           },
         },
         processes: {
-          updateMany: {
-            where: {},
-            data: {
-              technique: body.process?.technique,
-              application: body.process?.application,
-              notes: body.process?.notes,
-            },
+          deleteMany: {},
+          create: {
+            technique: body.process?.technique || 'pigment',
+            application: body.process?.application || 'Not specified',
+            notes: body.process?.notes || 'Not specified',
           },
         },
       },
@@ -217,6 +215,7 @@ export async function PATCH(
         },
       },
     });
+    console.log('Updated color result:', color);
     return NextResponse.json(color);
   } catch (error) {
     console.error('Error updating color:', error);

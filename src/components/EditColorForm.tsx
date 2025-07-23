@@ -42,9 +42,34 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
       description: color.description || '',
       location: color.location || '',
       sourceMaterial: color.materials?.[0]?.name || '',
-      type: color.type || 'pigment',
+      type: (() => {
+        // Check if technique field contains a long description (corrupted data)
+        const technique = color.processes?.[0]?.technique;
+        const isTechniqueCorrupted = technique && technique.length > 50;
+        
+        // Use the actual type if available, otherwise try to extract from technique
+        if (color.type && ['pigment', 'dye', 'ink'].includes(color.type)) {
+          return color.type as 'pigment' | 'dye' | 'ink';
+        } else if (technique && !isTechniqueCorrupted && ['pigment', 'dye', 'ink'].includes(technique)) {
+          return technique as 'pigment' | 'dye' | 'ink';
+        } else {
+          return 'pigment' as const;
+        }
+      })(),
       application: color.processes?.[0]?.application || '',
-      process: color.processes?.[0]?.notes || '',
+      process: (() => {
+        // Check if technique field contains a long description (corrupted data)
+        const technique = color.processes?.[0]?.technique;
+        const notes = color.processes?.[0]?.notes;
+        const isTechniqueCorrupted = technique && technique.length > 50;
+        
+        // If technique is corrupted, use it as process notes
+        if (isTechniqueCorrupted) {
+          return technique;
+        } else {
+          return notes || '';
+        }
+      })(),
       season: color.season || 'Spring',
     },
   });
