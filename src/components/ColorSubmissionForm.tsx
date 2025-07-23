@@ -767,8 +767,13 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Outcome Image Upload */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <span className="font-mono text-sm text-[#2C3E50] block">Color Outcome</span>
+                  
+                  <p className="font-mono text-xs text-[#2C3E50] mt-1">
+                    Upload an image of the final color result.
+                    <br></br>
+                    Crop the area you would like to be used to automatically generate the hex color code.</p>
                   <div className="max-w-[300px]">
                     {mediaFiles.find(m => m.type === 'outcome') ? (
                       <div className="relative w-full aspect-square border-2 border-[#2C3E50]">
@@ -816,15 +821,17 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                       </DragDropUpload>
                     )}
                   </div>
-                  <p className="font-mono text-xs text-[#2C3E50]">
-                    Upload an image of the final color result.
-                    <br></br>
-                    Crop the area you would like to be used to automatically generate the hex color code.</p>
+                  
                 </div>
 
                 {/* Landscape Image Upload */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <span className="font-mono text-sm text-[#2C3E50] block">Landscape Photo</span>
+                  
+                  <p className="font-mono text-xs text-[#2C3E50] mt-1">
+                    Upload a photo of the landscape where the material was collected.
+                    <br></br>
+                    This helps document the environmental context of your color source.</p>
                   <div className="max-w-[300px]">
                     {mediaFiles.find(m => m.type === 'landscape') ? (
                       <div className="relative w-full aspect-square border-2 border-[#2C3E50]">
@@ -866,6 +873,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                       </DragDropUpload>
                     )}
                   </div>
+                  
                 </div>
               </div>
 
