@@ -213,35 +213,12 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   })()}
                 </div>
                 <p className="text-base text-[#2C3E50]/80 italic">
-                  by {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'}
+                  by {'Anonymous'/* {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'} */}
                 </p>
                 <p className="text-base text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                   {color.season ? `, ${color.season}` : ''}
                 </p>
-                
-                {/* Materials Section - Bioregional Connection */}
-                <div className="mt-6 mb-4">
-                  <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
-                    Color Materials:
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {color.materials.map((material, index) => (
-                      <div
-                        key={material.id}
-                        className="bg-[#2C3E50]/10 border border-[#2C3E50]/20 rounded-full px-4 py-2 text-sm font-medium text-[#2C3E50]"
-                      >
-                        {material.name}
-                      
-                      </div>
-                    ))}
-                  </div>
-                  {color.materials[0]?.originNote && (
-                    <p className="text-sm text-[#2C3E50]/70 mt-2 italic">
-                      {color.materials[0].originNote}
-                    </p>
-                  )}
-                </div>
                 
                 <div className="mt-4">
                   
@@ -263,6 +240,29 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
           {/* Main Landscape Image */}
           {mainImage && (
             <div className="mb-8">
+              {/* Materials Section - Bioregional Connection */}
+              <div className="mb-4">
+                <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
+                  Source Material:
+                </h2>
+                <div className="w-full">
+                  {color.materials.map((material, index) => (
+                    <div
+                      key={material.id}
+                      className="bg-[#2C3E50]/10 border border-[#2C3E50]/20 rounded-full px-4 py-2 text-sm font-medium text-[#2C3E50] inline-block mb-2 mr-2"
+                    >
+                      {material.name}
+                    
+                    </div>
+                  ))}
+                </div>
+                {color.materials[0]?.originNote && (
+                  <p className="text-sm text-[#2C3E50]/70 mt-2 italic">
+                    {color.materials[0].originNote}
+                  </p>
+                )}
+              </div>
+              
               <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
                 <ImageGalleryWrapper
                   media={{
@@ -439,7 +439,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <Dialog.Close asChild>
                   <button type="button" className="bos-button" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px' }}>Cancel</button>
                 </Dialog.Close>
-                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button disabled:opacity-50" style={{ fontSize: '1.5rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px' }}>
+                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button disabled:opacity-50" style={{ fontSize: '1.125rem', padding: '0.75rem 2rem', fontWeight: 700, letterSpacing: '1px' }}>
                   {isUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>

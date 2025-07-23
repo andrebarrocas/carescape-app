@@ -168,14 +168,8 @@ Respond with ONLY valid JSON in this format:
 
             <div className="text-center mt-6">
               <p className="text-sm text-[#2C3E50]/60 italic mb-3">
-                Powered by AI. Please verify with sustainability experts.
+                Powered by Gemini AI. Please verify with sustainability experts.
               </p>
-              <button
-                onClick={onOpenChat}
-                className="bos-button text-lg px-6 py-2 flex items-center gap-2"
-              >
-                <span>+ Bioregional</span>
-              </button>
             </div>
           </div>
         )}

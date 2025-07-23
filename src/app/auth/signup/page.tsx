@@ -188,6 +188,7 @@ export default function SignUpPage() {
                   type="submit"
                   disabled={isLoading}
                   className="bos-button w-full text-lg px-6 py-2 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center"
+                  style={{ fontSize: '1.125rem' }}
                 >
                   {isLoading ? (
                     <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />

@@ -281,6 +281,7 @@ export default function AnimalSubmissionForm({ isOpen, onClose, onSubmit }: Anim
                 type="submit"
                 disabled={submitting}
                 className="bos-button text-lg px-6 py-2"
+                style={{ fontSize: '1.125rem' }}
               >
                 {submitting ? 'Submitting...' : 'Submit Animal'}
               </button>

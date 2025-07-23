@@ -522,7 +522,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 <Dialog.Close asChild>
                   <button type="button" className="bos-button text-base font-mono font-bold tracking-wider px-6 py-4">Cancel</button>
                 </Dialog.Close>
-                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-base font-mono font-bold tracking-wider px-6 py-4 disabled:opacity-50">
+                <button type="submit" disabled={isUploading || mediaFiles.length === 0} className="bos-button text-base font-mono font-bold tracking-wider px-6 py-4 disabled:opacity-50" style={{ fontSize: '1.125rem' }}>
                   {isUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>

@@ -194,6 +194,7 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
                 type="submit"
                 disabled={submitting}
                 className="bos-button text-lg px-6 py-2 mt-4"
+                style={{ fontSize: '1.125rem' }}
               >
                 Update Color
               </button>

@@ -50,7 +50,7 @@ export default function PigmentAnalysis({
     if (hasGeneratedInitial.current || !color || !hex || !materials) return;
 
     // Add introduction message instead of generating ideas immediately
-    const introMessage = "Hi! Would you like to explore what else you can make with these materials in your region? Here are some bioregional, sustainable design ideas you could try, using what is available locally.";
+    const introMessage = "Hello! Would you like to explore what else you can do with local materials in your region? Feel free to ask more questions to gain insight into bioregional design ideas.";
     setMessages([{ role: 'assistant', content: introMessage, styled: false }]);
     hasGeneratedInitial.current = true;
   }, [color, hex, materials]);

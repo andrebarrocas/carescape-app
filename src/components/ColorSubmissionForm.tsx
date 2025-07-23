@@ -817,8 +817,9 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                     )}
                   </div>
                   <p className="font-mono text-xs text-[#2C3E50]">
-                    Upload an image of the final color outcome. The hex color code will be automatically generated from this image.
-                  </p>
+                    Upload an image of the final color result.
+                    <br></br>
+                    Crop the area you would like to be used to automatically generate the hex color code.</p>
                 </div>
 
                 {/* Landscape Image Upload */}
@@ -933,6 +934,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 type="submit"
                 disabled={submitting}
                 className="bos-button text-lg px-6 py-2"
+                style={{ fontSize: '1.125rem' }}
                 onClick={() => {
                   console.log('Submit button clicked');
                   console.log('Submitting state:', submitting);
