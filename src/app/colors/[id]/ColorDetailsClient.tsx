@@ -318,7 +318,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               {color.bioregion?.description && (
                 <p>- Bioregion: {color.bioregion.description}</p>
               )}
-              <p>- Particular element used: {color.materials[0]?.partUsed || 'Not specified'}</p>
+             
             </div>
           </div>
 
