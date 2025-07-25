@@ -27,7 +27,7 @@ export default function AboutPage() {
         </Link>
         <Link 
           href="/about" 
-          className="bg-[#A0A0A0] text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-[#8A8A8A] transition-colors"
+          className="bg-black text-white text-2xl px-8 py-3 font-bold tracking-wider hover:bg-gray-800 transition-colors"
         >
           About
         </Link>
@@ -41,15 +41,13 @@ export default function AboutPage() {
             <div className="max-w-4xl mx-auto">
               <p className="text-lg md:text-xl text-black leading-relaxed mb-6 font-mono">
                 Welcome to CareScape — a collaborative platform celebrating the connection between landscapes and the colors they inspire. Here, we share the art and practice of making natural pigments and dyes from diverse ecosystems.
-                <br></br>
-                Our community brings together color makers, artists, and nature lovers to explore sustainable materials and share knowledge through stories and interactive maps.
               </p>
          
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-start justify-center gap-8 mb-12">
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
                 <Image 
                   src="/desenho-1.jpg" 
                   alt="About visual 1" 
@@ -62,7 +60,7 @@ export default function AboutPage() {
               <p className="text-base mb-2 text-black leading-relaxed font-mono">Share knowledge of making colors from elements of the surrounding landscapes worldwide, unveiling their natural, cultural and social contexts.</p>
             </div>
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
                 <Image 
                   src="/desenho-2.jpg" 
                   alt="About visual 2" 
@@ -75,7 +73,7 @@ export default function AboutPage() {
               <p className="text-base mb-2 text-black leading-relaxed font-mono">Highlight natural local materials and promote their use and application, disseminating situated knowledge for positive global impact.</p>
             </div>
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
                 <Image 
                   src="/desenho-3.jpg" 
                   alt="About visual 3" 
@@ -89,7 +87,7 @@ export default function AboutPage() {
             </div>
      
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
                 <Image 
                   src="/desenho-4.jpg" 
                   alt="About visual 4" 
@@ -131,7 +129,9 @@ export default function AboutPage() {
                     padding: '0.75rem 2rem',
                     lineHeight: '1.5',
                     letterSpacing: '1px',
-                    textAlign: 'left'
+                    textAlign: 'left',
+                    backgroundColor: 'black',
+                    color: 'white'
                   }}
                 >
                   Get Started

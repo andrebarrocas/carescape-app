@@ -234,6 +234,33 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
                   {color.season ? `, ${color.season}` : ''}
                 </p>
+                <p className="text-base text-[#2C3E50]/80 italic">Specific Location: {color.location}</p>
+                
+                {/* Main Landscape Image */}
+                {mainImage && (
+                  <div className="mt-6 mb-8">
+                    <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
+                      <ImageGalleryWrapper
+                        media={{
+                          ...mainImage,
+                          colorId: color.id,
+                          id: mainImage.id,
+                          filename: mainImage.filename,
+                          mimetype: mainImage.mimetype,
+                          comments: mainImage.comments,
+                          createdAt: mainImage.createdAt,
+                          type: mainImage.type,
+                          caption: mainImage.caption
+                        }}
+                      />
+                    </div>
+                    {mainImage.caption && (
+                      <p className="mt-1 text-xs text-[#2C3E50]/70" title={mainImage.caption}>
+                        {truncateText(mainImage.caption)}
+                      </p>
+                    )}
+                  </div>
+                )}
                 
                 <div className="mt-4">
                   
@@ -250,66 +277,39 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 </button>
               </div>
             </div>
-          </div>
-
-          {/* Main Landscape Image */}
-          {mainImage && (
-            <div className="mb-8">
-              {/* Materials Section - Bioregional Connection */}
-              <div className="mb-4">
-                <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
-                  Source Material:
-                </h2>
-                <div className="w-full">
-                  {color.materials.map((material, index) => (
-                    <div
-                      key={material.id}
-                      className="bg-[#2C3E50]/10 border border-[#2C3E50]/20 rounded-full px-4 py-2 text-sm font-medium text-[#2C3E50] inline-block mb-2 mr-2"
-                    >
-                      {material.name}
-                    
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
-                <ImageGalleryWrapper
-                  media={{
-                    ...mainImage,
-                    colorId: color.id,
-                    id: mainImage.id,
-                    filename: mainImage.filename,
-                    mimetype: mainImage.mimetype,
-                    comments: mainImage.comments,
-                    createdAt: mainImage.createdAt,
-                    type: mainImage.type,
-                    caption: mainImage.caption
-                  }}
-                />
-              </div>
-              {mainImage.caption && (
-                <p className="mt-1 text-xs text-[#2C3E50]/70" title={mainImage.caption}>
-                  {truncateText(mainImage.caption)}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Personal Description */}
-          <div className="mb-10">
+            <div className="mb-10">
             <div className="space-y-4 text-black font-sans text-base">
               <p>&quot;{color.description}&quot;</p>
             </div>
           </div>
+          </div>
+
+          {/* Materials Section - Bioregional Connection */}
+          <div className="mb-4">
+            <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
+              Source Material:
+            </h2>
+            <div className="w-full">
+              {color.materials.map((material, index) => (
+                <div
+                  key={material.id}
+                  className="bg-[#2C3E50]/10 border border-[#2C3E50]/20 rounded-full px-4 py-2 text-sm font-medium text-[#2C3E50] inline-block mb-2 mr-2"
+                >
+                  {material.name}
+                
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Personal Description */}
+
 
           {/* Landscape Details */}
           <div className="mb-10">
-            <h2 className="text-2xl text-[#2C3E50] mb-4 pb-2">
-              Landscape Details
-            </h2>
+    
             <div className="space-y-4 text-black font-sans text-base">
-              <p>- Specific Location: {color.location}</p>
+              
               {color.coordinates && (
                 <div className="pl-4">
                   {/* MapComponent can be added here if needed */}

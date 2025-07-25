@@ -103,27 +103,21 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     }
   });
 
-  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      reset();
       setMediaFiles([]);
-      // Only set if not already set
-      if (!mapCoordinates) {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((pos) => {
-            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            setMapCoordinates(coords);
-            setValue('coordinates', coords);
-          });
-        } else {
-          // fallback to a default location (e.g., 0,0)
-          setMapCoordinates({ lat: 0, lng: 0 });
-          setValue('coordinates', { lat: 0, lng: 0 });
-        }
+      // Only set default location if there are no coordinates in the form
+      const coords = watch('coordinates');
+      if (!coords || !coords.lat || !coords.lng) {
+        const portimaoCoords = { lat: 37.1366, lng: -8.5378 };
+        setMapCoordinates(portimaoCoords);
+        setValue('coordinates', portimaoCoords);
+      } else {
+        setMapCoordinates(coords);
       }
     }
-  }, [isOpen, reset]);
+    // eslint-disable-next-line
+  }, [isOpen]);
 
   // Keep mapCoordinates in sync with form coordinates
   useEffect(() => {

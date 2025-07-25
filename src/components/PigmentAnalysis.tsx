@@ -166,7 +166,7 @@ export default function PigmentAnalysis({
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-cyan-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 h-14 w-full rounded-none"
+            className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white text-base font-mono font-bold tracking-wider px-6 py-4 h-14 w-full rounded-none hover:opacity-90 transition-opacity"
           >
             Send
           </button>

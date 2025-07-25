@@ -94,7 +94,7 @@ export default function EditColorForm({ color, isOpen, onClose, onSubmit }: Edit
         <Dialog.Content className="fixed top-1/2 left-1/2 z-[1001] -translate-x-1/2 -translate-y-1/2 w-full max-w-lg md:max-w-xl lg:max-w-2xl bg-white rounded-2xl p-8 shadow-2xl border-2 border-[#2C3E50] focus:outline-none overflow-y-auto" style={{maxHeight: '90vh'}}>
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="flex justify-between items-start">
-              <Dialog.Title className="text-2xl font-serif text-[#2C3E50]">
+              <Dialog.Title className="text-2xl font-bold text-[#2C3E50]" style={{ fontFamily: '"Futura Magazine", monospace' }}>
                 Edit Color
               </Dialog.Title>
               <Dialog.Close className="text-[#2C3E50] hover:text-[#2C3E50]/80" onClick={onClose}>
