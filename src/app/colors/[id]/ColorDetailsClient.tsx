@@ -228,7 +228,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   })()}
                 </div>
                 <p className="text-base text-[#2C3E50]/80 italic">
-                  by {'Anonymous'/* {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'} */}
+                  by {color.authorName || color.user?.pseudonym || color.user?.name || 'Anonymous'}
                 </p>
                 <p className="text-base text-[#2C3E50]/60">
                   {color.dateCollected ? format(new Date(color.dateCollected), 'MMMM d, yyyy') : ''}
