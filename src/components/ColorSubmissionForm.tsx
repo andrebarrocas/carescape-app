@@ -540,7 +540,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               console.error('Form validation failed:', errors);
               alert('Please fix the form errors before submitting.');
             })} 
-            className="space-y-8"
+            className="space-y-6"
             onChange={() => {
               console.log('Form changed, errors:', errors);
               console.log('Form values:', watch());
@@ -745,32 +745,26 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               </div>
             </div>
 
-            {/* Media Upload Section */}
-            <div className="space-y-6">
-              <h3 className="font-serif text-xl text-[#2C3E50]">Media Upload</h3>
-              {/* Hidden hex input */}
-              <input type="hidden" {...register('hex')} />
-              {errors.hex && (
-                <p className="mt-1 text-red-500 text-xs">{errors.hex.message}</p>
-              )}
-              
-              {/* Hidden coordinates input */}
-              <input type="hidden" {...register('coordinates')} />
-              {errors.coordinates && (
-                <p className="mt-1 text-red-500 text-xs">{errors.coordinates.message}</p>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Hidden hex input */}
+            <input type="hidden" {...register('hex')} />
+            {errors.hex && (
+              <p className="mt-1 text-red-500 text-xs">{errors.hex.message}</p>
+            )}
+            
+            {/* Hidden coordinates input */}
+            <input type="hidden" {...register('coordinates')} />
+            {errors.coordinates && (
+              <p className="mt-1 text-red-500 text-xs">{errors.coordinates.message}</p>
+            )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 {/* Outcome Image Upload */}
-                <div className="space-y-1">
-                  <span className="font-mono text-sm text-[#2C3E50] block">Color Outcome</span>
-                  
-                  <p className="font-mono text-xs text-[#2C3E50] mt-1">
-                    Upload an image of the final color result.
-                    <br></br>
-                    Crop the area you would like to be used to automatically generate the hex color code.</p>
-                  <div className="max-w-[300px]">
+                <div className="h-40">
+                  <div className="h-6 mb-2">
+                    <span className="font-mono text-sm text-[#2C3E50]">Color Outcome</span>
+                  </div>
+                  <div className="h-72">
                     {mediaFiles.find(m => m.type === 'outcome') ? (
-                      <div className="relative w-full aspect-square border-2 border-[#2C3E50]">
+                      <div className="relative w-full h-full border-2 border-[#2C3E50]">
                         <Image
                           src={mediaFiles.find(m => m.type === 'outcome')?.preview || ''}
                           alt="Color outcome preview"
@@ -805,7 +799,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                       <DragDropUpload
                         onFilesSelected={(files) => handleFileUpload(files, 'outcome')}
                         multiple={false}
-                        className="w-full aspect-square"
+                        className="w-full h-full"
                       >
                         <div className="flex flex-col items-center justify-center h-full">
                           <Upload className="w-8 h-8 text-[#2C3E50] mb-2" />
@@ -815,20 +809,16 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                       </DragDropUpload>
                     )}
                   </div>
-                  
                 </div>
 
                 {/* Landscape Image Upload */}
-                <div className="space-y-1">
-                  <span className="font-mono text-sm text-[#2C3E50] block">Landscape Photo</span>
-                  
-                  <p className="font-mono text-xs text-[#2C3E50] mt-1">
-                    Upload a photo of the landscape where the material was collected.
-                    <br></br>
-                    This helps document the environmental context of your color source.</p>
-                  <div className="max-w-[300px]">
+                <div className="h-40">
+                  <div className="h-6 mb-2">
+                    <span className="font-mono text-sm text-[#2C3E50]">Landscape Photo</span>
+                  </div>
+                  <div className="h-72">
                     {mediaFiles.find(m => m.type === 'landscape') ? (
-                      <div className="relative w-full aspect-square border-2 border-[#2C3E50]">
+                      <div className="relative w-full h-full border-2 border-[#2C3E50]">
                         <Image
                           src={mediaFiles.find(m => m.type === 'landscape')?.preview || ''}
                           alt="Landscape preview"
@@ -858,40 +848,46 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                       <DragDropUpload
                         onFilesSelected={(files) => handleFileUpload(files, 'landscape')}
                         multiple={false}
-                        className="w-full aspect-square"
+                        className="w-full h-full"
                       >
-                        <div className="flex flex-col items-center justify-center h-full">
-                          <Upload className="w-8 h-8 text-[#2C3E50] mb-2" />
-                          <p className="text-sm text-[#2C3E50]">Upload landscape photo</p>
-                        </div>
+                                              <div className="flex flex-col items-center justify-center h-full">
+                        <Upload className="w-8 h-8 text-[#2C3E50] mb-2" />
+                        <p className="text-sm text-[#2C3E50]">Landscape photo</p>
+                        <p className="text-xs text-gray-500 mt-1">Upload landscape photo where the material comes
+                        
+
+                        </p>
+                      </div>
                       </DragDropUpload>
                     )}
                   </div>
-                  
                 </div>
-              </div>
 
-              {/* Media Images Upload */}
-              <div className="space-y-4">
-                <span className="font-mono text-sm text-[#2C3E50] block">Media Images</span>
-                <div className="flex flex-col space-y-4">
-                  <div className="flex flex-col space-y-2">
-                    <label className="text-lg">Add Media Photos</label>
+                {/* Media Images Upload */}
+                <div className="h-40">
+                  <div className="h-6 mb-2">
+                    <span className="font-mono text-sm text-[#2C3E50]">Media Images</span>
+                  </div>
+                  <div className="h-72">
                     <DragDropUpload
                       onFilesSelected={(files) => handleFileUpload(files, 'process')}
                       multiple={true}
                       maxFiles={20}
-                      className="w-full"
+                      className="w-full h-full"
                     >
-                      <div className="flex items-center justify-center gap-2">
-                        <Upload className="w-5 h-5" />
-                        <span>Add Media Photos</span>
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <Upload className="w-8 h-8 text-[#2C3E50] mb-2" />
+                        <p className="text-sm text-[#2C3E50]">Add Media Photos</p>
+                        <p className="text-xs text-gray-500 mt-1">Upload additional media photos</p>
                       </div>
                     </DragDropUpload>
                   </div>
                 </div>
+              </div>
 
-                {mediaFiles.filter(m => m.type === 'process').length > 0 && (
+              {/* Media Images Gallery */}
+              {mediaFiles.filter(m => m.type === 'process').length > 0 && (
+                <div className="space-y-2 mb-6">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {mediaFiles
                       .filter(m => m.type === 'process')
@@ -926,17 +922,17 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                         );
                       })}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              )}
 
             {/* Submit button */}
-            <div className="flex justify-center pt-6">
+            <div className="flex justify-center mt-4">
+              
               <button
                 type="submit"
                 disabled={submitting}
                 className="bos-button text-lg px-6 py-2"
-                style={{ fontSize: '1.125rem' }}
+                style={{ fontSize: '1.125rem', marginTop: '3%' }}
                 onClick={() => {
                   console.log('Submit button clicked');
                   console.log('Submitting state:', submitting);

@@ -78,7 +78,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
   const colorCoords = filteredColors.map(c => parseCoordinates(c.coordinates)).filter(Boolean);
   const defaultCenter = colorCoords.length ? {
     latitude: colorCoords.reduce((sum, c) => sum + c!.lat, 0) / colorCoords.length,
-    longitude: colorCoords.reduce((sum, c) => sum + c!.lng, 0) / colorCoords.length,
+    longitude: colorCoords.reduce((sum, c) => sum + c!.lng, 0) / colorCoords.length + 0.02, // Offset to center markers on left
     zoom: 3
   } : { latitude: 20, longitude: 0, zoom: 2 };
   const [viewport, setViewport] = useState(defaultCenter);
@@ -287,9 +287,14 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
       const coords = parseCoordinates(currentColor.coordinates);
       if (coords && mapRef.current) {
         setIsAnimating(true);
+        
+        // Calculate a center point that keeps markers visible on the left side
+        // Offset the center slightly to the right so markers appear on the left
+        const offsetLng = coords.lng + 0.02; // Small offset to center markers on left
+        
         mapRef.current.flyTo({
-          center: [coords.lng, coords.lat],
-          zoom: 12, // Increased zoom level for better centering
+          center: [offsetLng, coords.lat],
+          zoom: 10, // Reduced zoom to keep more markers visible
           duration: 2000,
           essential: true
         });
@@ -456,6 +461,19 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                 setStoryMode(true);
                 setCurrentColorId(cluster.data.id);
                 setSelectedColor(null);
+                
+                // Immediately center the map on the selected color with proper offset
+                const coords = parseCoordinates(cluster.data.coordinates);
+                if (coords && mapRef.current) {
+                  const offsetLng = coords.lng + 0.02; // Offset to center markers on left
+                  mapRef.current.flyTo({
+                    center: [offsetLng, coords.lat],
+                    zoom: 10,
+                    duration: 1500,
+                    essential: true
+                  });
+                }
+                
                 // Call the onColorSelect callback if provided
                 if (onColorSelect) {
                   onColorSelect(cluster.data);

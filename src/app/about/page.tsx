@@ -47,26 +47,26 @@ export default function AboutPage() {
           </div>
           <div className="flex flex-col md:flex-row items-start justify-center gap-8 mb-12">
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 mb-4 flex items-center justify-center">
                 <Image 
                   src="/desenho-1.gif" 
                   alt="About visual 1" 
                   width={256} 
                   height={256} 
-                  className="object-cover w-full h-full scale-125" 
+                  className="object-contain w-full h-full" 
                 />
               </div>
               <h2 className="text-xl font-bold mb-2 text-black font-mono">Multidisciplinary Team</h2>
               <p className="text-base mb-2 text-black leading-relaxed font-mono">A collective of HCI researchers from diverse fields such design, and architecture exploring sustainability and posthumanist approaches.</p>
             </div>
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 mb-4 flex items-center justify-center">
                 <Image 
                   src="/desenho-2.gif" 
                   alt="About visual 2" 
                   width={256} 
                   height={256} 
-                  className="object-cover w-full h-full scale-125" 
+                  className="object-contain w-full h-full" 
                 />
               </div>
               <h2 className="text-xl font-bold mb-2 text-black font-mono">Community Knowledge</h2>
@@ -74,13 +74,13 @@ export default function AboutPage() {
               
               </div>
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 mb-4 flex items-center justify-center">
                 <Image 
                   src="/desenho-3.gif" 
                   alt="About visual 3" 
                   width={256} 
                   height={256} 
-                  className="object-cover w-full h-full scale-125" 
+                  className="object-contain w-full h-full" 
                 />
               </div>
               <h2 className="text-xl font-bold mb-2 text-black font-mono">Sustainable Practices</h2>
@@ -88,26 +88,26 @@ export default function AboutPage() {
               </div>
      
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 mb-4 flex items-center justify-center">
                 <Image 
                   src="/desenho-4.gif" 
                   alt="About visual 4" 
                   width={256} 
                   height={256} 
-                  className="object-cover w-full h-full scale-125" 
+                  className="object-contain w-full h-full" 
                 />
               </div>
               <h2 className="text-xl font-bold mb-2 text-black font-mono">Exploratory Dialogue</h2>
               <p className="text-base mb-2 text-black leading-relaxed font-mono">Engage with an AI guide to explore materials, landscapes, and sustainable practices through open, curiosity-driven conversations.</p>
             </div>
             <div className="flex flex-col items-start text-left max-w-xs">
-              <div className="w-48 h-48 md:w-64 md:h-64 overflow-hidden flex-shrink-0 mb-4">
+              <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 mb-4 flex items-center justify-center">
                 <Image 
                   src="/desenho-5.gif" 
-                  alt="About visual 4" 
+                  alt="About visual 5" 
                   width={256} 
                   height={256} 
-                  className="object-cover w-full h-full scale-125" 
+                  className="object-contain w-full h-full" 
                 />
               </div>
               <h2 className="text-xl font-bold mb-2 text-black font-mono">Networks of Care</h2>
