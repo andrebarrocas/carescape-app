@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
   },
   images: {
     domains: ['localhost'],
