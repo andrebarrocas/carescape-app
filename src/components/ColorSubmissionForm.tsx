@@ -85,6 +85,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   const [cropperImage, setCropperImage] = useState<string>('');
   const [cropperType, setCropperType] = useState<'outcome' | 'landscape'>('outcome');
   const [mapCoordinates, setMapCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'detecting' | 'success' | 'error'>('idle');
 
   const {
     register,
@@ -106,17 +107,22 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
   useEffect(() => {
     if (isOpen) {
       setMediaFiles([]);
-      // Only set default location if there are no coordinates in the form
-      const coords = watch('coordinates');
-      if (!coords || !coords.lat || !coords.lng) {
-        const portimaoCoords = { lat: 37.1366, lng: -8.5378 };
-        setMapCoordinates(portimaoCoords);
-        setValue('coordinates', portimaoCoords);
-      } else {
-        setMapCoordinates(coords);
-      }
+      
+      // Try to get user's current location automatically
+      getUserLocation().then((locationFound) => {
+        if (!locationFound) {
+          // Fallback to default coordinates if location detection fails
+          const coords = watch('coordinates');
+          if (!coords || !coords.lat || !coords.lng) {
+            const defaultCoords = { lat: 40.7128, lng: -74.0060 }; // New York as default center
+            setMapCoordinates(defaultCoords);
+            setValue('coordinates', defaultCoords);
+          } else {
+            setMapCoordinates(coords);
+          }
+        }
+      });
     }
-    // eslint-disable-next-line
   }, [isOpen]);
 
   // Keep mapCoordinates in sync with form coordinates
@@ -160,6 +166,80 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
 
     setSearchTimeout(timeout);
   };
+
+  // Get user's current location automatically
+  const getUserLocation = async () => {
+    console.log('🔄 Attempting to get user location...');
+    setLocationStatus('detecting');
+    
+    if (!navigator.geolocation) {
+      console.log('❌ Geolocation not supported, using default coordinates');
+      setLocationStatus('error');
+      return false;
+    }
+
+    try {
+      console.log('📍 Requesting location permission...');
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      console.log('✅ Location obtained:', { latitude, longitude });
+      
+      try {
+        // Reverse geocode to get location name
+        console.log('🌍 Reverse geocoding location...');
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`
+        );
+        const data = await response.json();
+        
+        const locationName = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        console.log('📍 Location name:', locationName);
+        
+        setValue('location', locationName);
+        setValue('coordinates', { lat: latitude, lng: longitude });
+        setMapCoordinates({ lat: latitude, lng: longitude });
+        setLocationStatus('success');
+        console.log('✅ Location set successfully!');
+        return true;
+              } catch (error) {
+          console.error('❌ Error getting location name:', error);
+          // Fallback to coordinates if reverse geocoding fails
+          const fallbackName = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          console.log('📍 Using fallback location name:', fallbackName);
+          setValue('location', fallbackName);
+          setValue('coordinates', { lat: latitude, lng: longitude });
+          setMapCoordinates({ lat: latitude, lng: longitude });
+          setLocationStatus('success');
+          return true;
+        }
+      } catch (error: any) {
+        console.error('❌ Error getting location:', error);
+        if (error.code) {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              console.error('🚫 Location permission denied by user');
+              break;
+            case error.POSITION_UNAVAILABLE:
+              console.error('❓ Location information unavailable');
+              break;
+            case error.TIMEOUT:
+              console.error('⏰ Location request timed out');
+              break;
+            default:
+              console.error('❓ Unknown location error:', error.code);
+          }
+        }
+        setLocationStatus('error');
+        return false;
+      }
+    };
 
   // When user picks a location from suggestions, update mapCoordinates
   const handleSuggestionClick = (suggestion: LocationSuggestion) => {
@@ -613,6 +693,24 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                     placeholder="Search for a location..."
                   />
                 </div>
+
+                {/* Location Status Indicator */}
+                {locationStatus === 'detecting' && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                    Detecting your location...
+                  </div>
+                )}
+                {locationStatus === 'success' && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-green-600">
+                    ✓ Location detected successfully
+                  </div>
+                )}
+                {locationStatus === 'error' && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
+                    ⚠️ Could not detect location. Please search manually.
+                  </div>
+                )}
                 {errors.location && (
                   <p className="mt-1 text-red-500 text-xs">{errors.location.message}</p>
                 )}

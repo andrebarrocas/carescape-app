@@ -11,6 +11,18 @@ export default function AboutPage() {
     setMounted(true);
   }, []);
 
+  const handleGetStarted = async () => {
+    try {
+      // Always try to logout first (clears any existing auth)
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
+    // Always redirect to signin page
+    window.location.href = '/auth/signin';
+  };
+
   if (!mounted) {
     return null;
   }
@@ -135,9 +147,9 @@ export default function AboutPage() {
                 <p className="mb-4 text-black text-left">Explore the knowledge of making colors and networks of ecosystems relationships through an interactive map and by engaging with both the community stories and AI generated insights.</p>
               </div>
               <div className="flex flex-col items-start mt-8 gap-4">
-                <Link 
-                  href="/auth/signin" 
-                  className="bos-button text-xl px-8 py-4 tracking-wider text-left"
+                <button 
+                  onClick={handleGetStarted}
+                  className="bos-button text-xl px-8 py-4 tracking-wider text-left cursor-pointer"
                   style={{
                     fontSize: '1rem',
                     padding: '0.75rem 2rem',
@@ -149,7 +161,7 @@ export default function AboutPage() {
                   }}
                 >
                   Get Started
-                </Link>
+                </button>
               </div>
             </div>
           </div>
