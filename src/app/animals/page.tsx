@@ -20,7 +20,7 @@ export default async function BiodiversityPage() {
     <main className="min-h-screen bg-[#FFFCF5]">
       <MenuAndBreadcrumbs />
       <div className="container mx-auto px-4 py-8">
-        <BiodiversityClient animals={animals} session={session} />
+        <BiodiversityClient animals={animals} />
       </div>
     </main>
   );
