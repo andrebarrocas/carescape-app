@@ -25,6 +25,9 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Disable CSS optimization to fix build issues
+  optimizeFonts: false,
+  compress: false,
 };
 
 export default nextConfig;
