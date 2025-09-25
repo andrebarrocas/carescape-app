@@ -28,7 +28,7 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(colorData),
-        credentials: 'include', // Include cookies for authentication
+        credentials: 'include',
       });
       
       console.log('Color creation response status:', response.status);
@@ -72,7 +72,7 @@ export default function AddColorButton({ onSubmit }: AddColorButtonProps) {
           const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
             method: 'POST',
             body: formData,
-            credentials: 'include', // Include cookies for authentication
+            credentials: 'include',
           });
 
           console.log('Media upload response status:', mediaResponse.status);

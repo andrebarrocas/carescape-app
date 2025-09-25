@@ -335,7 +335,6 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
       const res = await fetch(`/api/colors/${storyColorId}/images`, {
         method: 'POST',
         body: formData,
-        credentials: 'include', // Include cookies for authentication
       });
       if (res.ok) {
         setAddMediaOpen(false);
@@ -591,10 +590,10 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(colorData),
-                credentials: 'include', // Include cookies for authentication
-              });
+              },
+              body: JSON.stringify(colorData),
+              credentials: 'include',
+            });
             
             if (!response.ok) {
               const errorText = await response.text();
@@ -617,7 +616,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                 const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
                   method: 'POST',
                   body: formData,
-                  credentials: 'include', // Include cookies for authentication
+                  credentials: 'include',
                 });
 
                 if (!mediaResponse.ok) {
