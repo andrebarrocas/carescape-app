@@ -15,6 +15,7 @@ interface ColorWithMedia {
   dateCollected: Date;
   userId: string;
   authorName: string | null;
+  type: string | null;
   user: {
     id: string;
     name: string | null;
