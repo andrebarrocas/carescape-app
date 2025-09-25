@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Filter } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface MapFilterButtonsProps {
   onFilterChange: (filter: string) => void;
@@ -8,6 +9,7 @@ interface MapFilterButtonsProps {
 }
 
 export default function MapFilterButtons({ onFilterChange, onColorFilterChange }: MapFilterButtonsProps) {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('all');
   const [color, setColor] = useState('');
   const [material, setMaterial] = useState('');
@@ -20,7 +22,7 @@ export default function MapFilterButtons({ onFilterChange, onColorFilterChange }
   };
 
   const handleCareScapeClick = () => {
-    handleFilterClick('all');
+    router.push('/map');
   };
 
   // Call when any color filter changes
