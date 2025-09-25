@@ -280,8 +280,8 @@ export default function MapPage() {
                 </div>
               </div>
             )}
-            {/* --- MAP FILTER BUTTON: Always visible, high z-index --- */}
-            <div className="absolute top-4 right-4 z-50 bg-white border-2 border-[#2C3E50] rounded shadow-lg p-1">
+            {/* --- MAP FILTER BUTTON: Always visible, high z-index, debug border --- */}
+            <div className="absolute top-4 right-4 z-50 bg-white border-4 border-blue-500 rounded shadow-lg p-1">
               <div className="relative" ref={filterDropdownRef}>
                 <button
                   onClick={() => setIsMapFilterOpen(!isMapFilterOpen)}
@@ -460,4 +460,4 @@ export default function MapPage() {
       </div>
     </main>
   );
-} 
+}
