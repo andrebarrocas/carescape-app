@@ -6,7 +6,7 @@ export default function MenuAndBreadcrumbs() {
   return (
     <div className="fixed top-6 left-6 z-20 flex gap-4">
       <Link 
-        href="/map" 
+        href="/" 
         className="bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white text-2xl px-8 py-3 font-bold tracking-wider hover:opacity-90 transition-opacity"
       >
         CareScape

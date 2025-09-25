@@ -20,7 +20,7 @@ export default function MapFilterButtons({ onFilterChange, onColorFilterChange }
   };
 
   const handleCareScapeClick = () => {
-    handleFilterClick('all');
+    window.location.href = '/';
   };
 
   // Call when any color filter changes
