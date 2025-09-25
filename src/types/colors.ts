@@ -30,6 +30,13 @@ export interface Process {
   updatedAt: string;
 }
 
+export interface User {
+  id: string;
+  name: string | null;
+  email: string;
+  pseudonym: string | null;
+}
+
 export interface ColorSubmission {
   id: string;
   name: string;
@@ -54,4 +61,5 @@ export interface ColorSubmission {
   authorName?: string | null;
   sourceMaterial: string;
   type: 'pigment' | 'dye' | 'ink';
+  user: User;
 } 

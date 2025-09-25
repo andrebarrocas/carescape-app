@@ -56,7 +56,18 @@ export default function MapPage() {
   const fetchColors = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/colors');
+      // Try the authenticated endpoint first
+      let response = await fetch('/api/colors');
+      
+      // If unauthorized, fall back to public endpoint
+      if (response.status === 401) {
+        response = await fetch('/api/public/colors');
+      }
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch colors');
+      }
+      
       const data = await response.json();
       setColors(data);
       setFilteredColors(data);
@@ -435,6 +446,7 @@ export default function MapPage() {
                   colors={filteredColors} 
                   onColorSelect={handleColorSelect}
                   selectedColorForFilter={selectedColorForFilter}
+                  onRefresh={fetchColors}
                 />
               </div>
             )}

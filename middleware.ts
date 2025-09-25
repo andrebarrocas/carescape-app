@@ -3,11 +3,11 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { verify } from 'jsonwebtoken';
 
-const PUBLIC_PATHS = ['/about', '/auth/signin', '/auth/signup'];
+const PUBLIC_PATHS = ['/about', '/auth/signin', '/auth/signup', '/map'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  // Allow only /about, /auth/signin, and /auth/signup as public
+  // Allow /about, /auth/signin, /auth/signup, and /map as public
   if (PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path + '/'))) {
     return NextResponse.next();
   }
@@ -40,5 +40,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/auth|api/public|auth/signin|auth/signup|about|public).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/auth|api/public|api/images|auth/signin|auth/signup|about|map|public).*)'],
 }; 

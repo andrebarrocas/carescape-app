@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import EditColorForm from '@/components/EditColorForm';
 import { ImageGalleryWrapper } from '@/components/ImageGalleryWrapper';
 import { ExtendedColor, MediaUploadWithComments } from '@/app/colors/[id]/types';
-import { Pencil, X } from 'lucide-react';
+import { Pencil, X, Trash2 } from 'lucide-react';
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import PigmentAnalysis from '@/components/PigmentAnalysis';
+import { useAuth } from '@/hooks/useAuth';
 
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -31,8 +32,10 @@ function truncateText(text: string) {
 
 export function ColorDetailsClient({ children, color, mediaUploads: initialMediaUploads, session }: ColorDetailsClientProps) {
   const router = useRouter();
+  const { session: currentSession } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isPigmentModalOpen, setPigmentModalOpen] = useState(false);
   const [isSustainabilityModalOpen, setSustainabilityModalOpen] = useState(false);
   const [isAddMediaOpen, setAddMediaOpen] = useState(false);
@@ -40,6 +43,38 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
   const [captions, setCaptions] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [mediaUploads, setMediaUploads] = useState(initialMediaUploads);
+
+  // Check if current user can edit/delete this color
+  const canEdit = useMemo(() => {
+    if (!currentSession?.user?.email || !color.user?.email) return false;
+    return currentSession.user.email === color.user.email;
+  }, [currentSession, color.user]);
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this color? This action cannot be undone.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/colors/${color.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete color');
+      }
+
+      // Redirect to the map page after successful deletion
+      router.push('/map');
+    } catch (error) {
+      console.error('Error deleting color:', error);
+      alert('Failed to delete color. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Memoize filtered media uploads to avoid recalculation
   const mainImage = useMemo(() => {
@@ -266,16 +301,27 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  aria-label="Edit Color"
-                  className="p-1 rounded-full hover:bg-[#f3f3f3] focus:outline-none transition-colors"
-                  style={{ border: 'none', background: 'none', boxShadow: 'none', color: '#2C3E50' }}
-                >
-                  <Pencil className="w-7 h-7" strokeWidth={2} />
-                </button>
-              </div>
+              {canEdit && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    aria-label="Edit Color"
+                    className="p-1 rounded-full hover:bg-[#f3f3f3] focus:outline-none transition-colors"
+                    style={{ border: 'none', background: 'none', boxShadow: 'none', color: '#2C3E50' }}
+                  >
+                    <Pencil className="w-7 h-7" strokeWidth={2} />
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    aria-label="Delete Color"
+                    className="p-1 rounded-full hover:bg-red-50 focus:outline-none transition-colors"
+                    style={{ border: 'none', background: 'none', boxShadow: 'none', color: '#dc2626' }}
+                  >
+                    <Trash2 className="w-7 h-7" strokeWidth={2} />
+                  </button>
+                </div>
+              )}
             </div>
             <div className="mb-10">
             <div className="space-y-4 text-black font-sans text-base">
@@ -328,23 +374,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
               Color Data
             </h2>
             <div className="space-y-4 text-black font-sans text-base">
-              <p>- Type: {(() => {
-                // Check if technique field contains a long description (corrupted data)
-                const technique = color.processes[0]?.technique;
-                const notes = color.processes[0]?.notes;
-                
-                // If technique is very long (more than 50 chars), it's probably corrupted data
-                const isTechniqueCorrupted = technique && technique.length > 50;
-                
-                // Use the actual type if available, otherwise try to extract from technique
-                if (color.type) {
-                  return color.type.charAt(0).toUpperCase() + color.type.slice(1);
-                } else if (technique && !isTechniqueCorrupted) {
-                  return technique.charAt(0).toUpperCase() + technique.slice(1);
-                } else {
-                  return 'Not specified';
-                }
-              })()}</p>
+              <p>- Type: {color.type ? color.type.charAt(0).toUpperCase() + color.type.slice(1) : 'Pigment'}</p>
               {color.processes.length > 0 ? (
                 color.processes.map(process => {
                   // Check if technique field contains a long description (corrupted data)

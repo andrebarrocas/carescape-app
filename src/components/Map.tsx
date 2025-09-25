@@ -18,6 +18,7 @@ import PigmentAnalysis from '@/components/PigmentAnalysis';
 import SustainabilityAnalysis from '@/components/SustainabilityAnalysis';
 import * as Dialog from '@radix-ui/react-dialog';
 import { clusterMarkers, parseCoordinates, MapMarker, applyZoomScaling } from '@/lib/map';
+import { useAuth } from '@/hooks/useAuth';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const caveat = Caveat({ subsets: ['latin'], weight: '700', variable: '--font-caveat' });
@@ -30,6 +31,7 @@ interface MapProps {
   titleColor?: string;
   onColorSelect?: (color: ColorSubmission) => void;
   selectedColorForFilter?: ColorSubmission | null;
+  onRefresh?: () => void;
 }
 
 interface Animal {
@@ -43,12 +45,13 @@ interface Animal {
   date: string;
 }
 
-export default function Map({ colors, titleColor, onColorSelect, selectedColorForFilter }: MapProps) {
+export default function Map({ colors, titleColor, onColorSelect, selectedColorForFilter, onRefresh }: MapProps) {
   const [hoveredColor, setHoveredColor] = useState<ColorSubmission | null>(null);
   const [showColorForm, setShowColorForm] = useState(false);
   const [showAnimalForm, setShowAnimalForm] = useState(false);
   const [selectedColor, setSelectedColor] = useState<ColorSubmission | null>(null);
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const [storyMode, setStoryMode] = useState(false);
   const [currentColorId, setCurrentColorId] = useState<string | null>(null);
   const [storyColorId, setStoryColorId] = useState<string | null>(null);
@@ -332,6 +335,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
       const res = await fetch(`/api/colors/${storyColorId}/images`, {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies for authentication
       });
       if (res.ok) {
         setAddMediaOpen(false);
@@ -587,9 +591,10 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(colorData),
-            });
+                },
+                body: JSON.stringify(colorData),
+                credentials: 'include', // Include cookies for authentication
+              });
             
             if (!response.ok) {
               const errorText = await response.text();
@@ -612,6 +617,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                 const mediaResponse = await fetch(`/api/colors/${color.id}/images`, {
                   method: 'POST',
                   body: formData,
+                  credentials: 'include', // Include cookies for authentication
                 });
 
                 if (!mediaResponse.ok) {
@@ -624,7 +630,10 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
             }
 
             setShowColorForm(false);
-            router.refresh();
+            // Refresh the colors data to show the newly added color with images
+            if (onRefresh) {
+              onRefresh();
+            }
           } catch (error) {
             console.error('Error submitting color:', error);
             alert(`Failed to submit color: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -824,7 +833,13 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
         <button
           className="bg-black text-white text-2xl px-8 py-3 font-bold tracking-wider rounded-none fixed bottom-8 z-50 shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
-          onClick={() => setShowColorForm(true)}
+          onClick={() => {
+            if (!isAuthenticated) {
+              router.push('/auth/signin');
+            } else {
+              setShowColorForm(true);
+            }
+          }}
           aria-label="Add new color"
         >
           <Plus className="w-6 h-6" strokeWidth={1.2} />
@@ -837,7 +852,13 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
         <button
           className="bos-button text-xl px-8 py-3 fixed bottom-8 z-50 shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
-          onClick={() => setShowAnimalForm(true)}
+          onClick={() => {
+            if (!isAuthenticated) {
+              router.push('/auth/signin');
+            } else {
+              setShowAnimalForm(true);
+            }
+          }}
           aria-label="Add new animal"
         >
           <Plus className="w-6 h-6" strokeWidth={1.2} />

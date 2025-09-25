@@ -139,6 +139,7 @@ export async function GET(
     // Format color object
     const colorObj = {
       ...color,
+      type: color.type || 'pigment', // Ensure type is never null
       dateCollected: color.dateCollected?.toISOString?.() || null,
       createdAt: color.createdAt?.toISOString?.() || null,
       updatedAt: color.updatedAt?.toISOString?.() || null,
@@ -183,7 +184,7 @@ export async function PATCH(
         description: body.description,
         location: body.location,
         season: body.season,
-        type: body.process?.technique || body.type,
+        type: body.type || 'pigment',
         materials: {
           deleteMany: {},
           create: {
@@ -195,7 +196,7 @@ export async function PATCH(
         processes: {
           deleteMany: {},
           create: {
-            technique: body.process?.technique || 'pigment',
+            technique: body.process?.technique || 'Not specified',
             application: body.process?.application || 'Not specified',
             notes: body.process?.notes || 'Not specified',
           },
@@ -392,6 +393,7 @@ export async function GET_full(
       bioregion,
       dateCollected: color.dateCollected?.toISOString?.() || null,
       season: color.season,
+      type: color.type || 'pigment', // Ensure type is never null
       materials: color.materials.map(m => ({
         id: m.id,
         name: m.name,

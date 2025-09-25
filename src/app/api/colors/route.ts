@@ -121,6 +121,7 @@ export async function GET() {
 
       return {
         ...color,
+        type: color.type || 'pigment', // Ensure type is never null
         coordinates: parsedCoordinates,
         mediaUploads: color.mediaUploads.map(media => ({
           ...media,
@@ -298,7 +299,7 @@ export async function POST(req: Request) {
         hex,
         dateCollected: new Date(dateCollected),
         season,
-        type: type || null,
+        type: type || 'pigment',
         userId: finalUserId,
         authorName: authorName || null,
         materials: {
