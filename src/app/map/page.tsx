@@ -195,11 +195,11 @@ export default function MapPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm">
-        <div className="px-6 py-4">
-          <div className="space-y-2">
+    <main className="min-h-screen bg-white pt-24">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="space-y-4">
             <h1 className="font-serif text-4xl text-[#2C3E50]">Color Map</h1>
             <p className="font-mono text-sm text-[#2C3E50] max-w-2xl">
               Explore the geographic distribution of natural colors across the world. Each point represents a documented color and its origin.
@@ -207,7 +207,7 @@ export default function MapPage() {
           </div>
 
           {/* Search and Filters */}
-          <div className="mt-4">
+          <div className="border-2 border-[#2C3E50] p-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="flex-1 relative">
@@ -217,14 +217,14 @@ export default function MapPage() {
                   placeholder="Search colors, materials, or locations..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                 />
               </div>
 
               {/* Filter Button */}
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-2 px-6 py-3 border border-[#2C3E50] font-mono text-sm hover:bg-[#2C3E50] hover:text-white transition-colors"
+                className="flex items-center gap-2 px-6 py-3 border-2 border-[#2C3E50] font-mono text-sm hover:bg-[#2C3E50] hover:text-white transition-colors"
               >
                 <Filter className="w-5 h-5" />
                 <span>Filters</span>
@@ -233,14 +233,14 @@ export default function MapPage() {
 
             {/* Filter Panel */}
             {isFilterOpen && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-[#2C3E50]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t-2 border-[#2C3E50]">
                 <div>
                   <label className="block font-mono text-sm text-[#2C3E50] mb-2">Color Name</label>
                   <input
                     type="text"
                     value={filters.color}
                     onChange={(e) => setFilters({ ...filters, color: e.target.value })}
-                    className="w-full p-3 border border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                     placeholder="Filter by color name"
                   />
                 </div>
@@ -250,7 +250,7 @@ export default function MapPage() {
                     type="text"
                     value={filters.source}
                     onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-                    className="w-full p-3 border border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                     placeholder="Filter by source"
                   />
                 </div>
@@ -260,47 +260,45 @@ export default function MapPage() {
                     type="text"
                     value={filters.place}
                     onChange={(e) => setFilters({ ...filters, place: e.target.value })}
-                    className="w-full p-3 border border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
+                    className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm bg-transparent focus:outline-none"
                     placeholder="Filter by location"
                   />
                 </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Map Container - Full Screen */}
-      <div className="absolute inset-0 overflow-hidden relative">
-        {/* Filter Status Indicator */}
-        {selectedFilter && (
-          <div className="absolute top-32 left-4 z-20 bg-white border border-[#2C3E50] px-3 py-2 font-mono text-sm shadow-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Filtered by: {selectedFilter.replace('same-', '')}</span>
-              <span className="text-gray-500">({filteredColors.length} results)</span>
-            </div>
-          </div>
-        )}
-        {/* --- MAP FILTER BUTTON: Always visible, high z-index --- */}
-        <div className="absolute top-32 right-4 z-50 bg-white border border-[#2C3E50] shadow-lg p-1">
-          <div className="relative" ref={filterDropdownRef}>
-            <button
-              onClick={() => setIsMapFilterOpen(!isMapFilterOpen)}
-              className="bg-white border border-[#2C3E50] px-4 py-2 font-mono text-sm hover:bg-[#2C3E50] hover:text-white transition-colors flex items-center gap-2 shadow-lg"
-            >
-              <Filter className="w-4 h-4" />
-              <span>Filter</span>
-              {selectedFilter && (
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              )}
-              <span className="text-xs text-gray-500 ml-1">
-                ({filteredColors.length})
-              </span>
-            </button>
-            {/* Map Filter Dropdown */}
-            {isMapFilterOpen && (
-              <div className="absolute top-full right-0 mt-2 bg-white border border-[#2C3E50] shadow-lg z-50 min-w-[280px]">
+          {/* Map Container */}
+          <div className="border-2 border-[#2C3E50] overflow-hidden min-h-[500px] h-[60vh] relative">
+            {/* Filter Status Indicator */}
+            {selectedFilter && (
+              <div className="absolute top-4 left-4 z-20 bg-white border-2 border-[#2C3E50] px-3 py-2 font-mono text-sm shadow-lg">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Filtered by: {selectedFilter.replace('same-', '')}</span>
+                  <span className="text-gray-500">({filteredColors.length} results)</span>
+                </div>
+              </div>
+            )}
+            {/* --- MAP FILTER BUTTON: Always visible, high z-index, debug border --- */}
+            <div className="absolute top-4 right-4 z-50 bg-white border-4 border-blue-500 rounded shadow-lg p-1">
+              <div className="relative" ref={filterDropdownRef}>
+                <button
+                  onClick={() => setIsMapFilterOpen(!isMapFilterOpen)}
+                  className="bg-white border-2 border-[#2C3E50] px-4 py-2 font-mono text-sm hover:bg-[#2C3E50] hover:text-white transition-colors flex items-center gap-2 shadow-lg"
+                >
+                  <Filter className="w-4 h-4" />
+                  <span>Filter</span>
+                  {selectedFilter && (
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  )}
+                  <span className="text-xs text-gray-500 ml-1">
+                    ({filteredColors.length})
+                  </span>
+                </button>
+                {/* Map Filter Dropdown */}
+                {isMapFilterOpen && (
+                  <div className="absolute top-full right-0 mt-2 bg-white border-2 border-[#2C3E50] shadow-lg z-50 min-w-[280px]">
                     <div className="p-4">
                       <div className="text-sm font-mono text-[#2C3E50] mb-3 font-bold">
                         Filter by same:
@@ -429,35 +427,37 @@ export default function MapPage() {
                           </button>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-white">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-[#2C3E50] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="font-mono text-sm text-[#2C3E50]">Loading colors...</p>
                 </div>
+              </div>
+            ) : (
+              <div className="absolute inset-0">
+                <Map 
+                  colors={filteredColors} 
+                  onColorSelect={handleColorSelect}
+                  selectedColorForFilter={selectedColorForFilter}
+                  onRefresh={fetchColors}
+                />
               </div>
             )}
           </div>
+
+          {/* Add Color Button - Fixed Position */}
+          <div className="fixed bottom-8 right-8 z-50">
+            <AddColorButton onSubmit={handleSubmit} />
+          </div>
         </div>
-
-        {isLoading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-white">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-[#2C3E50] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="font-mono text-sm text-[#2C3E50]">Loading colors...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="absolute inset-0">
-            <Map 
-              colors={filteredColors} 
-              onColorSelect={handleColorSelect}
-              selectedColorForFilter={selectedColorForFilter}
-              onRefresh={fetchColors}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Add Color Button - Fixed Position */}
-      <div className="fixed bottom-8 right-8 z-50">
-        <AddColorButton onSubmit={handleSubmit} />
       </div>
     </main>
   );
-} 
+}
