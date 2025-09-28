@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import MenuAndBreadcrumbs from '@/components/MenuAndBreadcrumbs';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -15,7 +14,6 @@ export default function SignInPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { refreshAuth } = useAuth();
 
   // Check for success message in URL
   useEffect(() => {
@@ -44,12 +42,8 @@ export default function SignInPage() {
 
       if (response.ok) {
         console.log('Sign in successful:', data);
-        // Refresh auth state to immediately update authentication status
-        refreshAuth();
-        // Small delay to ensure auth state is updated before redirect
-        setTimeout(() => {
-          router.push('/');
-        }, 100);
+        // Force page reload to ensure auth state is immediately updated
+        window.location.href = '/';
       } else {
         setError(data.error || 'Sign in failed');
       }

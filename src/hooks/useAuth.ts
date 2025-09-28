@@ -1,54 +1,26 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 
 export function useAuth() {
-  const { data: session, status } = useSession();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const checkAuth = useCallback(async () => {
-    try {
-      // Check if we have a custom auth-token cookie
-      const hasCustomToken = document.cookie.includes('auth-token=');
-      
-      // User is authenticated if either NextAuth session exists or custom token exists
-      const authenticated = !!(session?.user || hasCustomToken);
-      console.log('Auth check:', { 
-        hasSession: !!session?.user, 
-        hasCustomToken, 
-        authenticated 
-      });
-      setIsAuthenticated(authenticated);
-    } catch (error) {
-      console.error('Error checking auth status:', error);
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [session]);
-
   useEffect(() => {
-    // Check auth immediately
+    const checkAuth = () => {
+      // Simple check for auth-token cookie
+      const hasCustomToken = document.cookie.includes('auth-token=');
+      console.log('Auth check:', { hasCustomToken, authenticated: hasCustomToken });
+      setIsAuthenticated(hasCustomToken);
+      setIsLoading(false);
+    };
+
+    // Check immediately
     checkAuth();
     
-    // Listen for storage events (cookies changes)
-    const handleStorageChange = () => {
-      checkAuth();
-    };
+    // Check every 500ms to catch cookie changes immediately
+    const interval = setInterval(checkAuth, 500);
     
-    // Listen for focus events (user comes back to tab)
-    const handleFocus = () => {
-      checkAuth();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', handleFocus);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [checkAuth]);
+    return () => clearInterval(interval);
+  }, []);
 
   const logout = async () => {
     try {
@@ -64,15 +36,10 @@ export function useAuth() {
     }
   };
 
-  const refreshAuth = useCallback(() => {
-    checkAuth();
-  }, [checkAuth]);
-
   return {
     isAuthenticated,
     isLoading,
     logout,
-    refreshAuth,
-    session
+    session: null
   };
 }
