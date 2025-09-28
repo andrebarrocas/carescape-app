@@ -833,13 +833,9 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
           className="bg-black text-white text-2xl px-8 py-3 font-bold tracking-wider rounded-none fixed bottom-8 z-50 shadow-lg flex items-center justify-center transition-opacity"
           style={{ right: "5%" }}
           onClick={() => {
-            console.log('Add Color button clicked, isAuthenticated:', isAuthenticated);
-            console.log('Current cookies:', document.cookie);
             if (!isAuthenticated) {
-              console.log('Not authenticated, redirecting to signin');
               router.push('/auth/signin');
             } else {
-              console.log('Authenticated, opening color form');
               setShowColorForm(true);
             }
           }}

@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AboutPage() {
   const [mounted, setMounted] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     setMounted(true);
@@ -160,6 +162,23 @@ export default function AboutPage() {
                 >
                   Get Started
                 </button>
+                {isAuthenticated && (
+                  <button 
+                    onClick={logout}
+                    className="bos-button text-xl px-8 py-4 tracking-wider text-left cursor-pointer"
+                    style={{
+                      fontSize: '1rem',
+                      padding: '0.75rem 2rem',
+                      lineHeight: '1.5',
+                      letterSpacing: '1px',
+                      textAlign: 'left',
+                      backgroundColor: 'red',
+                      color: 'white'
+                    }}
+                  >
+                    Logout
+                  </button>
+                )}
               </div>
             </div>
           </div>

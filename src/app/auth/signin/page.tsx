@@ -42,7 +42,6 @@ export default function SignInPage() {
 
       if (response.ok) {
         console.log('Sign in successful:', data);
-        console.log('Cookies after signin:', document.cookie);
         // Force page reload to ensure auth state is immediately updated
         window.location.href = '/';
       } else {
