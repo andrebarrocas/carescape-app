@@ -3,13 +3,32 @@ import { useState, useEffect } from 'react';
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = () => {
       // Simple check for auth-token cookie
       const hasCustomToken = document.cookie.includes('auth-token=');
-      console.log('Auth check:', { hasCustomToken, authenticated: hasCustomToken });
+      
+      // Extract user email from cookie if it exists
+      let email = null;
+      if (hasCustomToken) {
+        const cookieMatch = document.cookie.match(/auth-token=([^;]+)/);
+        if (cookieMatch) {
+          try {
+            // Decode JWT token to get user email
+            const token = cookieMatch[1];
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            email = payload.email;
+          } catch (error) {
+            console.error('Error decoding token:', error);
+          }
+        }
+      }
+      
+      console.log('Auth check:', { hasCustomToken, authenticated: hasCustomToken, email });
       setIsAuthenticated(hasCustomToken);
+      setUserEmail(email);
       setIsLoading(false);
     };
 
@@ -40,6 +59,6 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     logout,
-    session: null
+    session: isAuthenticated && userEmail ? { user: { email: userEmail } } : null
   };
 }
