@@ -59,7 +59,7 @@ export default function AboutPage() {
          
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mb-12 max-w-7xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-8 mb-12 max-w-7xl mx-auto">
             <div className="flex flex-col items-center text-center max-w-xs mx-auto">
               <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 mb-4 flex items-center justify-center">
                 <Image 

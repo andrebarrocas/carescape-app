@@ -1024,7 +1024,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               )}
 
             {/* Submit button */}
-            <div className="flex justify-center mt-8 mb-4 sticky bottom-0 bg-white pt-4">
+            <div className="flex justify-center mt-8 mb-6">
               <button
                 type="submit"
                 disabled={submitting}
