@@ -604,7 +604,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     <Dialog.Root open={isOpen} onOpenChange={() => {}}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto border-2 border-black z-[110]">
+        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 pb-8 shadow-lg overflow-y-auto border-2 border-black z-[110]">
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-2xl font-bold text-[#2C3E50]" style={{ fontFamily: '"Futura Magazine", monospace' }}>
               Add New Color
@@ -985,7 +985,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
 
               {/* Media Images Gallery */}
               {mediaFiles.filter(m => m.type === 'process').length > 0 && (
-                <div className="space-y-2 mb-6">
+                <div className="space-y-2 mb-8">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {mediaFiles
                       .filter(m => m.type === 'process')
@@ -1024,13 +1024,12 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               )}
 
             {/* Submit button */}
-            <div className="flex justify-center mt-4">
-              
+            <div className="flex justify-center mt-8 mb-8">
               <button
                 type="submit"
                 disabled={submitting}
                 className="bos-button text-lg px-6 py-2"
-                style={{ fontSize: '1.125rem', marginTop: '3%' }}
+                style={{ fontSize: '1.125rem' }}
                 onClick={() => {
                   console.log('Submit button clicked');
                   console.log('Submitting state:', submitting);
