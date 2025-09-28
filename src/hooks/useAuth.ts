@@ -10,23 +10,28 @@ export function useAuth() {
       // Simple check for auth-token cookie
       const hasCustomToken = document.cookie.includes('auth-token=');
       
+      console.log('Full cookie string:', document.cookie);
+      console.log('Looking for auth-token, found:', hasCustomToken);
+      
       // Extract user email from cookie if it exists
       let email = null;
       if (hasCustomToken) {
         const cookieMatch = document.cookie.match(/auth-token=([^;]+)/);
+        console.log('Cookie match result:', cookieMatch);
         if (cookieMatch) {
           try {
             // Decode JWT token to get user email
             const token = cookieMatch[1];
             const payload = JSON.parse(atob(token.split('.')[1]));
             email = payload.email;
+            console.log('Decoded token payload:', payload);
           } catch (error) {
             console.error('Error decoding token:', error);
           }
         }
       }
       
-      console.log('Auth check:', { hasCustomToken, authenticated: hasCustomToken, email });
+      console.log('Auth check result:', { hasCustomToken, authenticated: hasCustomToken, email });
       setIsAuthenticated(hasCustomToken);
       setUserEmail(email);
       setIsLoading(false);

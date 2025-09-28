@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     );
 
     response.cookies.set('auth-token', token, {
-      httpOnly: true,
+      httpOnly: false, // Allow JavaScript access for client-side auth checks
       secure: false, // Set to true in production
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60, // 7 days

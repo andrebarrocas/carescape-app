@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     // Clear the custom auth-token cookie
     response.cookies.set('auth-token', '', {
-      httpOnly: true,
+      httpOnly: false, // Match the sign-in API setting
       secure: false,
       sameSite: 'lax',
       maxAge: 0, // This expires the cookie immediately
