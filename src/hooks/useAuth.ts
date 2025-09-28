@@ -7,13 +7,18 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         // Check if we have a custom auth-token cookie
         const hasCustomToken = document.cookie.includes('auth-token=');
         
         // User is authenticated if either NextAuth session exists or custom token exists
         const authenticated = !!(session?.user || hasCustomToken);
+        console.log('Auth check:', { 
+          hasSession: !!session?.user, 
+          hasCustomToken, 
+          authenticated 
+        });
         setIsAuthenticated(authenticated);
       } catch (error) {
         console.error('Error checking auth status:', error);

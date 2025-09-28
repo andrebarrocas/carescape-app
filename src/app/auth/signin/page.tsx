@@ -42,7 +42,7 @@ export default function SignInPage() {
 
       if (response.ok) {
         console.log('Sign in successful:', data);
-        router.push('/colors');
+        router.push('/');
       } else {
         setError(data.error || 'Sign in failed');
       }

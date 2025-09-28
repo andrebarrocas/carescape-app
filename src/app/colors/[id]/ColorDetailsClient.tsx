@@ -66,8 +66,8 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         throw new Error('Failed to delete color');
       }
 
-      // Redirect to the map page after successful deletion
-      router.push('/map');
+      // Redirect to the home page after successful deletion
+      router.push('/');
     } catch (error) {
       console.error('Error deleting color:', error);
       alert('Failed to delete color. Please try again.');
