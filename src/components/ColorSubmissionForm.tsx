@@ -855,13 +855,15 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
             {errors.coordinates && (
               <p className="mt-1 text-red-500 text-xs">{errors.coordinates.message}</p>
             )}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                {/* Outcome Image Upload */}
-                <div className="h-40">
-                  <div className="h-6 mb-2">
-                    <span className="font-mono text-sm text-[#2C3E50]">Color Outcome</span>
-                  </div>
-                  <div className="h-72">
+              <div className="space-y-6 mb-6">
+                {/* Upload Sections */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Outcome Image Upload */}
+                  <div>
+                    <div className="mb-2">
+                      <span className="font-mono text-sm text-[#2C3E50]">Color Outcome</span>
+                    </div>
+                    <div className="h-72">
                     {mediaFiles.find(m => m.type === 'outcome') ? (
                       <div className="relative w-full h-full border-2 border-[#2C3E50]">
                         <Image
@@ -910,12 +912,12 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   </div>
                 </div>
 
-                {/* Landscape Image Upload */}
-                <div className="h-40">
-                  <div className="h-6 mb-2">
-                    <span className="font-mono text-sm text-[#2C3E50]">Landscape Photo</span>
-                  </div>
-                  <div className="h-72">
+                  {/* Landscape Image Upload */}
+                  <div>
+                    <div className="mb-2">
+                      <span className="font-mono text-sm text-[#2C3E50]">Landscape Photo</span>
+                    </div>
+                    <div className="h-72">
                     {mediaFiles.find(m => m.type === 'landscape') ? (
                       <div className="relative w-full h-full border-2 border-[#2C3E50]">
                         <Image
@@ -962,12 +964,12 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   </div>
                 </div>
 
-                {/* Media Images Upload */}
-                <div className="h-40">
-                  <div className="h-6 mb-2">
-                    <span className="font-mono text-sm text-[#2C3E50]">Media Images</span>
-                  </div>
-                  <div className="h-72">
+                  {/* Media Images Upload */}
+                  <div>
+                    <div className="mb-2">
+                      <span className="font-mono text-sm text-[#2C3E50]">Media Images</span>
+                    </div>
+                    <div className="h-72">
                     <DragDropUpload
                       onFilesSelected={(files) => handleFileUpload(files, 'process')}
                       multiple={true}
@@ -980,11 +982,11 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                         <p className="text-xs text-gray-500 mt-1">Upload additional media photos</p>
                       </div>
                     </DragDropUpload>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Media Images Gallery */}
+                {/* Media Images Gallery */}
               {mediaFiles.filter(m => m.type === 'process').length > 0 && (
                 <div className="space-y-4 mb-6">
                   <h3 className="font-mono text-sm text-[#2C3E50]">Uploaded Media Photos:</h3>
@@ -1024,6 +1026,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   </div>
                 </div>
               )}
+              </div>
             </div>
 
             {/* Submit button */}
