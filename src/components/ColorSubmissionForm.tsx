@@ -604,7 +604,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     <Dialog.Root open={isOpen} onOpenChange={() => {}}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto border-2 border-black z-[110]">
+        <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg overflow-y-auto border-2 border-black z-[110] flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-2xl font-bold text-[#2C3E50]" style={{ fontFamily: '"Futura Magazine", monospace' }}>
               Add New Color
@@ -620,7 +620,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               console.error('Form validation failed:', errors);
               alert('Please fix the form errors before submitting.');
             })} 
-            className="space-y-6"
+            className="flex flex-col flex-1"
             onChange={() => {
               console.log('Form changed, errors:', errors);
               console.log('Form values:', watch());
@@ -629,6 +629,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
               console.log('Form invalid event triggered:', e);
             }}
           >
+            <div className="flex-1 overflow-y-auto space-y-6">
             {/* Basic Information */}
             <div className="space-y-4">
               <div>
@@ -1022,9 +1023,10 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                   </div>
                 </div>
               )}
+            </div>
 
             {/* Submit button */}
-            <div className="flex justify-center mt-8 mb-6">
+            <div className="flex justify-center mt-4 pt-4 border-t border-gray-200">
               <button
                 type="submit"
                 disabled={submitting}
