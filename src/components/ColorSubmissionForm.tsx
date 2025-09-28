@@ -986,26 +986,27 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
 
               {/* Media Images Gallery */}
               {mediaFiles.filter(m => m.type === 'process').length > 0 && (
-                <div className="space-y-2 mb-6">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-4 mb-6">
+                  <h3 className="font-mono text-sm text-[#2C3E50]">Uploaded Media Photos:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {mediaFiles
                       .filter(m => m.type === 'process')
                       .map((media, index) => {
                         // Find the actual index in the full mediaFiles array
                         const actualIndex = mediaFiles.findIndex(m => m === media);
                         return (
-                          <div key={actualIndex} className="space-y-4">
-                            <div className="relative aspect-square border-2 border-[#2C3E50]">
+                          <div key={actualIndex} className="space-y-3">
+                            <div className="relative aspect-square border-2 border-[#2C3E50] rounded">
                               <Image
                                 src={media.preview}
                                 alt={`Media image ${index + 1}`}
                                 fill
-                                className="object-cover"
+                                className="object-cover rounded"
                               />
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFile(actualIndex)}
-                                className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg"
+                                className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg hover:bg-gray-100"
                               >
                                 <X className="w-4 h-4 text-[#2C3E50]" />
                               </button>
@@ -1014,8 +1015,8 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                               placeholder="Add caption..."
                               value={media.caption}
                               onChange={(e) => handleCaptionChange(actualIndex, e.target.value)}
-                              className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm resize-none focus:outline-none"
-                              rows={4}
+                              className="w-full p-3 border-2 border-[#2C3E50] font-mono text-sm resize-none focus:outline-none rounded"
+                              rows={3}
                             />
                           </div>
                         );

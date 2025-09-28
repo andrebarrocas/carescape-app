@@ -606,8 +606,10 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
             // Then, upload media files if any
             if (mediaFiles && mediaFiles.length > 0) {
               try {
+                console.log('Uploading media files:', mediaFiles.length);
                 const formData = new FormData();
                 mediaFiles.forEach((media: any) => {
+                  console.log('Adding media file:', media.type, media.file.name);
                   formData.append('media', media.file);
                   formData.append('captions', media.caption || '');
                   formData.append('types', media.type);
@@ -620,7 +622,11 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                 });
 
                 if (!mediaResponse.ok) {
-                  console.error('Failed to upload media files');
+                  const errorText = await mediaResponse.text();
+                  console.error('Failed to upload media files:', errorText);
+                } else {
+                  const mediaResult = await mediaResponse.json();
+                  console.log('Media upload successful:', mediaResult);
                 }
               } catch (error) {
                 console.error('Error uploading media files:', error);
