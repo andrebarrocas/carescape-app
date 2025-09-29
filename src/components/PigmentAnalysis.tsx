@@ -72,7 +72,7 @@ export default function PigmentAnalysis({
 
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
-        model: 'models/gemini-1.5-flash',
+        model: 'models/gemini-2.0-flash-exp',
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 300,
