@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { verify } from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
 // Helper function to get display name
 function getDisplayName(user: any): string {
@@ -88,49 +90,44 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return new Response('Unauthorized', { status: 401 });
-    }
     const { id: colorId } = await params;
     const { content, mediaId, parentId } = await request.json();
 
-    // Ensure the user exists in the database and has the correct name
-    let user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    if (!user) {
-      const userData: any = { id: session.user.id };
-      if (session.user.email) userData.email = session.user.email;
-      if (session.user.name) userData.name = session.user.name;
-      if (session.user.pseudonym) userData.pseudonym = session.user.pseudonym;
-      user = await prisma.user.create({ data: userData });
-    } else {
-      // Update user data if it has changed
-      const updateData: any = {};
-      if (session.user.name && user.name !== session.user.name) {
-        updateData.name = session.user.name;
-      }
-      if (session.user.pseudonym && user.pseudonym !== session.user.pseudonym) {
-        updateData.pseudonym = session.user.pseudonym;
-      }
-      if (session.user.email && user.email !== session.user.email) {
-        updateData.email = session.user.email;
-      }
-      
-      if (Object.keys(updateData).length > 0) {
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: updateData
-        });
+    // Get user email from cookie
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth-token')?.value;
+    let userEmail = 'anonymous@carespace.app';
+    let userId = null;
+
+    if (authToken) {
+      try {
+        const decoded = verify(authToken, process.env.NEXTAUTH_SECRET || 'fallback-secret') as any;
+        userEmail = decoded.email || 'anonymous@carespace.app';
+        userId = decoded.userId;
+      } catch (error) {
+        console.error('Token verification failed:', error);
       }
     }
 
-    // Create the comment using the logged user's ID
+    // Get or create user based on email
+    let user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (!user) {
+      user = await prisma.user.create({ 
+        data: { 
+          email: userEmail,
+          name: userEmail.split('@')[0],
+          pseudonym: userEmail.split('@')[0]
+        } 
+      });
+    }
+
+    // Create the comment using the user's ID
     const comment = await prisma.comment.create({
       data: {
         content,
         colorId,
         mediaId,
-        userId: session.user.id,
+        userId: user.id,
         ...(parentId ? { parentId } : {})
       },
       include: {

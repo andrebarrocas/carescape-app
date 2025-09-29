@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { verify } from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
 export async function GET(
   request: Request,
@@ -9,7 +11,34 @@ export async function GET(
 ) {
   try {
     const { id: mediaId } = await params;
-    const session = await getServerSession(authOptions);
+    
+    // Get user email from cookie
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth-token')?.value;
+    let userEmail = 'anonymous@carespace.app';
+    let userId = null;
+
+    if (authToken) {
+      try {
+        const decoded = verify(authToken, process.env.NEXTAUTH_SECRET || 'fallback-secret') as any;
+        userEmail = decoded.email || 'anonymous@carespace.app';
+        userId = decoded.userId;
+      } catch (error) {
+        console.error('Token verification failed:', error);
+      }
+    }
+
+    // Get or create user based on email
+    let user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (!user) {
+      user = await prisma.user.create({ 
+        data: { 
+          email: userEmail,
+          name: userEmail.split('@')[0],
+          pseudonym: userEmail.split('@')[0]
+        } 
+      });
+    }
     
     // Get total likes count for this media
     const likesCount = await prisma.mediaLike.count({
@@ -18,12 +47,12 @@ export async function GET(
     
     // Check if current user has liked this media
     let isLiked = false;
-    if (session?.user?.id) {
+    if (user) {
       const userLike = await prisma.mediaLike.findUnique({
         where: {
           mediaId_userId: {
             mediaId,
-            userId: session.user.id
+            userId: user.id
           }
         }
       });
@@ -48,23 +77,42 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const { id: mediaId } = await params;
+    
+    // Get user email from cookie
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth-token')?.value;
+    let userEmail = 'anonymous@carespace.app';
+    let userId = null;
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+    if (authToken) {
+      try {
+        const decoded = verify(authToken, process.env.NEXTAUTH_SECRET || 'fallback-secret') as any;
+        userEmail = decoded.email || 'anonymous@carespace.app';
+        userId = decoded.userId;
+      } catch (error) {
+        console.error('Token verification failed:', error);
+      }
     }
 
-    const { id: mediaId } = await params;
+    // Get or create user based on email
+    let user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (!user) {
+      user = await prisma.user.create({ 
+        data: { 
+          email: userEmail,
+          name: userEmail.split('@')[0],
+          pseudonym: userEmail.split('@')[0]
+        } 
+      });
+    }
     
     // Check if user already liked this media
     const existingLike = await prisma.mediaLike.findUnique({
       where: {
         mediaId_userId: {
           mediaId,
-          userId: session.user.id
+          userId: user.id
         }
       }
     });
@@ -75,7 +123,7 @@ export async function POST(
         where: {
           mediaId_userId: {
             mediaId,
-            userId: session.user.id
+            userId: user.id
           }
         }
       });
@@ -84,7 +132,7 @@ export async function POST(
       await prisma.mediaLike.create({
         data: {
           mediaId,
-          userId: session.user.id
+          userId: user.id
         }
       });
     }
