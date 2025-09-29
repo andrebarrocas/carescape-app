@@ -59,9 +59,9 @@ export default function AboutPage() {
          
             </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-8 mb-12 max-w-7xl mx-auto">
-            <div className="flex flex-col items-center text-center max-w-xs mx-auto">
-              <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 mb-4 flex items-center justify-center">
+          <div className="flex flex-nowrap justify-center gap-4 mb-12 max-w-full mx-auto overflow-x-auto">
+            <div className="flex flex-col items-center text-center w-48 flex-shrink-0">
+              <div className="w-32 h-32 flex-shrink-0 mb-2 flex items-center justify-center">
                 <Image 
                   src="/desenho-1.gif" 
                   alt="About visual 1" 
@@ -70,11 +70,11 @@ export default function AboutPage() {
                   className="object-contain w-full h-full" 
                 />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-black font-mono">Multidisciplinary Team</h2>
-              <p className="text-base mb-2 text-black leading-relaxed font-mono">A collective of HCI researchers from diverse fields such design, and architecture exploring sustainability and posthumanist approaches.</p>
+              <h2 className="text-lg font-bold mb-1 text-black font-mono">Multidisciplinary Team</h2>
+              <p className="text-sm mb-1 text-black leading-relaxed font-mono">A collective of HCI researchers from diverse fields such design, and architecture exploring sustainability and posthumanist approaches.</p>
             </div>
-            <div className="flex flex-col items-center text-center max-w-xs mx-auto">
-              <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 mb-4 flex items-center justify-center">
+            <div className="flex flex-col items-center text-center w-48 flex-shrink-0">
+              <div className="w-32 h-32 flex-shrink-0 mb-2 flex items-center justify-center">
                 <Image 
                   src="/desenho-2.gif" 
                   alt="About visual 2" 
@@ -83,11 +83,11 @@ export default function AboutPage() {
                   className="object-contain w-full h-full" 
                 />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-black font-mono">Community Knowledge</h2>
-              <p className="text-base mb-2 text-black leading-relaxed font-mono">Share knowledge of making colors from elements of the surrounding landscapes worldwide, unveiling their natural, cultural and social contexts.</p>
+              <h2 className="text-lg font-bold mb-1 text-black font-mono">Community Knowledge</h2>
+              <p className="text-sm mb-1 text-black leading-relaxed font-mono">Share knowledge of making colors from elements of the surrounding landscapes worldwide, unveiling their natural, cultural and social contexts.</p>
             </div>
-            <div className="flex flex-col items-center text-center max-w-xs mx-auto">
-              <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 mb-4 flex items-center justify-center">
+            <div className="flex flex-col items-center text-center w-48 flex-shrink-0">
+              <div className="w-32 h-32 flex-shrink-0 mb-2 flex items-center justify-center">
                 <Image 
                   src="/desenho-3.gif" 
                   alt="About visual 3" 
@@ -96,11 +96,11 @@ export default function AboutPage() {
                   className="object-contain w-full h-full" 
                 />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-black font-mono">Sustainable Practices</h2>
-              <p className="text-base mb-2 text-black leading-relaxed font-mono">Highlight natural local materials and promote their use and application, disseminating situated knowledge for positive global impact.</p>
+              <h2 className="text-lg font-bold mb-1 text-black font-mono">Sustainable Practices</h2>
+              <p className="text-sm mb-1 text-black leading-relaxed font-mono">Highlight natural local materials and promote their use and application, disseminating situated knowledge for positive global impact.</p>
             </div>
-            <div className="flex flex-col items-center text-center max-w-xs mx-auto">
-              <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 mb-4 flex items-center justify-center">
+            <div className="flex flex-col items-center text-center w-48 flex-shrink-0">
+              <div className="w-32 h-32 flex-shrink-0 mb-2 flex items-center justify-center">
                 <Image 
                   src="/desenho-4.gif" 
                   alt="About visual 4" 
@@ -109,11 +109,11 @@ export default function AboutPage() {
                   className="object-contain w-full h-full" 
                 />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-black font-mono">Exploratory Dialogue</h2>
-              <p className="text-base mb-2 text-black leading-relaxed font-mono">Engage with an AI guide to explore materials, landscapes, and sustainable practices through open, curiosity-driven conversations.</p>
+              <h2 className="text-lg font-bold mb-1 text-black font-mono">Exploratory Dialogue</h2>
+              <p className="text-sm mb-1 text-black leading-relaxed font-mono">Engage with an AI guide to explore materials, landscapes, and sustainable practices through open, curiosity-driven conversations.</p>
             </div>
-            <div className="flex flex-col items-center text-center max-w-xs mx-auto">
-              <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 mb-4 flex items-center justify-center">
+            <div className="flex flex-col items-center text-center w-48 flex-shrink-0">
+              <div className="w-32 h-32 flex-shrink-0 mb-2 flex items-center justify-center">
                 <Image 
                   src="/desenho-5.gif" 
                   alt="About visual 5" 
@@ -122,8 +122,8 @@ export default function AboutPage() {
                   className="object-contain w-full h-full" 
                 />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-black font-mono">Networks of Care</h2>
-              <p className="text-base mb-2 text-black leading-relaxed font-mono">Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.</p>
+              <h2 className="text-lg font-bold mb-1 text-black font-mono">Networks of Care</h2>
+              <p className="text-sm mb-1 text-black leading-relaxed font-mono">Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.</p>
             </div>
           </div>
           <br />
