@@ -383,7 +383,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   return (
                     <div key={process.id} className="space-y-2">
                       <p>- Application: {process.application || 'Not specified'}</p>
-                      <p>- Process: {isTechniqueCorrupted ? process.technique : (process.notes || 'Not specified')}</p>
+                      <p>- Process: {process.technique || 'Not specified'}</p>
                     </div>
                   );
                 })
