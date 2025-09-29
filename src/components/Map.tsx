@@ -55,6 +55,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
   const [storyMode, setStoryMode] = useState(false);
   const [currentColorId, setCurrentColorId] = useState<string | null>(null);
   const [storyColorId, setStoryColorId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMapStyle, setCurrentMapStyle] = useState('all');
   const [currentView, setCurrentView] = useState('colors');
@@ -396,13 +397,9 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
         setMediaFiles([]);
         setCaptions([]);
         
-        // Force refresh the color details by re-setting the story color ID
-        // This will trigger the StoryColorDetails component to refetch data
-        const currentId = storyColorId;
-        setStoryColorId(null);
-        setTimeout(() => {
-          setStoryColorId(currentId);
-        }, 100);
+        // Force refresh the color details by incrementing refresh key
+        // This will trigger the StoryColorDetails component to remount and refetch data
+        setRefreshKey(prev => prev + 1);
       } else {
         const errorText = await res.text();
         console.error('Failed to upload additional media:', errorText);
@@ -723,7 +720,7 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
             style={{ fontFamily: 'Futura Magazine, monospace' }}
           >
             <div className="flex-1 overflow-y-auto p-6">
-              <EmbeddedColorDetails colorId={storyColorId} />
+              <EmbeddedColorDetails key={refreshKey} colorId={storyColorId} />
             </div>
             {/* Separator line and action bar */}
             <div className="w-full flex flex-col items-center">
