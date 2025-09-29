@@ -38,7 +38,9 @@ function ProgressiveLoader({ colorId }: { colorId: string }) {
     // Fetch full data with comments
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/colors/${colorId}/full`);
+        const res = await fetch(`/api/colors/${colorId}/full?t=${Date.now()}`, {
+          cache: 'no-store'
+        });
         if (!res.ok) throw new Error("Failed to fetch color details");
         const data = await res.json();
         if (isMounted) {

@@ -104,8 +104,18 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         throw new Error('Failed to add comment');
       }
 
-      // Refresh the page to show the new comment
-      router.refresh();
+      const newComment = await response.json();
+      
+      // Update local state to include the new comment
+      setMediaUploads(prev => prev.map(media => {
+        if (media.id === mediaId) {
+          return {
+            ...media,
+            comments: [newComment, ...media.comments]
+          };
+        }
+        return media;
+      }));
     } catch (error) {
       console.error('Error adding comment:', error);
       alert('Failed to add comment. Please try again.');
