@@ -271,6 +271,52 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
     };
   }, []);
 
+  // Helper function to compress images
+  const compressImage = (file: File, maxWidth: number = 1024, maxHeight: number = 1024, quality: number = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file); // Fallback to original file
+          }
+        }, 'image/jpeg', quality);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleFileUpload = async (files: File[], type: 'outcome' | 'landscape' | 'process') => {
     console.log('File upload triggered for type:', type);
     console.log('Files selected:', files?.length);
@@ -295,18 +341,17 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
         return;
       }
       
-      files.forEach(async (file, index) => {
-        console.log(`Processing file ${index + 1}:`, file.name, file.size);
+      // Process files sequentially to avoid memory issues
+      for (const file of files) {
+        console.log(`Processing file:`, file.name, file.size);
         
-        // Check file size (limit to 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-          alert(`File ${file.name} is too large. Please use files smaller than 10MB.`);
-          return;
-        }
+        // Compress the image first
+        const compressedFile = await compressImage(file, 1024, 1024, 0.8);
+        console.log(`Compressed file size:`, compressedFile.size);
         
-        const preview = URL.createObjectURL(file);
+        const preview = URL.createObjectURL(compressedFile);
         const newMedia: MediaFile = {
-          file,
+          file: compressedFile,
           type,
           preview,
           caption: '',
@@ -316,29 +361,27 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
           console.log('Updated media files count:', newFiles.length);
           return newFiles;
         });
-      });
+      }
     } else {
       // For outcome and landscape, only handle one file
       const file = files[0];
       console.log('Processing single file:', file.name, file.size);
       
-      // Check file size (limit to 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert(`File ${file.name} is too large. Please use files smaller than 10MB.`);
-        return;
-      }
+      // Compress the image first
+      const compressedFile = await compressImage(file, 1024, 1024, 0.8);
+      console.log(`Compressed file size:`, compressedFile.size);
       
-      const preview = URL.createObjectURL(file);
+      const preview = URL.createObjectURL(compressedFile);
 
       // If it's an outcome image, generate hex code
       if (type === 'outcome') {
         console.log('Generating hex for outcome image...');
-        const hex = await getAverageColor(file);
+        const hex = await getAverageColor(compressedFile);
         console.log('Generated hex:', hex);
         setValue('hex', hex); // Set the hex value in the form
         console.log('Hex value set in form');
         const newMedia: MediaFile = {
-          file,
+          file: compressedFile,
           type,
           preview,
           caption: hex,
@@ -347,7 +390,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
         setMediaFiles(prev => [...prev.filter(m => m.type !== 'outcome'), newMedia]);
       } else {
         const newMedia: MediaFile = {
-          file,
+          file: compressedFile,
           type,
           preview,
           caption: '',
