@@ -332,15 +332,33 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
         formData.append('types', 'process'); // Default type for additional media uploads
       });
       if (!storyColorId) return;
+      
       const res = await fetch(`/api/colors/${storyColorId}/images`, {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
+      
       if (res.ok) {
         setAddMediaOpen(false);
         setMediaFiles([]);
         setCaptions([]);
+        
+        // Force refresh the color details by re-setting the story color ID
+        // This will trigger the StoryColorDetails component to refetch data
+        const currentId = storyColorId;
+        setStoryColorId(null);
+        setTimeout(() => {
+          setStoryColorId(currentId);
+        }, 100);
+      } else {
+        const errorText = await res.text();
+        console.error('Failed to upload additional media:', errorText);
+        alert('Failed to upload media. Please try again.');
       }
+    } catch (error) {
+      console.error('Error uploading additional media:', error);
+      alert('Failed to upload media. Please try again.');
     } finally {
       setIsUploading(false);
     }
