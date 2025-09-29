@@ -66,8 +66,8 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         throw new Error('Failed to delete color');
       }
 
-      // Redirect to the home page after successful deletion
-      router.push('/');
+      // Force a complete page refresh to ensure all data is updated
+      window.location.href = '/';
     } catch (error) {
       console.error('Error deleting color:', error);
       alert('Failed to delete color. Please try again.');
@@ -302,7 +302,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 </div>
               </div>
               {canEdit && (
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   <button
                     onClick={() => setIsEditModalOpen(true)}
                     aria-label="Edit Color"
