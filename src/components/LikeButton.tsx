@@ -37,12 +37,6 @@ export function LikeButton({ colorId, initialLikesCount = 0, initialIsLiked = fa
   }, [colorId, initialLikesCount, initialIsLiked]);
 
   const handleLikeToggle = async () => {
-    if (!session?.user?.id) {
-      // Redirect to sign in or show a message
-      alert('Please sign in to like colors');
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch(`/api/colors/${colorId}/likes`, {

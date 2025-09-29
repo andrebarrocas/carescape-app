@@ -17,11 +17,6 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLikeToggle = async () => {
-    if (!session?.user?.id) {
-      alert('Please sign in to like comments');
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch(`/api/comments/${commentId}/likes`, {

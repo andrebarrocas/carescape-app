@@ -37,11 +37,6 @@ export function MediaLikeButton({ mediaId, initialLikesCount = 0, initialIsLiked
   }, [mediaId, initialLikesCount, initialIsLiked]);
 
   const handleLikeToggle = async () => {
-    if (!session?.user?.id) {
-      alert('Please sign in to like media');
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch(`/api/media/${mediaId}/likes`, {
