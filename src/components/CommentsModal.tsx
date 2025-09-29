@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { format } from 'date-fns';
@@ -101,6 +101,11 @@ export function CommentsModal({ media, onClose, onAddComment }: CommentsModalPro
       console.error('Error fetching comments:', error);
     }
   }, [media.colorId, media.id]);
+
+  // Fetch comments when modal opens
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
