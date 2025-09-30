@@ -752,7 +752,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                 )}
                 {locationStatus === 'error' && (
                   <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
-                    ⚠️ Could not detect location. Please search manually.
+                    ⚠️ Could not detect location. Please insert complete address or map coordinates.
                   </div>
                 )}
                 {errors.location && (

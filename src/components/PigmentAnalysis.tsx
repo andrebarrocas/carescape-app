@@ -75,7 +75,7 @@ export default function PigmentAnalysis({
         model: 'models/gemini-2.0-flash-exp',
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 300,
+          maxOutputTokens: 800,
           topP: 1,
           topK: 40,
         },
