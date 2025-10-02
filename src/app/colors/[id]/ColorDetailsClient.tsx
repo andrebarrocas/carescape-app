@@ -142,13 +142,13 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         season: data.season,
         material: {
           name: data.sourceMaterial,
-          partUsed: 'whole',
-          originNote: ''
+          partUsed: data.application || 'Not specified',
+          originNote: data.process
         },
         process: {
-          technique: data.process,
-          application: data.application || '',
-          notes: ''
+          technique: data.type,
+          application: data.application || 'Not specified',
+          notes: data.process
         }
       };
       console.log('Request body:', requestBody);
@@ -335,7 +335,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
             </div>
             <div className="mb-10">
             <div className="space-y-4 text-black font-sans text-base">
-              <p>&quot;{color.description}&quot;</p>
+              <div className="whitespace-pre-line">&quot;{color.description}&quot;</div>
             </div>
           </div>
           </div>
@@ -372,7 +372,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                 </div>
               )}
               {color.bioregion?.description && (
-                <p>- Bioregion: {color.bioregion.description}</p>
+                <div className="whitespace-pre-line">- Bioregion: {color.bioregion.description}</div>
               )}
              
             </div>
@@ -393,7 +393,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   return (
                     <div key={process.id} className="space-y-2">
                       <p>- Application: {process.application || 'Not specified'}</p>
-                      <p className="whitespace-pre-line">- Process: {process.technique || 'Not specified'}</p>
+                      <div className="whitespace-pre-line">- Process: {process.notes || 'Not specified'}</div>
                     </div>
                   );
                 })

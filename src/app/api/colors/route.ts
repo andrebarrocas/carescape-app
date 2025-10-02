@@ -312,9 +312,9 @@ export async function POST(req: Request) {
         },
         processes: {
           create: {
-            technique: process,
+            technique: type || 'pigment',
             application: application || '',
-            notes: '',
+            notes: process,
           },
         },
         // Note: Media uploads are handled separately via the /api/colors/[id]/images endpoint
