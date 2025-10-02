@@ -744,7 +744,13 @@ export default function Map({ colors, titleColor, onColorSelect, selectedColorFo
                   </button>
                   {/* Add Content Button */}
                   <button
-                    onClick={() => setAddMediaOpen(true)}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        router.push('/auth/signin');
+                      } else {
+                        setAddMediaOpen(true);
+                      }
+                    }}
                     className="bg-[#5C5954] text-white text-sm font-mono font-bold tracking-wider px-2 py-3 rounded-none transition-opacity h-12 flex-1 min-w-0"
                   >
                     + Add Content

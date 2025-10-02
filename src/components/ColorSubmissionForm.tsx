@@ -948,7 +948,7 @@ export default function ColorSubmissionForm({ isOpen, onClose, onSubmit }: Color
                         <div className="flex flex-col items-center justify-center h-full">
                           <Upload className="w-8 h-8 text-[#2C3E50] mb-2" />
                           <p className="text-sm text-[#2C3E50]">Upload outcome image</p>
-                          <p className="text-xs text-gray-500 mt-1">This will generate the hex color</p>
+                          <p className="text-xs text-gray-500 mt-1">Crop the relevant area to generate the hex color</p>
                         </div>
                       </DragDropUpload>
                     )}
