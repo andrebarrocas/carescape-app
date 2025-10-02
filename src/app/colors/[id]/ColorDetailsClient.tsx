@@ -142,13 +142,13 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
         season: data.season,
         material: {
           name: data.sourceMaterial,
-          partUsed: data.application || 'Not specified',
-          originNote: data.process
+          partUsed: 'whole',
+          originNote: ''
         },
         process: {
-          technique: data.type,
-          application: data.application || 'Not specified',
-          notes: data.process
+          technique: data.process,
+          application: data.application || '',
+          notes: ''
         }
       };
       console.log('Request body:', requestBody);
@@ -393,7 +393,7 @@ export function ColorDetailsClient({ children, color, mediaUploads: initialMedia
                   return (
                     <div key={process.id} className="space-y-2">
                       <p>- Application: {process.application || 'Not specified'}</p>
-                      <p>- Process: {process.technique || 'Not specified'}</p>
+                      <p className="whitespace-pre-line">- Process: {process.technique || 'Not specified'}</p>
                     </div>
                   );
                 })
