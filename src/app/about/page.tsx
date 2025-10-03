@@ -122,7 +122,7 @@ export default function AboutPage() {
                   className="object-contain w-full h-full" 
                 />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-black font-mono">Networks of Care</h2>
+              <h2 className="text-xl font-bold mb-2 text-black font-mono">Networks of More-than-Human Care</h2>
               <p className="text-base mb-2 text-black leading-relaxed font-mono">Promote deeper emotional connections to landscapes through first-person stories while understanding networks of ecosystems relations.</p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function AboutPage() {
                       lineHeight: '1.5',
                       letterSpacing: '1px',
                       textAlign: 'left',
-                      backgroundColor: 'red',
+                      backgroundColor: '#3b82f6',
                       color: 'white'
                     }}
                   >
